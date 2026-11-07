@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nutztierkosmos – Click-Dummy</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{brand:{50:'#F1F8F4',100:'#DCEFE5',500:'#2A8560',600:'#1C6B4C',700:'#16543D',800:'#11402F',900:'#0B2E22'},lime:{500:'#8DBF3F'},sand:{50:'#FBF9F3',100:'#F4F0E4',200:'#E7E0CE'},ink:{900:'#101915',700:'#2C3A33',500:'#5B6B63'},amber:{500:'#D98A2B'},sky:{500:'#3E7CA6'},berry:{500:'#A6486B'},danger:{500:'#B4372C'}},fontFamily:{serif:['Bitter','serif'],sans:['Inter','sans-serif']}}}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=Inter:wght@400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<style type="text/tailwindcss">
+.btn{@apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[15px] font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2}
+.b1{@apply btn bg-brand-600 text-white hover:bg-brand-500}.b2{@apply btn bg-white border border-sand-200 text-ink-900 hover:bg-sand-50}.b3{@apply btn text-brand-700 hover:bg-brand-50}.b4{@apply btn bg-danger-500 text-white}
+.card{@apply rounded-2xl bg-white border border-sand-200 p-6 shadow-[0_1px_2px_rgba(16,25,21,.06),0_8px_24px_-12px_rgba(16,25,21,.18)]}
+.inp{@apply w-full rounded-xl border border-sand-200 bg-white px-3 py-2.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-brand-500}
+.lbl{@apply block text-[13px] font-medium text-ink-700 mb-1}
+.bdg{@apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[13px] font-medium bg-brand-100 text-brand-700}
+.ovl{@apply text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-500}
+.h1{@apply font-serif text-[34px] leading-[1.2] font-bold text-brand-700}
+.opt{@apply flex w-full items-center gap-3 rounded-xl border-2 border-sand-200 bg-white p-4 text-left hover:border-brand-500}
+.opt.sel{@apply border-brand-600 bg-brand-50 ring-2 ring-brand-600}
+th{@apply text-left text-[13px] font-medium text-ink-500 p-3}td{@apply p-3 border-t border-sand-200 text-[15px]}
+.nav a{@apply flex items-center gap-3 rounded-lg px-3 py-2 text-white/80 hover:bg-white/10;border-left:3px solid transparent}.nav a.on{@apply bg-white/10 text-white;border-left-color:#8DBF3F}
+</style>
+<style>.material-symbols-outlined{font-variation-settings:'wght' 400,'FILL' 0;vertical-align:middle}[hidden]{display:none!important}@media(prefers-reduced-motion:reduce){*{transition:none!important}}</style>
+</head>
+<body class="bg-sand-50 font-sans text-ink-900 text-[15px] leading-[1.6] pb-16">
+
+<!-- S01 -->
+<section id="screen-s01" data-screen="s01" class="min-h-screen grid lg:grid-cols-[55fr_45fr]">
+ <div class="bg-gradient-to-br from-brand-900 to-brand-600 text-white p-8 lg:p-16 flex flex-col justify-center gap-6">
+  <div class="text-6xl">🐄</div>
+  <h1 class="font-serif text-[34px] lg:text-5xl leading-[1.1] font-bold">Nutztierkosmos</h1>
+  <p class="max-w-md text-white/80">Das Forschungsinstitut FBN erklärt, wie Nutztierhaltung wirklich funktioniert.</p>
+  <div class="flex flex-wrap gap-2"><span class="bdg !bg-white/15 !text-white">4 Module</span><span class="bdg !bg-white/15 !text-white">12 Spiele &amp; Quizze</span><span class="bdg !bg-white/15 !text-white">Forschen &amp; punkten</span></div>
+ </div>
+ <div class="flex items-center justify-center p-6"><div class="card w-full max-w-md space-y-4">
+  <p class="ovl">Willkommen</p><h2 class="h1">Wie heißt du?</h2>
+  <p class="text-ink-500">Dein Name erscheint in der Bestenliste. Kein Passwort, keine E-Mail.</p>
+  <div><label class="lbl" for="nm">Dein Name</label><input id="nm" class="inp" placeholder="z. B. Lena"><p class="text-[13px] text-ink-500 mt-1">2–20 Zeichen</p></div>
+  <div><p class="lbl">Wähle deinen Avatar</p><div class="flex gap-2" data-tab-group="avatar">
+   <button class="h-12 w-12 rounded-full bg-brand-50 ring-2 ring-brand-600 text-2xl" data-tab="a1">🦊</button><button class="h-12 w-12 rounded-full border border-sand-200 text-2xl" data-tab="a2">🐻</button><button class="h-12 w-12 rounded-full border border-sand-200 text-2xl" data-tab="a3">🦉</button><button class="h-12 w-12 rounded-full border border-sand-200 text-2xl" data-tab="a4">🐺</button><button class="h-12 w-12 rounded-full border border-sand-200 text-2xl" data-tab="a5">🐰</button><button class="h-12 w-12 rounded-full border border-sand-200 text-2xl" data-tab="a6">🐴</button></div></div>
+  <button class="b1 w-full" data-nav="screen-s02">Los geht's <span class="material-symbols-outlined">arrow_forward</span></button>
+  <button class="b3 w-full" data-nav="screen-s07"><span class="material-symbols-outlined">admin_panel_settings</span>Als Redaktion anmelden</button>
+  <p class="text-[13px] text-ink-500 text-center">Demo-Modus · Daten bleiben nur in diesem Browser.</p>
+ </div></div>
+</section>
+
+<!-- S02 -->
+<section id="screen-s02" data-screen="s02" hidden>
+ <header class="sticky top-0 z-10 flex items-center justify-between border-b border-sand-200 bg-white px-4 lg:px-8 h-16">
+  <div class="flex items-center gap-2 font-serif font-bold text-brand-700"><span class="grid h-8 w-8 place-items-center rounded-full bg-brand-600 text-white"><span class="material-symbols-outlined">pets</span></span>Nutztierkosmos</div>
+  <div class="flex items-center gap-3"><span class="bdg"><span class="material-symbols-outlined !text-[16px]">stars</span>480 Punkte</span><span class="text-xl">🦊</span><span class="hidden sm:inline font-medium">Lena</span><span class="material-symbols-outlined">expand_more</span></div>
+ </header>
+ <main class="mx-auto max-w-5xl space-y-8 p-4 lg:p-8">
+  <div class="relative overflow-hidden rounded-2xl bg-brand-900 p-8 text-white grid gap-6 md:grid-cols-[1fr_auto] items-center">
+   <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-brand-600/40"></div>
+   <div class="relative space-y-3"><p class="ovl !text-white/60">Dein Fortschritt</p><h1 class="font-serif text-[34px] font-bold">Weiter so, Lena!</h1><p class="text-white/80">3 von 4 Modulen begonnen · Level „Forscherin"</p>
+    <div class="flex flex-wrap gap-2 pt-2"><button class="btn bg-white text-brand-900" data-nav="screen-s03">Weiterlernen</button><button class="btn border border-white/60 text-white">Bestenliste ansehen</button></div></div>
+   <div class="relative grid h-[72px] w-[72px] place-items-center rounded-full font-semibold" style="background:conic-gradient(#8DBF3F 62%,rgba(255,255,255,.15) 0)"><span class="grid h-14 w-14 place-items-center rounded-full bg-brand-900">62 %</span></div>
+  </div>
+  <div class="flex flex-wrap items-center justify-between gap-3"><h2 class="font-serif text-2xl font-semibold text-brand-700">Deine Module</h2>
+   <div class="flex gap-2" data-tab-group="filter"><span class="bdg !bg-brand-600 !text-white">Alle</span><span class="bdg !bg-sand-100 !text-ink-700">Neu</span><span class="bdg !bg-sand-100 !text-ink-700">Angefangen</span><span class="bdg !bg-sand-100 !text-ink-700">Abgeschlossen</span></div></div>
+  <div class="grid gap-4 md:grid-cols-2" id="mods"></div>
+  <div class="card"><div class="mb-3 flex justify-between"><h2 class="font-serif text-2xl font-semibold text-brand-700">Bestenliste</h2><a class="text-brand-500 font-medium" href="#">Alle ansehen</a></div><div id="lb" class="divide-y divide-sand-200"></div></div>
+  <footer class="text-[13px] text-ink-500">Ein Demo-Projekt · FBN-Forschung zum Anfassen · Impressum · Datenschutz</footer>
+ </main>
+</section>
+
+<!-- S03 -->
+<section id="screen-s03" data-screen="s03" hidden><main class="mx-auto max-w-5xl space-y-6 p-4 lg:p-8">
+ <nav class="text-[13px] text-ink-500"><a href="#screen-s02" class="text-brand-500">Lernen</a> / Milchkuh &amp; Klima</nav>
+ <div class="grid gap-6 lg:grid-cols-[1fr_260px]">
+  <div class="space-y-6">
+   <div class="flex items-center gap-4"><div class="grid h-20 w-20 place-items-center rounded-2xl bg-brand-100 text-5xl">🐄</div><div><h1 class="h1">Milchkuh &amp; Klima</h1><p class="text-ink-500">Wie aus Gras Milch wird – und was das mit Methan zu tun hat.</p></div></div>
+   <div class="flex gap-2"><span class="bdg">3 Stationen</span><span class="bdg">60 Punkte</span><span class="bdg">ca. 15 Min.</span></div>
+   <div class="card divide-y divide-sand-200 !p-0">
+    <div class="flex items-center gap-4 p-5 opacity-70"><span class="material-symbols-outlined text-brand-600">check_circle</span><div class="flex-1"><p class="font-semibold">Quiz · Was weißt du über Methan?</p><p class="text-[13px] text-ink-500">6 Fragen · 60 P. · Abgeschlossen</p></div><button class="b2" data-nav="screen-s04">Nochmal</button></div>
+    <div class="flex items-center gap-4 p-5"><span class="material-symbols-outlined text-amber-500">sports_esports</span><div class="flex-1"><p class="font-semibold">Spiel · Pansen-Puzzle</p><p class="text-[13px] text-ink-500">5 Min. · 20 P. · Offen</p></div><button class="b1" data-nav="screen-s06">Starten</button></div>
+    <div class="flex items-center gap-4 p-5 text-ink-500"><span class="material-symbols-outlined">lock</span><div class="flex-1"><p class="font-semibold">Bilderrätsel · Futter oder Falle?</p><p class="text-[13px]">4 Bilder · 20 P. · Gesperrt – Schalte zuerst das Quiz frei</p></div></div>
+   </div></div>
+  <aside class="space-y-4"><div class="card text-center"><div class="mx-auto grid h-20 w-20 place-items-center rounded-full font-semibold" style="background:conic-gradient(#8DBF3F 62%,#E7E0CE 0)"><span class="grid h-16 w-16 place-items-center rounded-full bg-white">62 %</span></div><p class="mt-2 text-[13px]">2 von 3 Stationen</p></div>
+   <div class="card"><h3 class="font-semibold mb-2">Das steckt dahinter</h3><ul class="list-disc pl-5 text-ink-700 space-y-1"><li>Archaeen bilden im Pansen Methan.</li><li>Futter beeinflusst die Menge.</li><li>Pro kg Milch sinkt der Ausstoß.</li></ul><p class="mt-3 text-[13px] text-ink-500">FBN, Institut für Nutztierbiologie</p></div></aside>
+ </div></main></section>
+
+<!-- S04 -->
+<section id="screen-s04" data-screen="s04" hidden><div class="mx-auto max-w-[760px] p-4 space-y-4">
+ <div class="flex flex-wrap items-center gap-3"><button class="b3 !p-2" data-nav="screen-s03" aria-label="Zurück"><span class="material-symbols-outlined">arrow_back</span></button><span class="text-[13px] text-ink-500 flex-1">Was weißt du über Methan? · Frage 3 von 6</span><span class="bdg">20 P.</span><span class="bdg !bg-sand-100 !text-ink-500"><span class="material-symbols-outlined !text-[16px]">schedule</span>02:14</span><button class="b3" data-nav="screen-s05">Beenden</button></div>
+ <div class="h-2 rounded-full bg-sand-200"><div class="h-2 w-1/2 rounded-full bg-lime-500"></div></div>
+ <div class="flex gap-2 text-[13px]" data-tab-group="quiz-type"><button class="bdg" data-tab="mc">MC</button><button class="bdg !bg-sand-100" data-tab="tf">Richtig/Falsch</button><button class="bdg !bg-sand-100" data-tab="img">Bilderrätsel</button><button class="bdg !bg-sand-100" data-tab="map">Zuordnung</button></div>
+ <div class="card space-y-4">
+  <div data-pane="mc"><p class="ovl">Frage 1</p><h2 class="font-serif text-[28px] leading-tight font-semibold my-3">Wodurch entsteht im Pansen der Kühe vor allem Methan?</h2><div class="space-y-3" id="mc">
+   <button class="opt" data-ans="1"><b class="grid h-8 w-8 place-items-center rounded-lg bg-brand-100">A</b>Durch Mikroorganismen beim Abbau von Fasern</button><button class="opt" data-ans="0"><b class="grid h-8 w-8 place-items-center rounded-lg bg-brand-100">B</b>Durch die Atmung der Kuh</button><button class="opt" data-ans="0"><b class="grid h-8 w-8 place-items-center rounded-lg bg-brand-100">C</b>Durch das Wasser im Tränkebecken</button></div></div>
+  <div data-pane="tf" hidden><p class="ovl">Frage 6</p><h2 class="font-serif text-[28px] leading-tight font-semibold my-3">Wiederkäuer können Pflanzenfasern verwerten, die Menschen nicht verdauen können.</h2><div class="grid gap-3 sm:grid-cols-2"><button class="opt justify-center py-8" data-ans="1"><span class="material-symbols-outlined">check_circle</span>Richtig</button><button class="opt justify-center py-8" data-ans="0"><span class="material-symbols-outlined">cancel</span>Falsch</button></div></div>
+  <div data-pane="img" hidden><p class="ovl">Frage 3</p><h2 class="font-serif text-[28px] leading-tight font-semibold my-3">Welches Futter kann die Methanbildung reduzieren?</h2><div class="grid aspect-video place-items-center rounded-xl bg-brand-100 text-brand-700"><div class="text-center"><span class="material-symbols-outlined !text-5xl">image</span><p>Bild folgt</p></div></div><div class="mt-3 flex flex-wrap gap-2"><button class="opt !w-auto" data-ans="0">Mais</button><button class="opt !w-auto" data-ans="0">Heu</button><button class="opt !w-auto" data-ans="1">Raps- und Leinsaat</button></div></div>
+  <div data-pane="map" hidden><p class="ovl">Frage 4</p><h2 class="font-serif text-[28px] leading-tight font-semibold my-3">Ordne die Begriffe zu.</h2><div class="grid grid-cols-2 gap-3"><div class="space-y-2"><button class="opt sel">Pansen</button><button class="opt">Archaeen <b class="ml-auto bdg">2</b></button></div><div class="space-y-2"><button class="opt">Verdauungsorgan <b class="ml-auto bdg">1</b></button><button class="opt">Methanbildner</button></div></div></div>
+  <div id="fb" hidden class="rounded-xl border-2 p-4"></div>
+  <div class="flex items-center justify-between"><span class="text-ink-500">Punkte: 20</span><button class="b1" id="nxt" disabled style="opacity:.5" data-nav="screen-s05">Weiter</button></div>
+ </div>
+ <div class="flex gap-2 text-[13px]"><span class="bdg !bg-[#E8F5EE]">Demo: Zeit abgelaufen</span><button class="b2 !py-1" data-action="timeout">Keine Antwort zeigen</button></div></div></section>
+
+<!-- S05 -->
+<section id="screen-s05" data-screen="s05" hidden class="min-h-screen bg-sand-100 grid place-items-center p-4"><div class="card w-full max-w-xl text-center space-y-4">
+ <div class="mx-auto grid h-[140px] w-[140px] place-items-center rounded-full" style="background:conic-gradient(#8DBF3F 80%,#E7E0CE 0)"><div class="grid h-[116px] w-[116px] place-items-center rounded-full bg-white"><div><div class="font-serif text-[40px] font-bold leading-none">480</div><div class="text-[13px] text-ink-500">von 600 Punkten</div></div></div></div>
+ <h1 class="h1">Stark, Lena!</h1><p class="text-ink-500">Du hast 8 von 10 Fragen richtig beantwortet.</p>
+ <div class="grid grid-cols-3 gap-3"><div class="rounded-xl bg-[#E8F5EE] p-3"><b class="font-serif text-2xl">8</b><br>Richtig</div><div class="rounded-xl bg-[#FBEAE8] p-3"><b class="font-serif text-2xl">2</b><br>Falsch</div><div class="rounded-xl bg-sand-100 p-3"><b class="font-serif text-2xl">04:32</b><br>Zeit</div></div>
+ <div class="flex justify-center gap-4 text-3xl"><span title="Methan-Profi">🏅</span><span title="Schnelldenker">⚡</span><span class="grayscale opacity-50" title="Serie 3">🔥</span></div>
+ <div class="flex flex-wrap justify-center gap-2"><button class="b1" data-nav="screen-s04">Nochmal spielen</button><button class="b2" data-nav="screen-s03">Zurück zum Modul</button><button class="b3" data-nav="screen-s02">Bestenliste</button></div></div></section>
+
+<!-- S06 -->
+<section id="screen-s06" data-screen="s06" hidden><div class="mx-auto max-w-4xl p-4 space-y-3">
+ <div class="flex flex-wrap items-center gap-3"><button class="b3 !p-2" data-nav="screen-s03" aria-label="Zurück"><span class="material-symbols-outlined">arrow_back</span></button><h1 class="font-serif text-2xl font-bold flex-1 text-brand-700">Pansen-Puzzle</h1><span class="bdg !bg-white border border-amber-500 !text-amber-500">Demo-Modus</span><span class="bdg">🦊 Lena</span><span class="bdg">120 P.</span></div>
+ <div class="rounded-2xl border-4 border-dashed border-brand-100 bg-[#F1F8F4] p-4 aspect-video relative" style="font-family:ui-sans-serif,system-ui">
+  <div class="flex justify-between text-sm"><b>2 / 3 gefunden</b><button class="rounded bg-[#1C6B4C] px-3 py-1 text-white" data-nav="screen-s05">Fertig</button></div>
+  <div class="mt-4 grid grid-cols-3 gap-3 max-w-sm mx-auto" id="game"></div>
+  <code class="absolute bottom-2 left-3 text-[11px] text-ink-500 font-mono">Spiel erhält: Lena · api v1</code></div>
+ <div class="flex flex-wrap items-center justify-between gap-2 card !p-3"><span class="text-[13px] font-medium"><span class="inline-block h-2 w-2 rounded-full bg-lime-500"></span> Bridge verbunden</span><b>Score 120 / 200</b><div class="flex gap-1"><button class="b3"><span class="material-symbols-outlined">refresh</span>Neu starten</button><button class="b3"><span class="material-symbols-outlined">fullscreen</span>Vollbild</button><button class="b2" data-nav="screen-s03">Beenden</button></div></div>
+ <details data-dev-only class="rounded-2xl bg-brand-900 p-4 text-white/90" open><summary class="cursor-pointer font-medium">Bridge-Konsole</summary><pre class="mt-2 overflow-x-auto text-[12px] font-mono">14:02:11  host → game   INIT      { player: "Lena", game: "Pansen-Puzzle" }
+14:02:11  game → host   READY
+14:02:19  game → host   SCORE     120
+14:02:36  game → host   COMPLETE  { points: 180, maxPoints: 200 }</pre></details>
+ <div class="rounded-xl border border-amber-500 bg-amber-500/10 p-3 flex items-center gap-3"><span class="material-symbols-outlined text-amber-500">warning</span><span class="flex-1">Das Spiel antwortet nicht. Prüfe das Bridge-Skript.</span><button class="b2">Erneut senden</button></div></div></section>
+
+<!-- Admin shell S07-S14 -->
+<div id="admin" hidden class="lg:grid lg:grid-cols-[260px_1fr] min-h-screen">
+ <aside id="side" class="nav hidden lg:flex flex-col justify-between bg-brand-900 p-4 text-white fixed lg:static inset-y-0 left-0 w-[260px] z-20">
+  <div class="space-y-1"><div class="mb-6 flex items-center gap-2 font-serif font-bold"><span class="grid h-8 w-8 place-items-center rounded-full bg-brand-600"><span class="material-symbols-outlined">pets</span></span><div class="leading-tight">Nutztierkosmos<div class="text-[11px] font-sans font-normal text-white/60">Redaktion</div></div></div>
+   <a href="#screen-s07" data-nav="screen-s07"><span class="material-symbols-outlined">dashboard</span>Dashboard</a><a href="#screen-s08" data-nav="screen-s08"><span class="material-symbols-outlined">quiz</span>Quizze</a><a href="#screen-s10" data-nav="screen-s10"><span class="material-symbols-outlined">sports_esports</span>Spiele</a><a href="#screen-s11" data-nav="screen-s11"><span class="material-symbols-outlined">upload_file</span>HTML-Import</a><a href="#screen-s12" data-nav="screen-s12"><span class="material-symbols-outlined">group</span>Spieler</a><a href="#screen-s13" data-nav="screen-s13"><span class="material-symbols-outlined">photo_library</span>Mediathek</a><a href="#screen-s14" data-nav="screen-s14"><span class="material-symbols-outlined">settings</span>Einstellungen</a></div>
+  <div class="flex items-center gap-2 rounded-xl bg-white/10 p-3"><span class="grid h-8 w-8 place-items-center rounded-full bg-lime-500 text-brand-900 font-bold">R</span><span class="flex-1 text-sm">Redaktion (Demo)</span><span class="material-symbols-outlined" data-nav="screen-s01">logout</span></div></aside>
+ <div>
+  <header class="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-sand-200 bg-white px-4">
+   <button class="b3 !p-2 lg:hidden" data-action="drawer" aria-label="Menü"><span class="material-symbols-outlined">menu</span></button>
+   <span class="text-[13px] text-ink-500 hidden sm:inline" id="crumb">Redaktion</span><div class="flex-1"></div>
+   <div class="relative hidden md:block"><span class="material-symbols-outlined absolute left-2 top-2 text-ink-500">search</span><input class="inp !pl-9 w-56" placeholder="Suchen…"></div>
+   <button class="b2 hidden sm:inline-flex" data-nav="screen-s02">Vorschau ansehen</button><button class="b1" data-action="add-new">+ Neu</button></header>
+  <main class="p-4 lg:p-8 space-y-6" id="adminmain">
+
+<section id="screen-s07" data-screen="s07" hidden class="space-y-6"><div><h1 class="h1">Willkommen zurück</h1><p class="text-ink-500">Stand: 6. November 2026 · Demo-Daten</p></div>
+ <div class="grid grid-cols-2 gap-4 lg:grid-cols-4" id="kpi"></div>
+ <div class="grid gap-6 lg:grid-cols-[2fr_1fr]"><div class="card !p-0 overflow-x-auto"><h2 class="p-5 font-serif text-xl font-semibold text-brand-700">Zuletzt bearbeitet</h2><table class="w-full min-w-[560px]"><tr><th>Titel</th><th>Typ</th><th>Geändert</th><th>Von</th><th></th></tr>
+  <tr><td>Was weißt du über Methan?</td><td><span class="bdg">Quiz</span></td><td>06.11.2026, 09:12</td><td>Redaktion</td><td><a class="text-brand-500" href="#screen-s09" data-nav="screen-s09">Bearbeiten</a></td></tr>
+  <tr><td>Pansen-Puzzle</td><td><span class="bdg">Spiel (Code)</span></td><td>05.11.2026, 16:40</td><td>Redaktion</td><td><a class="text-brand-500" data-nav="screen-s10" href="#screen-s10">Bearbeiten</a></td></tr>
+  <tr><td>Stallklima-Simulator</td><td><span class="bdg">Spiel (HTML)</span></td><td>04.11.2026, 11:05</td><td>Redaktion</td><td><a class="text-brand-500" data-nav="screen-s10" href="#screen-s10">Bearbeiten</a></td></tr>
+  <tr><td>Futter oder Falle?</td><td><span class="bdg">Bilderrätsel</span></td><td>03.11.2026, 14:22</td><td>Redaktion</td><td><a class="text-brand-500" data-nav="screen-s09" href="#screen-s09">Bearbeiten</a></td></tr></table></div>
+  <div class="card space-y-3"><h2 class="font-serif text-xl font-semibold text-brand-700">Schnellaktionen</h2><button class="b2 w-full justify-start" data-nav="screen-s09"><span class="material-symbols-outlined">quiz</span>Neues Quiz</button><button class="b2 w-full justify-start" data-nav="screen-s10"><span class="material-symbols-outlined">sports_esports</span>Neues Spiel</button><button class="b2 w-full justify-start" data-nav="screen-s11"><span class="material-symbols-outlined">upload_file</span>HTML importieren</button></div></div>
+ <div class="rounded-2xl bg-brand-50 p-4 text-ink-700"><b>Hinweis:</b> Diese Demo speichert alle Inhalte ausschließlich im Browser (localStorage).</div></section>
+
+<section id="screen-s08" data-screen="s08" hidden class="space-y-4"><div class="flex justify-between"><div><h1 class="h1">Quizze</h1><p class="text-ink-500">3 Einträge</p></div><button class="b1" data-nav="screen-s09">+ Neues Quiz</button></div>
+ <div class="flex flex-wrap gap-2"><input class="inp !w-56" placeholder="Suchen…"><select class="inp !w-auto"><option>Alle Module</option></select><select class="inp !w-auto"><option>Status: Alle</option></select></div>
+ <div class="card !p-0 overflow-x-auto"><table class="w-full min-w-[640px]"><tr><th></th><th>Titel</th><th>Modul</th><th>Fragen</th><th>Punkte</th><th>Status</th><th></th></tr>
+ <tr class="hover:bg-brand-50/50"><td><input type="checkbox"></td><td><a class="font-medium text-brand-700" href="#screen-s09" data-nav="screen-s09">Was weißt du über Methan?</a></td><td>Milchkuh &amp; Klima</td><td>6</td><td>60</td><td><span class="bdg">Veröffentlicht</span></td><td><span class="material-symbols-outlined" data-action="menu">more_vert</span></td></tr>
+ <tr class="hover:bg-brand-50/50"><td><input type="checkbox"></td><td>Stallklima-Check</td><td>Schwein &amp; Stallklima</td><td>4</td><td>40</td><td><span class="bdg !bg-amber-500/15 !text-amber-500">Entwurf</span></td><td><span class="material-symbols-outlined" data-nav="m01">more_vert</span></td></tr>
+ <tr class="hover:bg-brand-50/50"><td><input type="checkbox"></td><td>Futter oder Falle?</td><td>Milchkuh &amp; Klima</td><td>4</td><td>20</td><td><span class="bdg !bg-amber-500/15 !text-amber-500">Entwurf</span></td><td><span class="material-symbols-outlined">more_vert</span></td></tr></table></div></section>
+
+<section id="screen-s09" data-screen="s09" hidden><div class="grid gap-4 xl:grid-cols-[320px_1fr_380px]">
+ <div class="card space-y-3"><h2 class="font-serif text-xl font-semibold text-brand-700">Einstellungen</h2><div><label class="lbl">Titel</label><input class="inp" value="Was weißt du über Methan?"></div><div><label class="lbl">Modul</label><select class="inp"><option>Milchkuh &amp; Klima</option></select></div><div><label class="lbl">Beschreibung</label><textarea class="inp" rows="3"></textarea></div><div><label class="lbl">Punkte gesamt</label><input class="inp bg-sand-100" readonly value="60"></div><label class="flex gap-2"><input type="checkbox" checked>Veröffentlicht</label><label class="flex gap-2"><input type="checkbox">Timer verwenden</label><button class="b2 w-full">Vorschau</button><button class="b3 !text-danger-500" data-nav="m01">Quiz löschen</button></div>
+ <div class="space-y-2"><div class="flex justify-between"><h2 class="font-serif text-xl font-semibold text-brand-700">Fragen (6)</h2><button class="b2" data-action="add-question">+ Frage hinzufügen</button></div><div id="qs" class="space-y-2"></div><div class="rounded-xl border-2 border-dashed border-sand-200 p-4 text-center text-ink-500">Frage hierher ziehen</div></div>
+ <div class="card space-y-3"><div class="flex flex-wrap gap-1 text-[13px]" data-tab-group="question-type"><button class="bdg" data-tab="mc">Multiple Choice</button><button class="bdg !bg-sand-100" data-tab="tf">Richtig/Falsch</button><button class="bdg !bg-sand-100" data-tab="img">Bilderrätsel</button><button class="bdg !bg-sand-100" data-tab="map">Zuordnung</button></div>
+  <div data-pane2="mc" class="space-y-3"><div><label class="lbl">Frage</label><textarea class="inp" rows="2">Wodurch entsteht im Pansen der Kühe vor allem Methan?</textarea></div><div><label class="lbl">Erklärung</label><textarea class="inp" rows="3">Methan entsteht, wenn Archaeen im Pansen Kohlenstoff und Wasserstoff zusammenbauen – vor allem bei faserreichem Futter.</textarea></div>
+   <label class="flex gap-2"><input type="radio" name="r" checked><input class="inp" value="Durch Mikroorganismen beim Abbau von Fasern"></label><label class="flex gap-2"><input type="radio" name="r"><input class="inp" value="Durch die Atmung der Kuh"></label><label class="flex gap-2"><input type="radio" name="r"><input class="inp" value="Durch das Wasser im Tränkebecken"></label><button class="b3">+ Antwort hinzufügen</button><div><label class="lbl">Punkte</label><input class="inp" type="number" value="10"></div></div>
+  <div data-pane2="tf" hidden class="space-y-3"><div><label class="lbl">Aussage</label><textarea class="inp" rows="2">Wiederkäuer können Pflanzenfasern verwerten, die Menschen nicht verdauen können.</textarea></div><div class="inline-flex rounded-xl border border-sand-200"><button class="b1">Richtig</button><button class="btn">Falsch</button></div></div>
+  <div data-pane2="img" hidden class="space-y-3"><div class="rounded-xl border-2 border-dashed border-sand-200 p-6 text-center text-ink-500">Bild auswählen oder hierher ziehen<br><small>PNG/JPG, max. 300 KB</small></div><textarea class="inp" rows="2">Welches Futter kann die Methanbildung im Pansen reduzieren?</textarea></div>
+  <div data-pane2="map" hidden class="space-y-2"><p class="lbl">Lösungen verbinden</p><div class="flex gap-2"><select class="inp"><option>Pansen</option></select><select class="inp"><option>Verdauungsorgan</option></select></div><div class="flex gap-2"><select class="inp"><option>Archaeen</option></select><select class="inp"><option>Methanbildner</option></select></div></div>
+  <div class="sticky bottom-0 flex items-center gap-2 border-t border-sand-200 bg-white pt-3"><button class="b3" data-nav="m02">Abbrechen</button><button class="b1" data-action="save-quiz">Änderungen speichern</button><span class="ml-auto text-[13px] text-amber-500" id="sv">Nicht gespeichert</span></div></div></div></section>
+
+<section id="screen-s10" data-screen="s10" hidden><div class="grid gap-4 xl:grid-cols-[300px_1fr_1fr]">
+ <div class="card space-y-3"><div><label class="lbl">Titel</label><input class="inp" value="Pansen-Puzzle"></div><div><label class="lbl">Max. Punkte</label><input class="inp" value="200"></div><span class="bdg">API v1</span><label class="flex gap-2"><input type="checkbox" checked>Veröffentlicht</label><button class="b3 !text-danger-500">Spiel löschen</button></div>
+ <div class="space-y-2"><p class="text-[13px] text-ink-500">Das Spiel läuft isoliert im iframe. Kommunikation nur über postMessage.</p><pre class="overflow-x-auto rounded-xl bg-[#0E1A15] p-4 text-[12px] leading-5 font-mono text-gray-300"><span style="color:#8DBF3F">&lt;script&gt;</span>
+  const send = (type, payload = {}) =&gt;
+    parent.postMessage({ source: <span style="color:#A9C7EC">'ntk-game'</span>, type, payload }, <span style="color:#A9C7EC">'*'</span>);
+  window.addEventListener(<span style="color:#A9C7EC">'message'</span>, (e) =&gt; {
+    if (e.data?.source !== <span style="color:#A9C7EC">'ntk-platform'</span>) return;
+    if (e.data.type === <span style="color:#A9C7EC">'INIT'</span>) start(e.data.payload);
+  });
+<span style="color:#8DBF3F">&lt;/script&gt;</span></pre><div class="flex items-center justify-between text-[13px]"><span>4.812 Zeichen</span><span><button class="b3">Formatieren</button><button class="b2">Vorschau aktualisieren</button></span></div></div>
+ <div class="space-y-2"><div class="inline-flex gap-1 text-[13px]"><span class="bdg">Desktop</span><span class="bdg !bg-sand-100">Tablet</span><span class="bdg !bg-sand-100">Mobil</span></div><div class="card grid aspect-video place-items-center bg-[#F1F8F4]">2 / 3 gefunden</div><div class="rounded-2xl bg-brand-900 p-3 text-white/90"><div class="flex justify-between text-sm"><b>Bridge-Konsole</b><span>● verbunden</span></div><pre class="mt-2 overflow-x-auto text-[11px] font-mono">14:02:11  host → game   INIT
+14:02:11  game → host   READY
+14:02:19  game → host   SCORE     120</pre><button class="b2 !py-1 mt-2">Test-SCORE</button></div><div class="rounded-xl border border-amber-500 bg-amber-500/10 p-3">Kein READY vom Spiel.</div></div></div></section>
+
+<section id="screen-s11" data-screen="s11" hidden class="space-y-4"><h1 class="h1">HTML importieren</h1><p class="text-ink-500">Fügen Sie ein komplettes HTML-Dokument ein oder ziehen Sie es hierher.</p>
+ <div class="grid gap-4 lg:grid-cols-[1fr_340px]"><div class="space-y-3"><div class="grid h-[220px] place-items-center rounded-2xl border-2 border-dashed border-sand-200 text-center text-ink-500"><div><span class="material-symbols-outlined !text-5xl">upload_file</span><p>HTML-Datei hierher ziehen</p><a class="text-brand-500">oder Datei auswählen</a><p class="text-[13px]">max. 500 KB · .html</p></div></div><p class="text-center text-ink-500">ODER</p><textarea class="inp font-mono text-[12px]" rows="12" placeholder="HTML-Code einfügen…"></textarea></div>
+ <div class="card space-y-2"><h2 class="font-semibold">Prüfergebnis</h2><p>✅ DOCTYPE vorhanden</p><p>✅ Bridge-Skript gefunden</p><p>✅ Keine externen Skripte</p><p>✅ Größe ok (4,8 KB)</p><p class="rounded-lg bg-amber-500/10 p-2 text-amber-500">Das Skript nutzt localStorage – im iframe nicht verfügbar.</p><input class="inp" placeholder="Titel"><div class="flex gap-2"><button class="b2">Abbrechen</button><button class="b1" data-action="import" data-nav="screen-s10">Importieren &amp; öffnen</button></div></div></div></section>
+
+<section id="screen-s12" data-screen="s12" hidden class="space-y-4"><div><h1 class="h1">Spieler</h1><p class="text-ink-500">5 Spieler · 1.600 Punkte gesamt</p></div><div class="card !p-0 overflow-x-auto"><table class="w-full min-w-[560px]" id="pl"><tr><th>Name</th><th>Level</th><th>Punkte</th><th>Zuletzt aktiv</th><th></th></tr></table></div><div class="card max-w-sm"><h2 class="font-semibold">🦊 Lena · 480 Punkte</h2><div class="mt-2 flex h-16 items-end gap-1"><i class="w-full bg-lime-500 h-6"></i><i class="w-full bg-lime-500 h-10"></i><i class="w-full bg-lime-500 h-8"></i><i class="w-full bg-lime-500 h-14"></i><i class="w-full bg-lime-500 h-4"></i><i class="w-full bg-lime-500 h-12"></i><i class="w-full bg-lime-500 h-16"></i></div><button class="b2 mt-3">Score manuell anpassen</button></div></section>
+
+<section id="screen-s13" data-screen="s13" hidden class="space-y-4"><div><h1 class="h1">Mediathek</h1><p class="text-ink-500">12 Dateien · 2,4 MB (Demo)</p></div><div class="grid grid-cols-2 gap-4 md:grid-cols-4"><div class="card !p-3"><div class="grid aspect-[3/2] place-items-center rounded-xl bg-gradient-to-br from-brand-100 to-lime-500/30 text-4xl">🌿</div><p class="mt-2 text-sm font-medium">methan-quelle.jpg</p><p class="text-[13px] text-ink-500">1200×800 · 180 KB</p></div><div class="card !p-3"><div class="grid aspect-[3/2] place-items-center rounded-xl bg-sand-100 text-4xl">🐄</div><p class="mt-2 text-sm font-medium">kuh-weide.jpg</p></div></div></section>
+
+<section id="screen-s14" data-screen="s14" hidden class="max-w-[820px] space-y-4"><h1 class="h1">Einstellungen</h1>
+ <div class="card space-y-3"><h2 class="font-semibold">Branding</h2><div><label class="lbl">Plattformname</label><input class="inp" value="Nutztierkosmos"></div></div>
+ <div class="card space-y-3"><h2 class="font-semibold">Punkte &amp; Level</h2><div><label class="lbl">Punkte pro richtiger Antwort</label><input class="inp" value="10"></div><div><label class="lbl">Forscherin ab</label><input class="inp" value="300"></div></div>
+ <div class="card"><h2 class="font-semibold">Bridge</h2><p class="text-ink-500">API-Version v1 · Erlaubt: INIT, SCORE, COMPLETE, RESIZE, STATE, LOG</p></div>
+ <div class="card border-danger-500"><h2 class="font-semibold text-danger-500">Demo-Daten</h2><button class="b4 mt-2" data-nav="m01">Alle Daten zurücksetzen</button></div></section>
+  </main></div></div>
+
+<!-- Overlays -->
+<div id="m01" data-overlay hidden class="fixed inset-0 z-40 grid place-items-center bg-ink-900/50 p-4"><div class="card w-full max-w-[420px] space-y-3"><span class="grid h-12 w-12 place-items-center rounded-full bg-[#FBEAE8] text-danger-500"><span class="material-symbols-outlined">delete</span></span><h2 class="font-serif text-xl font-semibold">Quiz löschen?</h2><p>„Was weißt du über Methan?" wird dauerhaft entfernt. Das kann nicht rückgängig gemacht werden.</p><div class="flex justify-end gap-2"><button class="b3" data-action="close">Abbrechen</button><button class="b4" data-action="close">Endgültig löschen</button></div></div></div>
+<div id="m02" data-overlay hidden class="fixed inset-0 z-40 grid place-items-center bg-ink-900/50 p-4"><div class="card w-full max-w-md space-y-3"><h2 class="font-serif text-xl font-semibold">Änderungen verwerfen?</h2><div class="flex flex-wrap justify-end gap-2"><button class="b3" data-action="close">Weiter bearbeiten</button><button class="b2" data-action="close">Verwerfen</button><button class="b1" data-action="close">Speichern &amp; verlassen</button></div></div></div>
+<div id="m03" data-overlay hidden class="fixed right-4 top-4 z-40 w-80 space-y-2" onclick="this.hidden=true"><div class="card !p-3 border-brand-600">✅ Quiz gespeichert</div><div class="card !p-3 border-danger-500">⛔ Speichern fehlgeschlagen – Speicher voll</div><div class="card !p-3">ℹ️ Demo-Modus: nichts wird hochgeladen</div></div>
+<div id="m04" data-overlay hidden class="fixed inset-0 z-40 grid place-items-center bg-sand-50 p-4 text-center" onclick="this.hidden=true"><div class="space-y-3"><span class="mx-auto grid h-24 w-24 place-items-center rounded-full bg-brand-100 text-brand-700"><span class="material-symbols-outlined !text-5xl">science</span></span><h2 class="font-serif text-2xl font-semibold">Hier ist noch nichts</h2><p class="text-ink-500">Legen Sie Ihr erstes Quiz an.</p><button class="b1">Erstes Quiz anlegen</button></div></div>
+<div id="toast" hidden class="fixed right-4 top-4 z-50 card !p-3 border-brand-600">✅ Quiz gespeichert</div>
+
+<nav data-dev-only class="fixed inset-x-0 bottom-0 z-50 flex gap-1 overflow-x-auto bg-ink-900 p-2 text-[12px] text-white" id="sw"></nav>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const SW=[['s01','Anmelden'],['s02','Lernen'],['s03','Modul'],['s04','Quiz'],['s05','Ergebnis'],['s06','Spiel'],['s07','CMS'],['s08','Quizze'],['s09','Quiz-Editor'],['s10','Spiel-Editor'],['s11','Import'],['s12','Spieler'],['s13','Mediathek'],['s14','Einstellungen'],['m01','Löschen'],['m02','Ungespeichert'],['m03','Toasts'],['m04','Leer']];
+$('#sw').innerHTML=SW.map(([i,t])=>`<button class="shrink-0 rounded-lg px-3 py-1.5 hover:bg-white/15" data-nav="${i[0]=='m'?i:'screen-'+i}">${t}</button>`).join('');
+const MODS=[['🐄','Milchkuh & Klima','Angefangen','3 Stationen · 60 P.',62,'bg-brand-100'],['🐖','Schwein & Stallklima','Neu','2 Stationen · 40 P.',0,'bg-amber-500/20'],['🐔','Geflügel & Verhalten','Bald verfügbar','noch keine Inhalte',0,'bg-sky-500/20 opacity-60'],['🛰️','Präzisionslandwirtschaft','Abgeschlossen','1 Station · 20 P.',100,'bg-berry-500/20']];
+$('#mods').innerHTML=MODS.map(m=>`<a href="#screen-s03" data-nav="screen-s03" class="card block hover:-translate-y-0.5 transition ${m[5].includes('opacity')?'opacity-60':''}"><div class="flex justify-between"><span class="grid h-14 w-14 place-items-center rounded-xl text-3xl ${m[5]}">${m[0]}</span><span class="bdg h-fit">${m[2]}</span></div><h3 class="mt-3 font-semibold text-[17px]">${m[1]}</h3><p class="text-[13px] text-ink-500">${m[3]}</p><div class="my-3 h-2 rounded-full bg-sand-200"><div class="h-2 rounded-full bg-lime-500" style="width:${m[4]}%"></div></div><span class="text-brand-600 font-medium">${m[4]?'Weiter':'Starten'} ›</span></a>`).join('');
+const P=[['🦊','Lena','Forscherin',480,'Du'],['🐻','Jonas','Forscher',420],['🦉','Mia','Forscherin',390],['🐺','Emre','Einsteiger',210],['👩‍🏫','Frau Weber','Einsteiger',100,'Lehrkraft']];
+$('#lb').innerHTML=P.map((p,i)=>`<div class="flex items-center gap-3 py-2 ${i==0?'bg-lime-500/15 -mx-2 px-2 rounded-lg':''}"><b class="w-6">${i+1}</b><span class="text-xl">${p[0]}</span><span class="flex-1 font-medium">${p[1]} ${p[4]?`<span class="bdg">${p[4]}</span>`:''}<br><small class="text-ink-500">${p[2]}</small></span><b>${p[3]}</b></div>`).join('');
+$('#pl').insertAdjacentHTML('beforeend',P.map(p=>`<tr><td>${p[0]} ${p[1]} ${p[4]?`<span class="bdg">${p[4]}</span>`:''}</td><td>${p[2]}</td><td>${p[3]}</td><td>heute</td><td><span class="material-symbols-outlined">restart_alt</span></td></tr>`).join(''));
+$('#kpi').innerHTML=[['Module',4,'+0','category'],['Quizze',3,'+1 diese Woche','quiz'],['Spiele',2,'+0','sports_esports'],['Spieler',5,'+2 diese Woche','group']].map(k=>`<div class="card !p-4"><span class="material-symbols-outlined text-brand-600">${k[3]}</span><div class="font-serif text-[40px] leading-none font-bold">${k[1]}</div><div class="text-[13px] text-ink-500">${k[0]} · ${k[2]}</div><svg viewBox="0 0 60 16" class="mt-2 h-4 w-full"><polyline fill="none" stroke="#8DBF3F" stroke-width="2" points="0,14 12,10 24,12 36,6 48,8 60,2"/></svg></div>`).join('');
+const Q=[['MC','Wodurch entsteht im Pansen vor allem Methan?'],['R/F','Eine Milchkuh produziert mehr Treibhausgas als ein Kleinwagen …'],['Bild','Welches Futter kann die Methanbildung reduzieren?'],['Zuord.','Pansen → Verdauungsorgan …'],['MC','Welche Faktoren beeinflussen die Methanemission?'],['R/F','Wiederkäuer können Pflanzenfasern verwerten …']];
+$('#qs').innerHTML=Q.map((q,i)=>`<div class="card !p-3 flex items-center gap-2 ${i==0?'ring-2 ring-brand-500':''}"><span class="material-symbols-outlined text-ink-500">drag_indicator</span><b>${i+1}</b><span class="bdg">${q[0]}</span><span class="flex-1 truncate">${q[1]}</span><small>10 P.</small><span class="material-symbols-outlined">content_copy</span><span class="material-symbols-outlined">delete</span></div>`).join('');
+$('#game').innerHTML=[1,0,1,0,1,0].map(c=>`<button class="aspect-square rounded-2xl border-2 border-[#DCEFE5] bg-white" data-c="${c}" aria-label="Futterbaustein"></button>`).join('');
+
+const screens=$$('[data-screen]');
+function show(id){
+ if(id[0]=='m'){$$('[data-overlay]').forEach(o=>o.hidden=o.id!=id);return}
+ const n=id.replace('screen-','');const adm=+n.slice(1)>=7;
+ screens.forEach(s=>s.hidden=s.dataset.screen!=n);
+ $('#screen-s01').classList.toggle('grid',n=='s01');
+ $('#admin').hidden=!adm;$('#side').classList.add('hidden');
+ ['s01','s02','s03','s04','s05','s06'].forEach(s=>{});
+ $$('#side a').forEach(a=>a.classList.toggle('on',a.dataset.nav=='screen-'+n));
+ $('#crumb').textContent='Redaktion / '+(SW.find(s=>s[0]==n)||[,''])[1];
+ $$('[data-overlay]').forEach(o=>o.hidden=true);scrollTo(0,0);
+}
+const toast=t=>{const e=$('#toast');e.textContent=t;e.hidden=false;setTimeout(()=>e.hidden=true,4000)};
+document.addEventListener('click',e=>{
+ const n=e.target.closest('[data-nav]');if(n){e.preventDefault();show(n.dataset.nav);return}
+ const a=e.target.closest('[data-action]');
+ if(a){const k=a.dataset.action;
+  if(k=='close')$$('[data-overlay]').forEach(o=>o.hidden=true);
+  if(k=='save-quiz'){$('#sv').textContent='Gespeichert 09:12';$('#sv').className='ml-auto text-[13px] text-brand-600';toast('Quiz gespeichert')}
+  if(k=='add-question')toast('Frage hinzugefügt');
+  if(k=='import')toast('Spiel importiert');
+  if(k=='drawer')$('#side').classList.toggle('hidden');
+  if(k=='add-new')toast('Demo-Modus: nichts wird hochgeladen');
+  if(k=='timeout')feedback('t');}
+ const t=e.target.closest('[data-tab]');
+ if(t){const g=t.closest('[data-tab-group]'),k=g.dataset.tabGroup;
+  $$('[data-tab]',g).forEach(b=>b.classList.toggle('ring-2',b==t));
+  if(k=='quiz-type'||k=='question-type'){$$('[data-tab]',g).forEach(b=>{b.classList.toggle('!bg-sand-100',b!=t)});
+   $$(k=='quiz-type'?'[data-pane]':'[data-pane2]').forEach(p=>p.hidden=(p.dataset.pane||p.dataset.pane2)!=t.dataset.tab);resetFb()}}
+ const o=e.target.closest('.opt[data-ans]');if(o){$$('.opt',o.parentElement).forEach(b=>b.classList.toggle('sel',b==o));feedback(o.dataset.ans=='1'?'r':'f')}
+ const c=e.target.closest('[data-c]');if(c){c.style.background=c.dataset.c=='1'?'#E8F5EE':'#FBEAE8';c.textContent=c.dataset.c=='1'?'✓':'✗'}
+});
+function resetFb(){$('#fb').hidden=true;$('#nxt').disabled=true;$('#nxt').style.opacity=.5}
+function feedback(k){const f=$('#fb');f.hidden=false;$('#nxt').disabled=false;$('#nxt').style.opacity=1;
+ const M={r:['bg-[#E8F5EE] border-[#1C6B4C]','check_circle','Richtig!','Archaeen im Pansen bilden Methan beim Abbau von Fasern. +20 Punkte'],f:['bg-[#FBEAE8] border-[#B4372C]','cancel','Nicht ganz.','Richtig wäre: „Durch Mikroorganismen beim Abbau von Fasern"'],t:['bg-sand-100 border-sand-200','schedule','Keine Antwort – 0 Punkte','Die Zeit ist abgelaufen.']}[k];
+ f.className='rounded-xl border-2 p-4 '+M[0];f.innerHTML=`<b><span class="material-symbols-outlined">${M[1]}</span> ${M[2]}</b><p>${M[3]}</p>`}
+document.addEventListener('keydown',e=>{if(e.key=='Escape')$$('[data-overlay]').forEach(o=>o.hidden=true)});
+</script>
+</body></html>

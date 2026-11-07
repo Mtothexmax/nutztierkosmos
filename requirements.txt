@@ -1,0 +1,34 @@
+Hier sind die konkreten Umsetzungsinfos für das LLM, reduziert auf das Wesentliche für die Programmierung der Spiele und interaktiven Elemente:
+
+### 1. Zu implementierende Fragetypen & Interaktionsformen (Frontend)
+
+Das System muss folgende interaktive Formate technisch unterstützen und im Frontend fehlerfrei ausführen können:
+
+* **Quiz & Multiple-Choice-Fragen:** Anzeige einer Frage mit mehreren Antwortoptionen und Auswertung der korrekten Auswahl.
+
+
+* **Richtig/Falsch-Fragen:** Aussagen, die vom Nutzer als wahr oder falsch eingestuft werden.
+
+
+* **Bilderrätsel:** Visuelle Rätsel auf Basis von Bilddateien mit zugehöriger Eingabe- oder Auswahl-Logik.
+
+
+* **Zuordnungsaufgaben:** Mechanismus zum Verknüpfen von Elementen (z. B. Begriffe, Kategorien oder Bilder).
+
+
+
+### 2. Feedback-Logik
+
+* **Unmittelbare Rückmeldung:** Nach jeder Interaktion (z. B. Klick auf eine Antwort) muss das System sofort ein visuelles Feedback ausgeben (Richtig/Falsch-Anzeige, Punkte oder Erklärtext).
+
+
+
+### 3. Backend-Verwaltung (CMS)
+
+* **No-Code-Pflege:** Für alle genannten interaktiven Formate muss im Redaktionssystem eine Eingabemaske existieren, über die Redakteure Fragen, Antwortoptionen und Zuordnungen **komplett ohne Programmierkenntnisse** erstellen und bearbeiten können.
+
+
+
+### 4. Konkreter initialer Leistungsumfang
+
+* **Beispiel-Modul:** Es muss mindestens **eine vollständige, funktionsfähige interaktive Einheit** (z. B. ein thematisches Quiz oder eine Zuordnungsaufgabe) als fester Beispielinhalt auf Basis eines FBN-Forschungsthemas implementiert sein.
