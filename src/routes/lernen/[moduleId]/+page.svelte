@@ -98,9 +98,16 @@
 	</main>
 {:else}
 	<main class="mx-auto max-w-5xl space-y-6 p-4 lg:p-8">
-		<nav class="text-[13px] text-ink-500">
-			<a href="/lernen" class="text-brand-500">Lernen</a> / {module.title}
-		</nav>
+		<div class="flex items-center gap-2">
+			<a class="b3 !p-2" href="/lernen" aria-label="Zurück zu den Modulen">
+				<Icon name="arrow_back" />
+			</a>
+			<nav class="text-[13px] text-ink-500">
+				<a href="/lernen" class="text-brand-600 underline underline-offset-2 hover:text-brand-700"
+					>Lernen</a
+				> / {module.title}
+			</nav>
+		</div>
 
 		<div class="grid gap-6 lg:grid-cols-[1fr_260px]">
 			<div class="space-y-6">
@@ -129,7 +136,7 @@
 				<div class="card divide-y divide-sand-200 !p-0">
 					{#each stations as station, index (station.id)}
 						{@const locked = isLocked(index)}
-						<div class="flex items-center gap-4 p-5 {station.done ? 'opacity-70' : ''}">
+						<div class="flex items-center gap-4 p-5 {station.done ? 'bg-ok-bg/40' : ''}">
 							<Icon
 								name={station.done ? 'check_circle' : locked ? 'lock' : station.icon}
 								class={station.done
@@ -183,7 +190,7 @@
 				</div>
 
 				<div class="card">
-					<h3 class="mb-2 font-semibold">Das steckt dahinter</h3>
+					<h2 class="mb-2 font-semibold">Das steckt dahinter</h2>
 					{#if facts.length}
 						<ul class="list-disc space-y-1 pl-5 text-ink-700">
 							{#each facts as fact (fact)}

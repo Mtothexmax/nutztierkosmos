@@ -73,9 +73,6 @@
 		<a class="b2 w-full justify-start" href="/admin/spiele">
 			<Icon name="sports_esports" />Alle Spiele
 		</a>
-		<a class="b2 w-full justify-start" href="/admin/api">
-			<Icon name="terminal" />API-Doku &amp; KI-Skill
-		</a>
 	</div>
 </div>
 

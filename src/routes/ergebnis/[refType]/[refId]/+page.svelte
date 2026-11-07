@@ -65,6 +65,9 @@
 			<a class="b1" href="/lernen">Zu den Modulen</a>
 		</div>
 	{:else}
+		<a class="b3 fixed top-4 left-4 z-10 !p-2" href={backHref} aria-label="Zurück zum Modul">
+			<Icon name="arrow_back" />
+		</a>
 		<div class="card w-full max-w-xl space-y-4 text-center">
 			<p class="ovl">{result.title}</p>
 			<div class="mx-auto grid h-[140px] w-[140px] place-items-center rounded-full"

@@ -184,7 +184,7 @@ export type Session = { playerId: ID; startedAt: string; isAdmin: boolean };
 /admin/spiele              Gemeinsame Spiele-Liste (Quizze + HTML-Spiele)
 /admin/quiz/[id]           Quiz-Editor: Grundeinstellungen → Fragen
 /admin/spiele/[id]         HTML-Spiel-Editor: ZIP-Upload → Dateien & Vorschau
-/admin/api                 Spiel-API v1, Bridge-Snippet und KI-Skill
+/admin/api                 Spiel-API v1, Bridge-Snippet und KI-Skill (Link im ZIP-Editor)
 /admin/spieler             Spieler & Scores
 /admin/mediathek           Bild-Platzhalter-Galerie
 /admin/einstellungen       Branding, Punkte, Reset

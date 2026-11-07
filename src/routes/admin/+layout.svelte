@@ -14,24 +14,17 @@
 	const nav = [
 		{ href: '/admin', label: 'Dashboard', icon: 'dashboard' },
 		{ href: '/admin/spiele', label: 'Spiele', icon: 'sports_esports' },
-		{ href: '/admin/api', label: 'API-Doku', icon: 'terminal' },
 		{ href: '/admin/spieler', label: 'Spieler', icon: 'group' },
 		{ href: '/admin/mediathek', label: 'Mediathek', icon: 'photo_library' },
 		{ href: '/admin/einstellungen', label: 'Einstellungen', icon: 'settings' }
 	];
 
-	let current = $derived(
-		nav.find((item) =>
-			item.href === '/admin'
-				? page.url.pathname === '/admin'
-				: page.url.pathname === item.href || page.url.pathname.startsWith(`${item.href}/`)
-		)
-	);
+	let current = $derived(nav.find((item) => isActive(item.href)));
 
 	function isActive(href: string): boolean {
-		return href === '/admin'
-			? page.url.pathname === '/admin'
-			: page.url.pathname === href || page.url.pathname.startsWith(`${href}/`);
+		if (href === '/admin') return page.url.pathname === '/admin';
+		if (href === '/admin/spiele') return page.url.pathname.startsWith('/admin/spiele') || page.url.pathname === '/admin/api';
+		return page.url.pathname === href || page.url.pathname.startsWith(`${href}/`);
 	}
 
 	function logout() {
