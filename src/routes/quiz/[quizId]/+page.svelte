@@ -224,6 +224,7 @@
 			dragPos = { x: event.clientX - rect.left, y: event.clientY - rect.top };
 		}
 		event.preventDefault();
+		console.log('[DragDrop] startDrag:', leftId, 'at', JSON.stringify(dragPos));
 	}
 
 	function onDragMove(event: PointerEvent) {
@@ -246,12 +247,13 @@
 				break;
 			}
 		}
+		console.log('[DragDrop] onDragMove:', Math.round(dragPos.x), Math.round(dragPos.y), 'target:', dragTarget);
 	}
 
 	function endDrag() {
+		console.log('[DragDrop] endDrag called, dragFrom:', dragFrom, 'dragTarget:', dragTarget);
 		if (!dragFrom || !matchContainer || !question) return;
-		// Falls sich die Maus seit dem letzten pointermove nicht bewegt hat,
-		// prüfen wir hier noch einmal, über welchem Button die Maus liegt.
+		// Nachhol-Prüfung basierend auf letzter bekannter Mausposition
 		if (!dragTarget) {
 			const q = question as { right: { id: string }[] };
 			const rect = matchContainer.getBoundingClientRect();
@@ -268,7 +270,10 @@
 			}
 		}
 		if (dragTarget) {
+			console.log('[DragDrop] endDrag -> assignPair:', dragTarget);
 			assignPair(dragTarget);
+		} else {
+			console.log('[DragDrop] endDrag -> no target, dropping');
 		}
 		dragFrom = null;
 		dragTarget = null;
@@ -648,8 +653,11 @@
 										class:bg-ok-bg={phase === 'feedback' && isCorrect}
 										disabled={phase === 'feedback'}
 										onpointerup={(e) => {
+											console.log('[DragDrop] right button pointerup, dragFrom:', dragFrom, 'right.id:', right.id);
 											if (dragFrom) {
 												e.preventDefault();
+												e.stopPropagation();
+												console.log('[DragDrop] right button -> assignPair:', right.id);
 												assignPair(right.id);
 											}
 										}}
