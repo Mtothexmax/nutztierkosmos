@@ -177,9 +177,11 @@
 	});
 
 	$effect(() => {
+		console.log('[SVG] effect running, pairs:', Object.entries(pairs).length, 'matchSvg:', !!matchSvg, 'matchContainer:', !!matchContainer);
 		if (!matchSvg || !matchContainer || !question || question.type !== 'match') return;
 		matchSvg.innerHTML = '';
 		// Permanente Verbindungen
+		let drawn = 0;
 		for (const [leftId, rightId] of Object.entries(pairs)) {
 			const leftPos = getMatchPos('left', leftId);
 			const rightPos = getMatchPos('right', rightId);
@@ -197,7 +199,9 @@
 			line.setAttribute('stroke-linecap', 'round');
 			line.setAttribute('opacity', phase === 'feedback' ? '1' : '0.45');
 			matchSvg.appendChild(line);
+			drawn++;
 		}
+		console.log('[SVG] drew', drawn, 'permanent lines');
 		// Drag-Faden (wenn gerade gezogen wird)
 		if (dragFrom && question) {
 			const leftPos = getMatchPos('left', dragFrom);
@@ -211,6 +215,7 @@
 				line.setAttribute('stroke-width', '3');
 				line.setAttribute('stroke-linecap', 'round');
 				matchSvg.appendChild(line);
+				console.log('[SVG] drew drag line to', JSON.stringify(dragPos));
 			}
 		}
 	});
