@@ -33,6 +33,10 @@
 	let inputAnswer = $state('');
 	let pairs = $state<Record<string, string>>({});
 	let activeLeft = $state<string | null>(null);
+	let dragFrom = $state<string | null>(null);   // ID des linken Elements, das gezogen wird
+	let dragPos = $state({ x: 0, y: 0 });         // Aktuelle Mausposition im Container
+	let dragTarget = $state<string | null>(null); // ID des rechten Elements unter der Maus
+	let dragJustEnded = $state(false);            // Schutz gegen Doppel-Klick nach Drag
 	let clickImg = $state<HTMLImageElement>();
 	let clickCanvas = $state<HTMLCanvasElement>();
 	let clickDrawn = $state(false);
@@ -48,6 +52,20 @@
 		const timer = setInterval(() => (elapsed = Date.now() - startedAt), 1000);
 		return () => clearInterval(timer);
 	});
+
+	function getMatchPos(side: 'left' | 'right', id: string): { x: number; y: number; w: number; h: number } | null {
+		if (!matchContainer) return null;
+		const btn = document.getElementById(`match-${side}-${id}`);
+		if (!btn) return null;
+		const rect = btn.getBoundingClientRect();
+		const cr = matchContainer.getBoundingClientRect();
+		return {
+			x: rect.left - cr.left,
+			y: rect.top - cr.top,
+			w: rect.width,
+			h: rect.height
+		};
+	}
 
 	function optionCorrect(question: Question, optionId: string): boolean {
 		if (question.type === 'mc' || question.type === 'image') {
@@ -153,21 +171,9 @@
 	$effect(() => {
 		if (!matchSvg || !matchContainer || !question || question.type !== 'match') return;
 		matchSvg.innerHTML = '';
-		const containerRect = matchContainer.getBoundingClientRect();
-		function getPos(side: 'left' | 'right', id: string): { x: number; y: number; w: number; h: number } | null {
-			const btn = document.getElementById(`match-${side}-${id}`);
-			if (!btn) return null;
-			const rect = btn.getBoundingClientRect();
-			return {
-				x: rect.left - containerRect.left,
-				y: rect.top - containerRect.top,
-				w: rect.width,
-				h: rect.height
-			};
-		}
 		for (const [leftId, rightId] of Object.entries(pairs)) {
-			const leftPos = getPos('left', leftId);
-			const rightPos = getPos('right', rightId);
+			const leftPos = getMatchPos('left', leftId);
+			const rightPos = getMatchPos('right', rightId);
 			if (!leftPos || !rightPos) continue;
 			const isCorrect = phase === 'feedback'
 				? question.solution.some((p) => p.leftId === leftId && p.rightId === rightId)
@@ -184,6 +190,54 @@
 			matchSvg.appendChild(line);
 		}
 	});
+
+	function startDrag(leftId: string, event: MouseEvent) {
+		if (phase !== 'question' || !question) return;
+		dragFrom = leftId;
+		const rect = matchContainer?.getBoundingClientRect();
+		if (rect) {
+			dragPos = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+		}
+		event.preventDefault();
+	}
+
+	function onDragMove(event: MouseEvent) {
+		if (!dragFrom || !matchContainer || !question) return;
+		const rect = matchContainer.getBoundingClientRect();
+		dragPos = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+		dragTarget = null;
+		const q = question as { right: { id: string }[] };
+		for (const right of q.right) {
+			const btn = document.getElementById(`match-right-${right.id}`);
+			if (!btn) continue;
+			const br = btn.getBoundingClientRect();
+			if (
+				event.clientX >= br.left &&
+				event.clientX <= br.right &&
+				event.clientY >= br.top &&
+				event.clientY <= br.bottom
+			) {
+				dragTarget = right.id;
+				break;
+			}
+		}
+	}
+
+	function endDrag() {
+		if (!dragFrom) return;
+		if (dragTarget) {
+			assignPair(dragTarget);
+		}
+		dragFrom = null;
+		dragTarget = null;
+		dragJustEnded = true;
+		setTimeout(() => (dragJustEnded = false), 80);
+	}
+
+	function cancelDrag() {
+		dragFrom = null;
+		dragTarget = null;
+	}
 
 	function isCorrect(): boolean {
 		if (!question) return false;
@@ -491,11 +545,28 @@
 							class="absolute inset-0 w-full h-full pointer-events-none"
 							preserveAspectRatio="none"
 							style="overflow: visible;"
-						/>
+						>
+							{#if dragFrom && question}
+								{@const leftPos = getMatchPos('left', dragFrom)}
+								{#if leftPos}
+									<line
+										x1="{leftPos.x + leftPos.w}"
+										y1="{leftPos.y + leftPos.h / 2}"
+										x2="{dragPos.x}"
+										y2="{dragPos.y}"
+										stroke="#ef4444"
+										stroke-width="3"
+										stroke-linecap="round"
+									/>
+								{/if}
+							{/if}
 
 						<div
 							bind:this={matchContainer}
 							class="grid grid-cols-2 gap-6 pt-6 pb-6"
+							onmousemove={onDragMove}
+							onmouseup={endDrag}
+							onmouseleave={cancelDrag}
 						>
 							<div class="space-y-2">
 								<p class="text-[12px] font-semibold text-ink-700">Links</p>
@@ -507,14 +578,16 @@
 									<button
 										id={`match-left-${left.id}`}
 										class="opt text-left py-3 rounded-xl border relative"
-										class:border-brand-600={activeLeft === left.id}
-										class:bg-brand-50={activeLeft === left.id}
+										class:border-brand-600={activeLeft === left.id || dragFrom === left.id}
+										class:bg-brand-50={activeLeft === left.id || dragFrom === left.id}
 										class:border-err-fg={phase === 'feedback' && hasPair && !isCorrect}
 										class:bg-err-bg={phase === 'feedback' && hasPair && !isCorrect}
 										class:border-ok-fg={phase === 'feedback' && hasPair && isCorrect}
 										class:bg-ok-bg={phase === 'feedback' && hasPair && isCorrect}
 										disabled={phase === 'feedback'}
-										onclick={() => (activeLeft = left.id)}
+										onclick={() => {
+											if (!dragFrom) activeLeft = left.id;
+										}}
 									>
 										<span class="flex-1 pr-6">{left.text}</span>
 										<span
@@ -542,14 +615,16 @@
 									<button
 										id={`match-right-${right.id}`}
 										class="opt text-left py-3 rounded-xl border relative"
-										class:border-brand-600={activeLeft === null && isAssigned}
-										class:bg-brand-50={activeLeft === null && isAssigned}
+										class:border-brand-600={activeLeft === null && isAssigned || dragTarget === right.id}
+										class:bg-brand-50={activeLeft === null && isAssigned || dragTarget === right.id}
 										class:border-err-fg={phase === 'feedback' && isAssigned && !isCorrect}
 										class:bg-err-bg={phase === 'feedback' && isAssigned && !isCorrect}
 										class:border-ok-fg={phase === 'feedback' && isCorrect}
 										class:bg-ok-bg={phase === 'feedback' && isCorrect}
 										disabled={phase === 'feedback'}
-										onclick={() => assignPair(right.id)}
+										onclick={() => {
+											if (!dragJustEnded) assignPair(right.id);
+										}}
 									>
 										<span class="flex-1 pl-6">{right.text}</span>
 										<span

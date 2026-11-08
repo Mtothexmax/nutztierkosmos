@@ -202,10 +202,10 @@
 
 		<div
 			bind:this={stage}
-			class="stage aspect-video overflow-hidden rounded-2xl border-4 border-dashed border-brand-100 bg-[#F1F8F4] {fullscreen ||
+			class="stage overflow-hidden rounded-2xl border-4 border-dashed border-brand-100 bg-[#F1F8F4] {fullscreen ||
 			overlayFullscreen
-				? 'fixed inset-0 z-40 !aspect-auto !rounded-none !border-0'
-				: 'relative'}"
+				? 'fixed inset-0 z-40 w-full h-full !aspect-auto !rounded-none !border-0 bg-[#F1F8F4]'
+				: 'relative aspect-video'}"
 		>
 			{#key reloadKey}
 				<iframe
