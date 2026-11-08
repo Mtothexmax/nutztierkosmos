@@ -406,7 +406,7 @@
 							onkeydown={(e) => {
 								if (e.key === 'Enter' || e.key === ' ') {
 									e.preventDefault();
-									onImageClick(e as MouseEvent);
+									onImageClick(e as unknown as MouseEvent);
 								}
 							}}
 						>
@@ -447,40 +447,98 @@
 						</div>
 					{/if}
 				{:else if question.type === 'match'}
-					<div class="grid grid-cols-2 gap-3">
-						<div class="space-y-2">
-							{#each question.left as left (left.id)}
-								<button
-									class="opt"
-									class:sel={activeLeft === left.id}
-									class:ok={phase === 'feedback' &&
-										question.solution.some((p) => p.leftId === left.id && p.rightId === pairs[left.id])}
-									disabled={phase === 'feedback'}
-									onclick={() => (activeLeft = left.id)}
-								>
-									<span class="flex-1">{left.text}</span>
-									{#if pairs[left.id]}
-										<span class="bdg">{rightText(pairs[left.id])}</span>
-									{/if}
-								</button>
+					<div class="relative min-h-[320px]">
+						<!-- Gezeichnete Verbindungen (SVG-Overlay) -->
+						<svg
+							class="absolute inset-0 w-full h-full pointer-events-none"
+							preserveAspectRatio="none"
+						>
+							{#each question.left as left, leftIndex (left.id)}
+								{#if pairs[left.id]}
+									{@const rightIndex = question.right.findIndex((r) => r.id === pairs[left.id])}
+									{@const isCorrect = phase === 'feedback'
+										? question.solution.some((p) => p.leftId === left.id && p.rightId === pairs[left.id])
+										: false}
+									<line
+										x1="0%"
+										y1="{((leftIndex + 0.5) / question.left.length) * 100}%"
+										x2="100%"
+										y2="{((rightIndex + 0.5) / question.right.length) * 100}%"
+										stroke={isCorrect ? '#22c55e' : '#ef4444'}
+										stroke-width="3"
+										stroke-linecap="round"
+										opacity={phase === 'feedback' ? 1 : 0.45}
+									/>
+								{/if}
 							{/each}
+						</svg>
+
+						<div class="grid grid-cols-2 gap-6 pt-6 pb-6">
+							<div class="space-y-2">
+								<p class="text-[12px] font-semibold text-ink-700">Links</p>
+								{#each question.left as left (left.id)}
+									{@const isCorrect = phase === 'feedback'
+										? question.solution.some((p) => p.leftId === left.id && p.rightId === pairs[left.id])
+										: false}
+									{@const hasPair = !!pairs[left.id]}
+									<button
+										class="opt text-left py-3 rounded-xl border"
+										class:border-brand-600={activeLeft === left.id}
+										class:bg-brand-50={activeLeft === left.id}
+										class:border-err-fg={phase === 'feedback' && hasPair && !isCorrect}
+										class:bg-err-bg={phase === 'feedback' && hasPair && !isCorrect}
+										class:border-ok-fg={phase === 'feedback' && hasPair && isCorrect}
+										class:bg-ok-bg={phase === 'feedback' && hasPair && isCorrect}
+										disabled={phase === 'feedback'}
+										onclick={() => (activeLeft = left.id)}
+									>
+										<span class="flex-1">{left.text}</span>
+										{#if phase === 'feedback'}
+											<Icon name={isCorrect ? 'check_circle' : 'cancel'} size={16} class={isCorrect ? 'text-brand-600' : 'text-danger-500'} />
+										{:else if hasPair}
+											<Icon name="link" size={16} class="text-brand-600" />
+										{:else}
+											<Icon name="link" size={16} class="text-ink-400" />
+										{/if}
+									</button>
+								{/each}
+							</div>
+							<div class="space-y-2">
+								<p class="text-[12px] font-semibold text-ink-700">Rechts</p>
+								{#each question.right as right (right.id)}
+									{@const userLeft = question.left.find((l) => pairs[l.id] === right.id)}
+									{@const correctPair = question.solution.find((p) => p.rightId === right.id)}
+									{@const correctLeftId = correctPair?.leftId ?? ''}
+									{@const isCorrect = phase === 'feedback' && userLeft && userLeft.id === correctLeftId}
+									{@const isAssigned = !!userLeft}
+									<button
+										class="opt text-left py-3 rounded-xl border"
+										class:border-brand-600={activeLeft === null && isAssigned}
+										class:bg-brand-50={activeLeft === null && isAssigned}
+										class:border-err-fg={phase === 'feedback' && isAssigned && !isCorrect}
+										class:bg-err-bg={phase === 'feedback' && isAssigned && !isCorrect}
+										class:border-ok-fg={phase === 'feedback' && isCorrect}
+										class:bg-ok-bg={phase === 'feedback' && isCorrect}
+										disabled={phase === 'feedback'}
+										onclick={() => assignPair(right.id)}
+									>
+										<span class="flex-1">{right.text}</span>
+										{#if phase === 'feedback'}
+											<Icon name={isCorrect ? 'check_circle' : 'cancel'} size={16} class={isCorrect ? 'text-brand-600' : 'text-danger-500'} />
+										{:else if isAssigned}
+											<Icon name="link" size={16} class="text-brand-600" />
+										{:else}
+											<Icon name="link" size={16} class="text-ink-400" />
+										{/if}
+									</button>
+								{/each}
+							</div>
 						</div>
-						<div class="space-y-2">
-							{#each question.right as right (right.id)}
-								<button
-									class="opt"
-									class:sel={Object.values(pairs).includes(right.id)}
-									disabled={phase === 'feedback'}
-									onclick={() => assignPair(right.id)}
-								>
-									{right.text}
-								</button>
-							{/each}
-						</div>
+
+						<p class="text-[13px] text-ink-500 text-center mt-2">
+							Klicke erst ein Element links, dann das passende rechts.
+						</p>
 					</div>
-					<p class="text-[13px] text-ink-500">
-						Erst links wählen, dann rechts zuordnen.
-					</p>
 				{/if}
 
 				{#if phase === 'feedback'}
