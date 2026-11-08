@@ -659,6 +659,7 @@
 												e.stopPropagation();
 												console.log('[DragDrop] right button -> assignPair:', right.id);
 												assignPair(right.id);
+												endDrag();
 											}
 										}}
 										onclick={() => {
