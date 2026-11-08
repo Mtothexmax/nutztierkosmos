@@ -36,6 +36,8 @@
 	let clickImg = $state<HTMLImageElement>();
 	let clickCanvas = $state<HTMLCanvasElement>();
 	let clickDrawn = $state(false);
+	let matchSvg = $state<SVGSVGElement>();
+	let matchContainer = $state<HTMLDivElement>();
 
 	let question = $derived<Question | undefined>(quiz?.questions[index]);
 	let total = $derived(quiz?.questions.length ?? 0);
@@ -145,6 +147,41 @@
 	$effect(() => {
 		if (question?.type === 'image' && (question as { mode: string }).mode === 'click' && clickImg && clickCanvas) {
 			drawClickPolygon();
+		}
+	});
+
+	$effect(() => {
+		if (!matchSvg || !matchContainer || !question || question.type !== 'match') return;
+		matchSvg.innerHTML = '';
+		const containerRect = matchContainer.getBoundingClientRect();
+		function getPos(side: 'left' | 'right', id: string): { x: number; y: number; w: number; h: number } | null {
+			const btn = document.getElementById(`match-${side}-${id}`);
+			if (!btn) return null;
+			const rect = btn.getBoundingClientRect();
+			return {
+				x: rect.left - containerRect.left,
+				y: rect.top - containerRect.top,
+				w: rect.width,
+				h: rect.height
+			};
+		}
+		for (const [leftId, rightId] of Object.entries(pairs)) {
+			const leftPos = getPos('left', leftId);
+			const rightPos = getPos('right', rightId);
+			if (!leftPos || !rightPos) continue;
+			const isCorrect = phase === 'feedback'
+				? question.solution.some((p) => p.leftId === leftId && p.rightId === rightId)
+				: false;
+			const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+			line.setAttribute('x1', String(leftPos.x + leftPos.w));
+			line.setAttribute('y1', String(leftPos.y + leftPos.h / 2));
+			line.setAttribute('x2', String(rightPos.x));
+			line.setAttribute('y2', String(rightPos.y + rightPos.h / 2));
+			line.setAttribute('stroke', isCorrect ? '#22c55e' : '#ef4444');
+			line.setAttribute('stroke-width', '3');
+			line.setAttribute('stroke-linecap', 'round');
+			line.setAttribute('opacity', phase === 'feedback' ? '1' : '0.45');
+			matchSvg.appendChild(line);
 		}
 	});
 
@@ -448,32 +485,18 @@
 					{/if}
 				{:else if question.type === 'match'}
 					<div class="relative min-h-[320px]">
-						<!-- Gezeichnete Verbindungen (SVG-Overlay) -->
+						<!-- SVG-Overlay: echte Verbindungslinien von Button zu Button -->
 						<svg
+							bind:this={matchSvg}
 							class="absolute inset-0 w-full h-full pointer-events-none"
 							preserveAspectRatio="none"
-						>
-							{#each question.left as left, leftIndex (left.id)}
-								{#if pairs[left.id]}
-									{@const rightIndex = question.right.findIndex((r) => r.id === pairs[left.id])}
-									{@const isCorrect = phase === 'feedback'
-										? question.solution.some((p) => p.leftId === left.id && p.rightId === pairs[left.id])
-										: false}
-									<line
-										x1="0%"
-										y1="{((leftIndex + 0.5) / question.left.length) * 100}%"
-										x2="100%"
-										y2="{((rightIndex + 0.5) / question.right.length) * 100}%"
-										stroke={isCorrect ? '#22c55e' : '#ef4444'}
-										stroke-width="3"
-										stroke-linecap="round"
-										opacity={phase === 'feedback' ? 1 : 0.45}
-									/>
-								{/if}
-							{/each}
-						</svg>
+							style="overflow: visible;"
+						/>
 
-						<div class="grid grid-cols-2 gap-6 pt-6 pb-6">
+						<div
+							bind:this={matchContainer}
+							class="grid grid-cols-2 gap-6 pt-6 pb-6"
+						>
 							<div class="space-y-2">
 								<p class="text-[12px] font-semibold text-ink-700">Links</p>
 								{#each question.left as left (left.id)}
@@ -482,7 +505,8 @@
 										: false}
 									{@const hasPair = !!pairs[left.id]}
 									<button
-										class="opt text-left py-3 rounded-xl border"
+										id={`match-left-${left.id}`}
+										class="opt text-left py-3 rounded-xl border relative"
 										class:border-brand-600={activeLeft === left.id}
 										class:bg-brand-50={activeLeft === left.id}
 										class:border-err-fg={phase === 'feedback' && hasPair && !isCorrect}
@@ -492,7 +516,11 @@
 										disabled={phase === 'feedback'}
 										onclick={() => (activeLeft = left.id)}
 									>
-										<span class="flex-1">{left.text}</span>
+										<span class="flex-1 pr-6">{left.text}</span>
+										<span
+											class="absolute right-2 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-2 border-brand-600 bg-white shadow-sm"
+											aria-hidden="true"
+										/>
 										{#if phase === 'feedback'}
 											<Icon name={isCorrect ? 'check_circle' : 'cancel'} size={16} class={isCorrect ? 'text-brand-600' : 'text-danger-500'} />
 										{:else if hasPair}
@@ -512,7 +540,8 @@
 									{@const isCorrect = phase === 'feedback' && userLeft && userLeft.id === correctLeftId}
 									{@const isAssigned = !!userLeft}
 									<button
-										class="opt text-left py-3 rounded-xl border"
+										id={`match-right-${right.id}`}
+										class="opt text-left py-3 rounded-xl border relative"
 										class:border-brand-600={activeLeft === null && isAssigned}
 										class:bg-brand-50={activeLeft === null && isAssigned}
 										class:border-err-fg={phase === 'feedback' && isAssigned && !isCorrect}
@@ -522,7 +551,11 @@
 										disabled={phase === 'feedback'}
 										onclick={() => assignPair(right.id)}
 									>
-										<span class="flex-1">{right.text}</span>
+										<span class="flex-1 pl-6">{right.text}</span>
+										<span
+											class="absolute left-2 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-2 border-brand-600 bg-white shadow-sm"
+											aria-hidden="true"
+										/>
 										{#if phase === 'feedback'}
 											<Icon name={isCorrect ? 'check_circle' : 'cancel'} size={16} class={isCorrect ? 'text-brand-600' : 'text-danger-500'} />
 										{:else if isAssigned}
