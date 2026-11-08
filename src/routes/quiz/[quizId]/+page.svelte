@@ -400,10 +400,16 @@
 	}
 
 	function assignPair(rightId: string) {
-		if (!activeLeft) return;
-		// Immer nur eine Verbindung gleichzeitig – alte wird ersetzt
-		pairs = { [activeLeft]: rightId };
+		// Verwende activeLeft (beim Klick) ODER dragFrom (beim Drag & Drop)
+		const leftId = activeLeft ?? dragFrom;
+		if (!leftId) return;
+
+		pairs = { [leftId]: rightId };
+
+		// Beide Zustände sauber zurücksetzen
 		activeLeft = null;
+		dragFrom = null;
+
 		drawPermanentLines();
 	}
 
