@@ -171,6 +171,7 @@
 	$effect(() => {
 		if (!matchSvg || !matchContainer || !question || question.type !== 'match') return;
 		matchSvg.innerHTML = '';
+		// Permanente Verbindungen
 		for (const [leftId, rightId] of Object.entries(pairs)) {
 			const leftPos = getMatchPos('left', leftId);
 			const rightPos = getMatchPos('right', rightId);
@@ -188,6 +189,21 @@
 			line.setAttribute('stroke-linecap', 'round');
 			line.setAttribute('opacity', phase === 'feedback' ? '1' : '0.45');
 			matchSvg.appendChild(line);
+		}
+		// Drag-Faden (wenn gerade gezogen wird)
+		if (dragFrom && question) {
+			const leftPos = getMatchPos('left', dragFrom);
+			if (leftPos) {
+				const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+				line.setAttribute('x1', String(leftPos.x + leftPos.w));
+				line.setAttribute('y1', String(leftPos.y + leftPos.h / 2));
+				line.setAttribute('x2', String(dragPos.x));
+				line.setAttribute('y2', String(dragPos.y));
+				line.setAttribute('stroke', '#ef4444');
+				line.setAttribute('stroke-width', '3');
+				line.setAttribute('stroke-linecap', 'round');
+				matchSvg.appendChild(line);
+			}
 		}
 	});
 
@@ -545,22 +561,7 @@
 							class="absolute inset-0 w-full h-full pointer-events-none"
 							preserveAspectRatio="none"
 							style="overflow: visible;"
-						>
-							{#if dragFrom && question}
-								{@const leftPos = getMatchPos('left', dragFrom)}
-								{#if leftPos}
-									<line
-										x1="{leftPos.x + leftPos.w}"
-										y1="{leftPos.y + leftPos.h / 2}"
-										x2="{dragPos.x}"
-										y2="{dragPos.y}"
-										stroke="#ef4444"
-										stroke-width="3"
-										stroke-linecap="round"
-									/>
-								{/if}
-							{/if}
-
+						></svg>
 						<div
 							bind:this={matchContainer}
 							class="grid grid-cols-2 gap-6 pt-6 pb-6"
