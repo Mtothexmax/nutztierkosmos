@@ -11,6 +11,14 @@
 
 	onMount(() => {
 		if (!session.isLoggedIn) goto('/');
+		const onMove = (event: PointerEvent) => onDragMove(event);
+		const onUp = () => endDrag();
+		window.addEventListener('pointermove', onMove);
+		window.addEventListener('pointerup', onUp);
+		return () => {
+			window.removeEventListener('pointermove', onMove);
+			window.removeEventListener('pointerup', onUp);
+		};
 	});
 
 	let quizId = $derived(page.params.quizId ?? '');
@@ -207,9 +215,10 @@
 		}
 	});
 
-	function startDrag(leftId: string, event: MouseEvent) {
+	function startDrag(leftId: string, event: PointerEvent) {
 		if (phase !== 'question' || !question) return;
 		dragFrom = leftId;
+		dragJustEnded = false;
 		const rect = matchContainer?.getBoundingClientRect();
 		if (rect) {
 			dragPos = { x: event.clientX - rect.left, y: event.clientY - rect.top };
@@ -217,7 +226,7 @@
 		event.preventDefault();
 	}
 
-	function onDragMove(event: MouseEvent) {
+	function onDragMove(event: PointerEvent) {
 		if (!dragFrom || !matchContainer || !question) return;
 		const rect = matchContainer.getBoundingClientRect();
 		dragPos = { x: event.clientX - rect.left, y: event.clientY - rect.top };
@@ -565,9 +574,6 @@
 						<div
 							bind:this={matchContainer}
 							class="grid grid-cols-2 gap-6 pt-6 pb-6"
-							onmousemove={onDragMove}
-							onmouseup={endDrag}
-							onmouseleave={cancelDrag}
 						>
 							<div class="space-y-2">
 								<p class="text-[12px] font-semibold text-ink-700">Links</p>
@@ -586,6 +592,7 @@
 										class:border-ok-fg={phase === 'feedback' && hasPair && isCorrect}
 										class:bg-ok-bg={phase === 'feedback' && hasPair && isCorrect}
 										disabled={phase === 'feedback'}
+										onpointerdown={(e) => startDrag(left.id, e)}
 										onclick={() => {
 											if (!dragFrom) activeLeft = left.id;
 										}}
