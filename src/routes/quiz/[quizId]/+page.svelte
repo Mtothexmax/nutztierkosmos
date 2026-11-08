@@ -376,30 +376,33 @@
 	function drawPermanentLines() {
 		if (!matchSvg || !matchContainer || !question) return;
 		matchSvg.innerHTML = '';
-		for (const [leftId, rightId] of Object.entries(pairs)) {
-			const leftPos = getMatchPos('left', leftId);
-			const rightPos = getMatchPos('right', rightId);
-			if (!leftPos || !rightPos) continue;
-			const isCorrect = phase === 'feedback'
-				? (question as { solution: { leftId: string; rightId: string }[] }).solution.some((p) => p.leftId === leftId && p.rightId === rightId)
-				: false;
-			const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-			line.setAttribute('x1', String(leftPos.x + leftPos.w));
-			line.setAttribute('y1', String(leftPos.y + leftPos.h / 2));
-			line.setAttribute('x2', String(rightPos.x));
-			line.setAttribute('y2', String(rightPos.y + rightPos.h / 2));
-			line.setAttribute('stroke', isCorrect ? '#22c55e' : '#ef4444');
-			line.setAttribute('stroke-width', '3');
-			line.setAttribute('stroke-linecap', 'round');
-			line.setAttribute('opacity', phase === 'feedback' ? '1' : '0.45');
-			matchSvg.appendChild(line);
-		}
-		console.log('[SVG] drew', Object.keys(pairs).length, 'permanent lines');
+		// Immer nur eine Verbindung gleichzeitig
+		const pair = Object.entries(pairs)[0];
+		if (!pair) return;
+		const [leftId, rightId] = pair;
+		const leftPos = getMatchPos('left', leftId);
+		const rightPos = getMatchPos('right', rightId);
+		if (!leftPos || !rightPos) return;
+		const isCorrect = phase === 'feedback'
+			? (question as { solution: { leftId: string; rightId: string }[] }).solution.some((p) => p.leftId === leftId && p.rightId === rightId)
+			: false;
+		const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+		line.setAttribute('x1', String(leftPos.x + leftPos.w));
+		line.setAttribute('y1', String(leftPos.y + leftPos.h / 2));
+		line.setAttribute('x2', String(rightPos.x));
+		line.setAttribute('y2', String(rightPos.y + rightPos.h / 2));
+		line.setAttribute('stroke', isCorrect ? '#22c55e' : '#ef4444');
+		line.setAttribute('stroke-width', '3');
+		line.setAttribute('stroke-linecap', 'round');
+		line.setAttribute('opacity', phase === 'feedback' ? '1' : '0.45');
+		matchSvg.appendChild(line);
+		console.log('[SVG] drew', 1, 'permanent line:', leftId, '→', rightId);
 	}
 
 	function assignPair(rightId: string) {
 		if (!activeLeft) return;
-		pairs = { ...pairs, [activeLeft]: rightId };
+		// Immer nur eine Verbindung gleichzeitig – alte wird ersetzt
+		pairs = { [activeLeft]: rightId };
 		activeLeft = null;
 		drawPermanentLines();
 	}
