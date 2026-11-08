@@ -53,10 +53,12 @@ export type TfQuestion = QuestionBase & {
 
 export type ImageQuestion = QuestionBase & {
 	type: 'image';
-	mode: 'choice' | 'input';
+	mode: 'choice' | 'input' | 'click';
 	options?: { id: ID; text: string; correct: boolean }[];
 	answer?: string;
 	tolerance?: 'exact' | 'loose';
+	clickInstruction?: string;
+	clickPolygon?: { x: number; y: number }[];
 };
 
 export type MatchQuestion = QuestionBase & {

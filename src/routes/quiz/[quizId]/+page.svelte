@@ -33,6 +33,9 @@
 	let inputAnswer = $state('');
 	let pairs = $state<Record<string, string>>({});
 	let activeLeft = $state<string | null>(null);
+	let clickImg = $state<HTMLImageElement>();
+	let clickCanvas = $state<HTMLCanvasElement>();
+	let clickDrawn = $state(false);
 
 	let question = $derived<Question | undefined>(quiz?.questions[index]);
 	let total = $derived(quiz?.questions.length ?? 0);
@@ -66,6 +69,84 @@
 		tfAnswer = value;
 		check();
 	}
+
+	function pointInPolygon(point: { x: number; y: number }, polygon: { x: number; y: number }[]): boolean {
+		let inside = false;
+		for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+			const xi = polygon[i].x,
+				yi = polygon[i].y;
+			const xj = polygon[j].x,
+				yj = polygon[j].y;
+			if (
+				(yi > point.y) !== (yj > point.y) &&
+				point.x < ((xj - xi) * (point.y - yi)) / (yj - yi) + xi
+			) {
+				inside = !inside;
+			}
+		}
+		return inside;
+	}
+
+	function getClickPointFromEvent(event: MouseEvent): { x: number; y: number } | null {
+		const target = event.currentTarget as HTMLElement;
+		if (!target) return null;
+		const rect = target.getBoundingClientRect();
+		const mx = event.clientX - rect.left;
+		const my = event.clientY - rect.top;
+		if (mx < 0 || my < 0 || mx > rect.width || my > rect.height) return null;
+		return { x: mx / rect.width, y: my / rect.height };
+	}
+
+	function onImageClick(event: MouseEvent) {
+		if (phase !== 'question' || !question) return;
+		const imgQuestion = question as { type: string; clickPolygon?: { x: number; y: number }[] };
+		if (imgQuestion.type !== 'image' || !imgQuestion.clickPolygon || imgQuestion.clickPolygon.length < 3) return;
+		const p = getClickPointFromEvent(event);
+		if (!p) return;
+		clickedImage = true;
+		lastCorrect = pointInPolygon(p, imgQuestion.clickPolygon);
+		if (lastCorrect) earned += question.points;
+		results = [...results, { id: question.id, correct: lastCorrect, points: lastCorrect ? question.points : 0 }];
+		phase = 'feedback';
+		drawClickPolygon();
+	}
+
+	let clickedImage = $state(false);
+
+	$effect(() => {
+		if (question?.type === 'image' && (question as { mode: string }).mode === 'click' && clickImg && clickCanvas) {
+			drawClickPolygon();
+		}
+	});
+
+	function drawClickPolygon() {
+		if (!clickImg || !clickCanvas) return;
+		const ctx = clickCanvas.getContext('2d');
+		if (!ctx) return;
+		const rect = clickImg.getBoundingClientRect();
+		clickCanvas.width = rect.width;
+		clickCanvas.height = rect.height;
+		ctx.clearRect(0, 0, rect.width, rect.height);
+		const poly = (question as { clickPolygon?: { x: number; y: number }[] }).clickPolygon ?? [];
+		if (poly.length === 0) return;
+		ctx.beginPath();
+		ctx.moveTo(poly[0].x * rect.width, poly[0].y * rect.height);
+		for (let i = 1; i < poly.length; i++) {
+			ctx.lineTo(poly[i].x * rect.width, poly[i].y * rect.height);
+		}
+		ctx.closePath();
+		ctx.fillStyle = lastCorrect ? 'rgba(34, 197, 94, 0.35)' : 'rgba(239, 68, 68, 0.35)';
+		ctx.fill();
+		ctx.strokeStyle = lastCorrect ? '#22c55e' : '#ef4444';
+		ctx.lineWidth = 3;
+		ctx.stroke();
+	}
+
+	$effect(() => {
+		if (question?.type === 'image' && (question as { mode: string }).mode === 'click' && clickImg && clickCanvas) {
+			drawClickPolygon();
+		}
+	});
 
 	function isCorrect(): boolean {
 		if (!question) return false;
@@ -315,6 +396,40 @@
 								Prüfen
 							</button>
 						</div>
+					{:else if question.mode === 'click'}
+						<div
+							class="relative inline-block"
+							role="button"
+							tabindex="0"
+							aria-label={question.clickInstruction ?? 'Auf dem Bild klicken'}
+							onclick={onImageClick}
+							onkeydown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
+									onImageClick(e as MouseEvent);
+								}
+							}}
+						>
+							<img
+								bind:this={clickImg}
+								src={question.image}
+								alt=""
+								class="max-h-48 rounded-lg cursor-crosshair"
+							/>
+							<canvas
+								bind:this={clickCanvas}
+								class="absolute inset-0"
+								style="pointer-events: none;"
+							></canvas>
+						</div>
+						<p class="text-[13px] text-ink-700">
+							{question.clickInstruction ?? 'Klicke in den markierten Bereich.'}
+						</p>
+						{#if phase === 'feedback'}
+							<div class="text-[13px] font-semibold {lastCorrect ? 'text-brand-600' : 'text-danger-500'}">
+								{lastCorrect ? 'Richtig!' : 'Falsch.'}
+							</div>
+						{/if}
 					{:else}
 						<div class="flex flex-wrap gap-2">
 							{#each question.options ?? [] as option (option.id)}

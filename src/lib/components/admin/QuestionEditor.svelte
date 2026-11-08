@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from '$lib/components/Icon.svelte';
+	import ImageHotspotEditor from '$lib/components/admin/ImageHotspotEditor.svelte';
 	import type { Question } from '$lib/types';
 	import { uid } from '$lib/utils';
 
@@ -198,6 +199,18 @@
 				>
 					Eingabe
 				</button>
+				<button
+					class="px-4 py-2 text-[14px] font-semibold {question.mode === 'click'
+						? 'bg-brand-600 text-white'
+						: 'bg-white text-ink-700 hover:bg-sand-50'}"
+					onclick={() => {
+						question.mode = 'click';
+						if (!question.clickPolygon) question.clickPolygon = [];
+						if (!question.clickInstruction) question.clickInstruction = '';
+					}}
+				>
+					Klick-Bereich
+				</button>
 			</div>
 		</div>
 
@@ -226,7 +239,7 @@
 					<Icon name="add" size={18} />Antwort hinzufügen
 				</button>
 			</div>
-		{:else}
+		{:else if question.mode === 'input'}
 			<div class="grid gap-2 sm:grid-cols-[1fr_auto]">
 				<div>
 					<label class="lbl" for="q-answer">Korrekte Antwort</label>
@@ -240,6 +253,8 @@
 					</select>
 				</div>
 			</div>
+		{:else if question.mode === 'click'}
+			<ImageHotspotEditor {question} />
 		{/if}
 	{:else if question.type === 'match'}
 		<div class="grid gap-3 sm:grid-cols-2">
