@@ -57,7 +57,6 @@ HTML-Spiele laufen isoliert im iframe (`sandbox="allow-scripts allow-forms allow
 | `/admin/spiele/[id]` | HTML-Spiel-Editor |
 | `/admin/api` | Spiel-API v1 und KI-Skill (verlinkt im ZIP-Editor) |
 | `/admin/spieler` | Spieler und Scores |
-| `/admin/mediathek` | Medien |
 | `/admin/einstellungen` | Einstellungen und Reset |
 
 ## Speicherung

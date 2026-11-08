@@ -6,6 +6,18 @@
 	type Props = { question: Question };
 	let { question }: Props = $props();
 
+	function handleImage(event: Event) {
+		const input = event.currentTarget as HTMLInputElement;
+		const file = input.files?.[0];
+		if (!file) return;
+		const reader = new FileReader();
+		reader.onload = () => {
+			question.image = reader.result as string;
+		};
+		reader.readAsDataURL(file);
+		input.value = '';
+	}
+
 	function addOption() {
 		if (question.type !== 'mc' && question.type !== 'image') return;
 		question.options = [
@@ -132,10 +144,38 @@
 		</div>
 	{:else if question.type === 'image'}
 		<div>
-			<label class="lbl" for="q-img">Bild (Emoji oder URL)</label>
-			<input id="q-img" class="inp" bind:value={question.image} placeholder="🌿 oder https://…" />
+			<label class="lbl" for="q-img">Bild</label>
+			<div class="flex flex-wrap gap-2">
+				<label class="flex items-center gap-2 rounded-xl border border-sand-200 bg-sand-50 p-3 cursor-pointer">
+					<Icon name="image" class="text-ink-500" />
+					<span>Bilddatei wählen</span>
+					<input
+						id="q-img"
+						type="file"
+						accept="image/*"
+						class="hidden"
+						onchange={handleImage}
+					/>
+				</label>
+				{#if question.image}
+					<div class="relative">
+						<img
+							src={question.image}
+							alt="Vorschau"
+							class="max-h-32 max-w-32 rounded-lg border border-sand-200"
+						/>
+						<button
+							class="absolute top-1 right-1 rounded-full bg-err-bg p-1 hover:bg-danger-500 hover:text-white transition"
+							aria-label="Bild entfernen"
+							onclick={(e) => { e.stopPropagation(); question.image = undefined; }}
+						>
+							<Icon name="close" size={14} />
+						</button>
+					</div>
+				{/if}
+			</div>
 			<p class="mt-1 text-[12px] text-ink-500">
-				Demo: Emojis oder Data-URL. Upload folgt in einer späteren Ausbaustufe.
+				PNG, JPG, GIF, WebP. Das Bild wird als Data-URL direkt im Quiz gespeichert.
 			</p>
 		</div>
 

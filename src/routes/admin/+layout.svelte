@@ -15,7 +15,6 @@
 		{ href: '/admin', label: 'Dashboard', icon: 'dashboard' },
 		{ href: '/admin/spiele', label: 'Spiele', icon: 'sports_esports' },
 		{ href: '/admin/spieler', label: 'Spieler', icon: 'group' },
-		{ href: '/admin/mediathek', label: 'Mediathek', icon: 'photo_library' },
 		{ href: '/admin/einstellungen', label: 'Einstellungen', icon: 'settings' }
 	];
 
