@@ -1,18 +1,41 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { browser } from '$app/env';
 	import { onMount } from 'svelte';
 	import { GameBridge } from '$lib/bridge/bridge.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { bundleGame } from '$lib/games/files';
 	import { content } from '$lib/stores/content.svelte';
 	import { session } from '$lib/stores/session.svelte';
-	import { storageKeys, write } from '$lib/storage/db';
-	import type { LastResult } from '$lib/types';
+	import { read, storageKeys, write } from '$lib/storage/db';
+	import type { LastResult, Preferences } from '$lib/types';
 	import { toasts } from '$lib/stores/toast.svelte';
 
 	onMount(() => {
 		if (!session.isLoggedIn) goto('/');
+		const onKey = (event: KeyboardEvent) => {
+			if (event.key !== 'Escape') return;
+			if (overlayFullscreen || fullscreen) {
+				fullscreen = false;
+				overlayFullscreen = false;
+			}
+		};
+		document.addEventListener('keydown', onKey);
+		return () => {
+			document.removeEventListener('keydown', onKey);
+		};
+	});
+
+	// Vollbild als CSS-Overlay (zuverlässiger als requestFullscreen im Iframe).
+	$effect(() => {
+		if (!browser) return;
+		if (!fullscreen && !overlayFullscreen) return;
+		const previous = document.body.style.overflow;
+		document.body.style.overflow = 'hidden';
+		return () => {
+			document.body.style.overflow = previous;
+		};
 	});
 
 	let gameId = $derived(page.params.gameId ?? '');
@@ -25,10 +48,19 @@
 	let srcdoc = $derived(game ? bundleGame(game) : '');
 
 	let iframe = $state<HTMLIFrameElement>();
+	let stage = $state<HTMLDivElement>();
 	let reloadKey = $state(0);
 	let bridge = new GameBridge();
 	let completed = $state<{ points: number; maxPoints: number; durationMs: number } | null>(null);
 	let fullscreen = $state(false);
+	let overlayFullscreen = $state(false);
+	let prefs = $state<Preferences>(read<Preferences>(storageKeys.prefs, { hideTriggerWarnings: false }));
+	let warningAccepted = $state(false);
+	let hideWarningChecked = $state(false);
+
+	let showWarning = $derived(
+		Boolean(game?.triggerWarning) && !prefs.hideTriggerWarnings && !warningAccepted
+	);
 
 	bridge.onComplete = (result) => {
 		if (!game || !session.player || completed) return;
@@ -77,6 +109,10 @@
 		bridge.connected = false;
 		bridge.score = 0;
 		reloadKey += 1;
+	}
+
+	function toggleFullscreen() {
+		fullscreen = !fullscreen;
 	}
 </script>
 
@@ -127,10 +163,49 @@
 			</div>
 		{/if}
 
+	{#if showWarning}
+		<div class="card rounded-2xl border-4 border-err-fg bg-err-bg p-6">
+			<div class="flex items-start gap-3">
+				<Icon name="warning" class="text-err-fg mt-0.5" />
+				<div class="flex-1">
+					<h2 class="font-serif text-xl font-bold text-err-fg">Epilepsie-Triggerwarnung</h2>
+					<p class="text-[14px] text-ink-700 mt-2">
+						Dieses Spiel enthält möglicherweise schnell wechselnde Bilder, blinkende Elemente oder
+						starke Kontraste, die bei empfindlichen Personen Anfälle auslösen können.
+					</p>
+					<label class="flex items-center gap-2 mt-4">
+						<input
+							type="checkbox"
+							bind:checked={hideWarningChecked}
+							class="text-err-fg"
+						/>
+						Diese Warnung nicht wieder anzeigen, egal für welches Spiel
+					</label>
+				</div>
+			</div>
+			<div class="mt-6 flex justify-end">
+				<button
+					class="b1"
+					onclick={() => {
+						if (hideWarningChecked) {
+							prefs.hideTriggerWarnings = true;
+							write(storageKeys.prefs, prefs);
+						}
+						warningAccepted = true;
+					}}
+				>
+					Ich habe verstanden – Spiel starten
+				</button>
+			</div>
+		</div>
+	{:else}
+
 		<div
-			class="relative aspect-video overflow-hidden rounded-2xl border-4 border-dashed border-brand-100 bg-[#F1F8F4] {fullscreen
-				? 'fixed inset-2 z-40 !aspect-auto'
-				: ''}"
+			bind:this={stage}
+			class="stage aspect-video overflow-hidden rounded-2xl border-4 border-dashed border-brand-100 bg-[#F1F8F4] {fullscreen ||
+			overlayFullscreen
+				? 'fixed inset-0 z-40 !aspect-auto !rounded-none !border-0'
+				: 'relative'}"
 		>
 			{#key reloadKey}
 				<iframe
@@ -142,10 +217,25 @@
 					onload={onLoad}
 				></iframe>
 			{/key}
-			<code class="pointer-events-none absolute bottom-2 left-3 font-mono text-[11px] text-ink-500">
+			<code
+				class="pointer-events-none absolute bottom-2 left-3 font-mono text-[11px] text-ink-500 {fullscreen ||
+				overlayFullscreen
+					? 'hidden'
+					: ''}"
+			>
 				Spiel erhält: {session.player?.name ?? '–'} · api v1
 			</code>
+
+			{#if fullscreen || overlayFullscreen}
+				<button
+					class="absolute top-3 right-3 z-10 inline-flex items-center gap-2 rounded-xl bg-black/55 px-3 py-2 text-[13px] font-semibold text-white backdrop-blur transition hover:bg-black/75"
+					onclick={toggleFullscreen}
+				>
+					<Icon name="fullscreen_exit" />Vollbild beenden
+				</button>
+			{/if}
 		</div>
+	{/if}
 
 		<div class="card flex flex-wrap items-center justify-between gap-2 !p-3">
 			<span class="text-[13px] font-medium">
@@ -159,8 +249,10 @@
 			<b>Score {bridge.score} / {game.maxPoints}</b>
 			<div class="flex flex-wrap gap-1">
 				<button class="b3" onclick={restart}><Icon name="refresh" />Neu starten</button>
-				<button class="b3" onclick={() => (fullscreen = !fullscreen)}>
-					<Icon name="fullscreen" />{fullscreen ? 'Vollbild beenden' : 'Vollbild'}
+				<button class="b3" onclick={toggleFullscreen}>
+					<Icon name="fullscreen" />{fullscreen || overlayFullscreen
+						? 'Vollbild beenden'
+						: 'Vollbild'}
 				</button>
 				<button class="b2" onclick={() => goto(backHref)}>Beenden</button>
 			</div>

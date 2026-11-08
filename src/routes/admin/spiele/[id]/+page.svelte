@@ -306,6 +306,11 @@
 					Veröffentlicht
 				</label>
 
+				<label class="flex items-center gap-2">
+					<input type="checkbox" bind:checked={draft.triggerWarning} />
+					Epilepsie-Triggerwarnung vor Spielstart einblenden
+				</label>
+
 				<a class="b2 w-full" href="/admin/api" target="_blank">
 					API-Doku &amp; KI-Skill
 				</a>

@@ -22,9 +22,11 @@
 	let current = $derived(nav.find((item) => isActive(item.href)));
 
 	function isActive(href: string): boolean {
-		if (href === '/admin') return page.url.pathname === '/admin';
-		if (href === '/admin/spiele') return page.url.pathname.startsWith('/admin/spiele') || page.url.pathname === '/admin/api';
-		return page.url.pathname === href || page.url.pathname.startsWith(`${href}/`);
+		const path = page.url.pathname;
+		if (href === '/admin') return path === '/admin';
+		if (href === '/admin/spiele') return path === '/admin/spiele' || path.startsWith('/admin/spiele/');
+		if (href === '/admin/spieler') return path === '/admin/spieler';
+		return path === href || path.startsWith(`${href}/`);
 	}
 
 	function logout() {
@@ -33,7 +35,7 @@
 	}
 </script>
 
-<div class="min-h-screen lg:grid lg:grid-cols-[260px_1fr]">
+<div class="h-screen lg:grid lg:grid-cols-[260px_1fr]">
 	{#if drawer}
 		<button
 			class="fixed inset-0 z-30 bg-ink-900/40 lg:hidden"
@@ -43,7 +45,7 @@
 	{/if}
 
 	<aside
-		class="nav fixed inset-y-0 left-0 z-40 flex w-[260px] flex-col justify-between bg-brand-900 p-4 text-white transition lg:static lg:z-auto lg:flex {drawer
+		class="nav fixed inset-y-0 left-0 z-40 flex w-[260px] flex-col justify-between bg-brand-900 p-4 text-white transition lg:static lg:z-auto lg:flex lg:h-full {drawer
 			? 'flex'
 			: 'hidden'}"
 	>
@@ -79,26 +81,11 @@
 		</div>
 	</aside>
 
-	<div class="min-w-0">
-		<header
-			class="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-sand-200 bg-white px-4"
-		>
-			<button class="b3 !p-2 lg:hidden" aria-label="Menü" onclick={() => (drawer = !drawer)}>
-				<Icon name="menu" />
-			</button>
-			<span class="hidden text-[13px] text-ink-500 sm:inline">
-				Redaktion{current ? ` / ${current.label}` : ''}
-			</span>
-			<div class="flex-1"></div>
-			<div class="relative hidden md:block">
-				<Icon name="search" class="absolute top-2 left-2 text-ink-500" />
-				<input class="inp !w-56 !pl-9" placeholder="Suchen…" />
-			</div>
-			<a class="b2 hidden sm:inline-flex" href="/lernen">Vorschau ansehen</a>
-			<a class="b1" href="/admin/spiele?new=1">+ Neu</a>
-		</header>
-
-		<main class="space-y-6 p-4 lg:p-8">
+	<div class="min-w-0 flex flex-col h-full">
+		<button class="b3 !p-2 lg:hidden" aria-label="Menü" onclick={() => (drawer = !drawer)}>
+			<Icon name="menu" />
+		</button>
+		<main class="flex-1 overflow-y-auto space-y-6 p-4 lg:p-8">
 			{@render children()}
 		</main>
 	</div>

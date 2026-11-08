@@ -103,9 +103,16 @@ export type Game = {
 	files: GameFile[];
 	maxPoints: number;
 	apiVersion: 1;
+	/** Epilepsie-Triggerwarnung vor dem Start einblenden. */
+	triggerWarning: boolean;
 	published: boolean;
 	createdAt: string;
 	updatedAt: string;
+};
+
+export type Preferences = {
+	/** Global vom Spieler bestätigt: Warnung nie wieder anzeigen. */
+	hideTriggerWarnings: boolean;
 };
 
 export type Settings = {

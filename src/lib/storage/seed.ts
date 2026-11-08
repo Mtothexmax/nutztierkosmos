@@ -5,7 +5,8 @@ import type {
 	Player,
 	Quiz,
 	Score,
-	Settings
+	Settings,
+	Preferences
 } from '$lib/types';
 import { pansenPuzzleHtml, stallklimaHtml } from '$lib/games/seed-games';
 
@@ -354,6 +355,7 @@ export const seedGames: Game[] = [
 		files: htmlFiles(pansenPuzzleHtml),
 		maxPoints: 200,
 		apiVersion: 1,
+		triggerWarning: false,
 		published: true,
 		createdAt: T('2026-10-27'),
 		updatedAt: T('2026-11-05')
@@ -367,6 +369,7 @@ export const seedGames: Game[] = [
 		files: htmlFiles(stallklimaHtml),
 		maxPoints: 150,
 		apiVersion: 1,
+		triggerWarning: false,
 		published: true,
 		createdAt: T('2026-11-04'),
 		updatedAt: T('2026-11-04')
@@ -422,4 +425,8 @@ export const seedSettings: Settings = {
 	pointsPerAnswer: 10,
 	levelThresholds: { forscher: 150, forscherin: 300 },
 	leaderboardPublic: true
+};
+
+export const seedPrefs: Preferences = {
+	hideTriggerWarnings: false,
 };

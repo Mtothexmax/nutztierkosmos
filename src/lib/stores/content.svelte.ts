@@ -7,9 +7,11 @@ import {
 	seedPlayers,
 	seedQuizzes,
 	seedScores,
-	seedSettings
+	seedSettings,
+	seedPrefs
 } from '$lib/storage/seed';
 import type { Game, GameFile, Module, Player, Quiz, Score, Settings } from '$lib/types';
+import type { Preferences } from '$lib/types';
 import { levelFor, nowIso, uid } from '$lib/utils';
 import { starterIndexHtml } from '$lib/games/files';
 
@@ -33,7 +35,7 @@ function normalizeGame(game: LegacyGame): Game {
 				]
 			: [];
 	const { source: _legacySource, ...rest } = game;
-	return { ...rest, kind: 'html', files } as Game;
+	return { ...rest, kind: 'html', files, triggerWarning: game.triggerWarning ?? true } as Game;
 }
 
 const starterFiles = (): GameFile[] => [
@@ -54,6 +56,7 @@ class ContentStore {
 	players = $state<Player[]>([]);
 	scores = $state<Score[]>([]);
 	settings = $state<Settings>(seedSettings);
+	prefs = $state<Preferences>(seedPrefs);
 	loaded = $state(false);
 
 	init(): void {
@@ -69,6 +72,7 @@ class ContentStore {
 			this.players = read(storageKeys.players, []);
 			this.scores = read(storageKeys.scores, []);
 			this.settings = read(storageKeys.settings, seedSettings);
+			this.prefs = read<Preferences>(storageKeys.prefs, seedPrefs);
 		}
 		this.loaded = true;
 	}
@@ -87,6 +91,7 @@ class ContentStore {
 		write(storageKeys.players, this.players);
 		write(storageKeys.scores, this.scores);
 		write(storageKeys.settings, this.settings);
+		write(storageKeys.prefs, this.prefs);
 		write<Meta>(storageKeys.meta, {
 			seedVersion: SEED_VERSION,
 			createdAt: nowIso(),
@@ -112,6 +117,7 @@ class ContentStore {
 	}
 	persistSettings(): void {
 		write(storageKeys.settings, this.settings);
+		write(storageKeys.prefs, this.prefs);
 	}
 
 	getModule(id: string): Module | undefined {
@@ -234,6 +240,7 @@ class ContentStore {
 			files: input.files?.length ? structuredClone(input.files) : starterFiles(),
 			maxPoints: input.maxPoints ?? 100,
 			apiVersion: 1,
+			triggerWarning: input.triggerWarning ?? true,
 			published: false,
 			createdAt: nowIso(),
 			updatedAt: nowIso()

@@ -11,6 +11,7 @@ export const storageKeys = {
 	games: `${PREFIX}games`,
 	scores: `${PREFIX}scores`,
 	settings: `${PREFIX}settings`,
+	prefs: `${PREFIX}prefs`,
 	lastResult: `${PREFIX}lastResult`
 } as const;
 
