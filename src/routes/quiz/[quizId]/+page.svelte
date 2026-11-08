@@ -249,7 +249,24 @@
 	}
 
 	function endDrag() {
-		if (!dragFrom) return;
+		if (!dragFrom || !matchContainer || !question) return;
+		// Falls sich die Maus seit dem letzten pointermove nicht bewegt hat,
+		// prüfen wir hier noch einmal, über welchem Button die Maus liegt.
+		if (!dragTarget) {
+			const q = question as { right: { id: string }[] };
+			const rect = matchContainer.getBoundingClientRect();
+			const mx = dragPos.x + rect.left;
+			const my = dragPos.y + rect.top;
+			for (const right of q.right) {
+				const btn = document.getElementById(`match-right-${right.id}`);
+				if (!btn) continue;
+				const br = btn.getBoundingClientRect();
+				if (mx >= br.left && mx <= br.right && my >= br.top && my <= br.bottom) {
+					dragTarget = right.id;
+					break;
+				}
+			}
+		}
 		if (dragTarget) {
 			assignPair(dragTarget);
 		}
