@@ -647,6 +647,12 @@
 										class:border-ok-fg={phase === 'feedback' && isCorrect}
 										class:bg-ok-bg={phase === 'feedback' && isCorrect}
 										disabled={phase === 'feedback'}
+										onpointerup={(e) => {
+											if (dragFrom) {
+												e.preventDefault();
+												assignPair(right.id);
+											}
+										}}
 										onclick={() => {
 											if (!dragJustEnded) assignPair(right.id);
 										}}
