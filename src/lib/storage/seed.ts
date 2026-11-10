@@ -25,7 +25,7 @@ import { pansenPuzzleHtml, stallklimaHtml } from '$lib/games/seed-games';
  * WICHTIG: Publikationen, Autorinnen/Autoren und Zahlenwerte sind Platzhalter
  * und keine echten FBN-Veröffentlichungen. Sie zeigen nur Struktur und Ablauf.
  */
-export const SEED_VERSION = 12;
+export const SEED_VERSION = 22;
 
 const T = (d: string, h = 9) => new Date(`${d}T${String(h).padStart(2, '0')}:00:00.000Z`).toISOString();
 
@@ -234,36 +234,56 @@ export const seedKeywords: Keyword[] = [
 /* Medien                                                              */
 /* ------------------------------------------------------------------ */
 
+/** KI-generierte Platzhalterfotos: Breite, Höhe, Größe in KB. */
+const photoSizes: Record<string, [number, number, number]> = {
+	'hitze-titel.jpg': [1536, 864, 254],
+	'methan-titel.jpg': [1376, 768, 218],
+	'sensoren-titel.jpg': [1240, 697, 145],
+	'stallklima-titel.jpg': [1376, 768, 252],
+	'beschaeftigung-titel.jpg': [1376, 768, 297],
+	'huehner-titel.jpg': [1376, 768, 250],
+	'kalk-titel.jpg': [1536, 864, 248],
+	'hitze-ventilator.jpg': [1376, 768, 241],
+	'hitze-traenke.jpg': [1376, 768, 252],
+	'kat-rind.jpg': [1024, 768, 186],
+	'kat-schwein.jpg': [1200, 896, 246],
+	'kat-gefluegel.jpg': [1200, 896, 254],
+	'kat-schaf-ziege.jpg': [1200, 896, 234]
+};
+
 const img = (
 	id: string,
 	file: string,
 	title: [string, string],
 	alt: [string, string],
-	credit = 'Illustration: Nutztierkosmos (Platzhalter)'
-): MediaItem => ({
-	id,
-	type: 'image',
-	title: { de: title[0], en: title[1] },
-	alt: { de: alt[0], en: alt[1] },
-	credit,
-	src: `/demo/${file}`,
-	mime: 'image/svg+xml',
-	sizeKb: 5,
-	width: 1600,
-	height: 900,
-	downloadable: true,
-	createdAt: T('2026-10-20'),
-	updatedAt: T('2026-10-20')
-});
+	credit?: string
+): MediaItem => {
+	const photo = photoSizes[file];
+	return {
+		id,
+		type: 'image',
+		title: { de: title[0], en: title[1] },
+		alt: { de: alt[0], en: alt[1] },
+		credit: credit ?? (photo ? 'Bild: KI-generiert (Platzhalter)' : 'Illustration: Nutztierkosmos (Platzhalter)'),
+		src: `/demo/${file}`,
+		mime: photo ? 'image/jpeg' : 'image/svg+xml',
+		sizeKb: photo ? photo[2] : 5,
+		width: photo ? photo[0] : 1600,
+		height: photo ? photo[1] : 900,
+		downloadable: true,
+		createdAt: T('2026-10-20'),
+		updatedAt: T('2026-10-20')
+	};
+};
 
 export const seedMedia: MediaItem[] = [
 	img(
 		'md-hitze',
-		'hitzestress.svg',
-		['Sommerhitze auf der Weide', 'Summer heat on the pasture'],
+		'hitze-titel.jpg',
+		['Milchkuh im Schatten an einem heißen Tag', 'Dairy cow in the shade on a hot day'],
 		[
-			'Illustration: Stall und Weide unter greller Sonne, ein Thermometer zeigt hohe Temperatur.',
-			'Illustration: barn and pasture under a blazing sun, a thermometer shows a high temperature.'
+			'Eine schwarz-weiße Milchkuh steht im Schatten eines Baumes und hechelt mit leicht geöffnetem Maul; dahinter vertrocknete Weide unter greller Sonne.',
+			'A black-and-white dairy cow stands in the shade of a tree, panting with its mouth slightly open; behind it a parched pasture under a blazing sun.'
 		]
 	),
 	img(
@@ -345,53 +365,112 @@ export const seedMedia: MediaItem[] = [
 	},
 	img(
 		'md-methan',
-		'methan.svg',
-		['Methanmolekül über der Weide', 'Methane molecule above the pasture'],
+		'methan-titel.jpg',
+		['Wiederkäuende Kühe auf der Weide', 'Cows chewing the cud on the pasture'],
 		[
-			'Illustration: ein Methanmolekül (ein Kohlenstoff-, vier Wasserstoffatome) schwebt über grünen Hügeln.',
-			'Illustration: a methane molecule (one carbon, four hydrogen atoms) floats above green hills.'
+			'Zwei braun-weiße Kühe liegen am frühen Morgen auf einer Wiese und käuen wieder; im Hintergrund Nebel über hügeliger Landschaft.',
+			'Two brown-and-white cows lie on a meadow in the early morning chewing the cud; mist over rolling hills in the background.'
 		]
 	),
 	img(
 		'md-stallklima',
-		'stallklima.svg',
-		['Luftströmung im Schweinestall', 'Airflow in a pig barn'],
+		'stallklima-titel.jpg',
+		['Ruhende Schweine im hellen Stall', 'Pigs resting in a bright barn'],
 		[
-			'Querschnitt eines Stalls mit vier Buchten, gestrichelte Pfeile zeigen die Luftströmung.',
-			'Cross-section of a barn with four pens; dashed arrows show the airflow.'
+			'Vier Mastschweine liegen entspannt auf Stroh in einer hellen Bucht mit großen Fenstern und einer Lüftungsöffnung in der Wand.',
+			'Four fattening pigs lie relaxed on straw in a bright pen with large windows and a ventilation opening in the wall.'
 		]
 	),
 	img(
 		'md-beschaeftigung',
-		'beschaeftigung.svg',
-		['Beschäftigungsmaterial', 'Enrichment material'],
+		'beschaeftigung-titel.jpg',
+		['Schweine beim Wühlen im Stroh', 'Pigs rooting in straw'],
 		[
-			'Stroh auf dem Boden, zwei hängende Spielelemente an Ketten.',
-			'Straw on the floor, two hanging toys on chains.'
+			'Mehrere Schweine wühlen mit dem Rüssel im Stroh; eines kaut an einem Holzklotz, der an einer Kette hängt.',
+			'Several pigs root in the straw with their snouts; one chews on a wooden block hanging from a chain.'
 		]
 	),
 	img(
 		'md-gefluegel',
-		'gefluegel.svg',
+		'huehner-titel.jpg',
 		['Hennen auf Sitzstangen', 'Hens on perches'],
 		[
-			'Illustration: Hennen sitzen auf drei übereinanderliegenden Sitzstangen, Tageslicht fällt ein.',
-			'Illustration: hens on three tiers of perches, daylight streaming in.'
+			'Braune Legehennen sitzen dicht nebeneinander auf erhöhten Holzstangen in einem Hühnerstall; Abendlicht fällt durch ein Gitterfenster.',
+			'Brown laying hens sit close together on raised wooden perches in a henhouse; evening light falls through a mesh window.'
 		]
 	),
 	img(
 		'md-sensoren',
-		'sensoren.svg',
-		['Sensordaten', 'Sensor data'],
+		'sensoren-titel.jpg',
+		['Milchkuh mit Sensorhalsband', 'Dairy cow with a sensor collar'],
 		[
-			'Ein Sensor sendet Signale, daneben eine Kurve aus Messpunkten.',
-			'A sensor sends signals, next to it a curve of data points.'
+			'Nahaufnahme einer schwarz-weißen Milchkuh im Laufstall; am grauen Halsband hängt unten ein kleines Sensorgehäuse.',
+			'Close-up of a black-and-white dairy cow in a loose-housing barn; a small sensor unit hangs at the bottom of its grey collar.'
 		]
 	),
-	img('md-kat-rind', 'kat-rind.svg', ['Kategorie Rind', 'Category cattle'], ['Stilisierte Hügellandschaft als Kategoriebild.', 'Stylised landscape of hills as category image.']),
-	img('md-kat-schwein', 'kat-schwein.svg', ['Kategorie Schwein', 'Category pigs'], ['Stilisierte Hügellandschaft als Kategoriebild.', 'Stylised landscape of hills as category image.']),
-	img('md-kat-gefluegel', 'kat-gefluegel.svg', ['Kategorie Geflügel', 'Category poultry'], ['Stilisierte Hügellandschaft als Kategoriebild.', 'Stylised landscape of hills as category image.']),
-	img('md-kat-wiederkaeuer', 'kat-wiederkaeuer.svg', ['Kategorie Schaf & Ziege', 'Category sheep & goats'], ['Stilisierte Hügellandschaft als Kategoriebild.', 'Stylised landscape of hills as category image.'])
+	img(
+		'md-kat-rind',
+		'kat-rind.jpg',
+		['Kategorie Rind', 'Category cattle'],
+		[
+			'Eine schwarz-weiße Milchkuh trinkt im Stall aus einem Wassertrog; dahinter steht eine zweite Kuh.',
+			'A black-and-white dairy cow drinks from a water trough in the barn; a second cow stands behind it.'
+		]
+	),
+	img(
+		'md-kat-schwein',
+		'kat-schwein.jpg',
+		['Kategorie Schwein', 'Category pigs'],
+		[
+			'Ein geflecktes Schwein steht mit zwei Ferkeln auf einer Wiese an einem Holzzaun; dahinter Herbstwald.',
+			'A spotted pig stands with two piglets on a meadow by a wooden fence; autumn woods behind.'
+		]
+	),
+	img(
+		'md-kat-gefluegel',
+		'kat-gefluegel.jpg',
+		['Kategorie Geflügel', 'Category poultry'],
+		[
+			'Mehrere Hennen picken im Gras eines Auslaufs vor einem kleinen Holzhühnerstall.',
+			'Several hens peck in the grass of an outdoor run in front of a small wooden henhouse.'
+		]
+	),
+	img(
+		'md-kat-wiederkaeuer',
+		'kat-schaf-ziege.jpg',
+		['Kategorie Schaf & Ziege', 'Category sheep & goats'],
+		[
+			'Ein Schaf und eine Ziege mit Hörnern stehen nebeneinander auf einer hügeligen Weide.',
+			'A sheep and a horned goat stand side by side on a hilly pasture.'
+		]
+	),
+	img(
+		'md-kalk',
+		'kalk-titel.jpg',
+		['Henne am Futterautomaten', 'Hen at the feeder'],
+		[
+			'Eine braune Legehenne pickt Futter aus einem Futterautomaten; davor liegen Futterkalk und drei braune Eier im Stroh.',
+			'A brown laying hen pecks feed from a feeder; in front lie feed limestone and three brown eggs in the straw.'
+		]
+	),
+	img(
+		'md-hitze-ventilator',
+		'hitze-ventilator.jpg',
+		['Großventilator im Milchviehstall', 'Large fan in a dairy barn'],
+		[
+			'Ein großer Deckenventilator dreht sich über den Liegeboxen eines hellen Milchviehstalls, darunter ruhen Kühe.',
+			'A large ceiling fan turns above the cubicles of a bright dairy barn, with cows resting below.'
+		]
+	),
+	img(
+		'md-hitze-traenke',
+		'hitze-traenke.jpg',
+		['Kuh an der Tränke', 'Cow at the water trough'],
+		[
+			'Eine schwarz-weiße Kuh trinkt im Stall aus einem Edelstahltrog, in den frisches Wasser läuft; dahinter eine zweite Kuh.',
+			'A black-and-white cow drinks in the barn from a stainless steel trough filled with running water; a second cow behind it.'
+		]
+	)
 ];
 
 /* ------------------------------------------------------------------ */
@@ -740,11 +819,13 @@ export const seedExhibitions: Exhibition[] = [
 				id: 'b-h-gallery',
 				type: 'gallery',
 				heading: { de: 'Bildergalerie', en: 'Image gallery' },
-				mediaIds: ['md-hitze', 'md-stall-schema', 'md-sensoren']
+				mediaIds: ['md-hitze', 'md-hitze-ventilator', 'md-hitze-traenke']
 			},
 			{ id: 'b-h-audio', type: 'media', mediaId: 'md-audio-stall' },
 			{ id: 'b-h-pdf', type: 'media', mediaId: 'md-pdf-hitze' },
-			{ id: 'b-h-quiz', type: 'quiz', quizId: 'q-hitze' }
+			{ id: 'b-h-quiz', type: 'quiz', quizId: 'q-hitze' },
+			// Spiel aus games/ (Nutztierkosmos-Spiel.zip), wird beim Build bereitgestellt.
+			{ id: 'b-h-game', type: 'game', gameId: 'g-heisser-tag' }
 		]
 	}),
 	ex({
@@ -854,7 +935,8 @@ export const seedExhibitions: Exhibition[] = [
 				}
 			},
 			{ id: 'b-st-quiz', type: 'quiz', quizId: 'q-stallklima' },
-			{ id: 'b-st-game', type: 'game', gameId: 'g-stallklima' }
+			{ id: 'b-st-game', type: 'game', gameId: 'g-stallklima' },
+			{ id: 'b-st-verhalten', type: 'quiz', quizId: 'q-schwein-verhalten' }
 		]
 	}),
 	ex({
@@ -912,7 +994,8 @@ export const seedExhibitions: Exhibition[] = [
 					de: 'Das Bankivahuhn, die Wildform unseres Haushuhns, schläft in Bäumen – sicher vor Fressfeinden. Diesen Drang haben auch unsere Legehennen behalten. Erhöhte Sitzstangen geben ihnen Sicherheit und Ruhe. Für die Haltung heißt das: genug Sitzplätze in verschiedenen Höhen und gut erreichbare Ebenen.',
 					en: 'The red junglefowl, the wild ancestor of our domestic chicken, sleeps in trees – safe from predators. Our laying hens have kept this urge. Raised perches give them security and rest. For husbandry, this means enough perches at different heights and easily accessible tiers.'
 				}
-			}
+			},
+			{ id: 'b-hu-quiz', type: 'quiz', quizId: 'q-huhn-zuordnen' }
 		]
 	}),
 	ex({
@@ -921,7 +1004,7 @@ export const seedExhibitions: Exhibition[] = [
 		topicId: 't-huehner-futter',
 		title: { de: 'Kalk für starke Schalen' },
 		teaser: { de: 'Entwurf: Wie Calcium im Futter Knochen und Eischale stärkt.' },
-		heroMediaId: 'md-gefluegel',
+		heroMediaId: 'md-kalk',
 		readingMinutes: 3,
 		audiences: ['allgemein'],
 		publicationIds: [],
@@ -1217,6 +1300,319 @@ const baseQuizzes: Quiz[] = [
 					{ id: 'v5a', text: 'Verhalten beobachten und mögliche Umweltfaktoren untersuchen.', correct: true },
 					{ id: 'v5b', text: 'Emma sofort von den anderen Tieren trennen.', correct: false },
 					{ id: 'v5c', text: 'Das Verhalten grundsätzlich ignorieren.', correct: false }
+				]
+			}
+		]
+	},
+	{
+		id: 'q-schwein-verhalten-en',
+		topicId: 't-beschaeftigung',
+		lang: 'en',
+		translationOf: 'q-schwein-verhalten',
+		title: 'What is the pig telling me?',
+		description:
+			'Five situations from a pig’s everyday life: which interpretation is plausible – and what else would you need to know?',
+		published: true,
+		timerSeconds: null,
+		createdAt: T('2026-11-10'),
+		updatedAt: T('2026-11-10'),
+		questions: [
+			{
+				id: 've1',
+				type: 'image',
+				prompt: 'The pig holds its snout close to a branch in the leaves. Which interpretation is most plausible?',
+				explanation:
+					'Snout to the ground, ears forward, calm posture: the pig is curiously exploring. Rooting and exploring are basic needs – without suitable material, the risk of stress and tail biting rises.',
+				points: 10,
+				mode: 'choice',
+				mediaKind: 'image',
+				media: [
+					{
+						id: 've1-img',
+						name: 'A spotted pig sniffs at a mossy branch among autumn leaves in a pasture.',
+						mime: 'image/jpeg',
+						src: '/demo/schwein-neugierig.jpg'
+					}
+				],
+				options: [
+					{ id: 've1b', text: 'It is ill and is eating leaves because of that.', correct: false },
+					{ id: 've1a', text: 'It is curiously exploring its surroundings.', correct: true },
+					{ id: 've1c', text: 'It is afraid of the branch.', correct: false }
+				]
+			},
+			{
+				id: 've2',
+				type: 'image',
+				prompt: 'The pig presses its snout against a fence post. What is a plausible interpretation?',
+				explanation:
+					'Pigs are social animals and perceive a lot through their snout. This one is probably seeking contact. To be sure, you need more information: is there another pig or a person on the other side? Is the pig kept on its own?',
+				points: 10,
+				mode: 'choice',
+				mediaKind: 'image',
+				media: [
+					{
+						id: 've2-img',
+						name: 'A spotted pig stands at a wooden fence and presses its snout against a post.',
+						mime: 'image/jpeg',
+						src: '/demo/schwein-sucht-kontakt.jpg'
+					}
+				],
+				options: [
+					{ id: 've2b', text: 'It is aggressive and wants to break the fence.', correct: false },
+					{ id: 've2c', text: 'It is thirsty.', correct: false },
+					{ id: 've2a', text: 'It is seeking contact with other pigs or people.', correct: true }
+				]
+			},
+			{
+				id: 've3',
+				type: 'image',
+				prompt: 'The pig leans against the fence with its eyes half closed. What is it most likely showing?',
+				explanation:
+					'Half-closed eyes and a relaxed, leaning posture suggest tiredness. But a single moment says little: if the pig seems listless for a longer time, eats poorly or often lies apart from the others, think of heat or illness.',
+				points: 10,
+				mode: 'choice',
+				mediaKind: 'image',
+				media: [
+					{
+						id: 've3-img',
+						name: 'A spotted pig leans its hindquarters against a wooden fence, eyes half closed.',
+						mime: 'image/jpeg',
+						src: '/demo/schwein-muede.jpg'
+					}
+				],
+				options: [
+					{ id: 've3a', text: 'It is tired and resting.', correct: true },
+					{ id: 've3c', text: 'It is looking for food.', correct: false },
+					{ id: 've3b', text: 'It is in a particularly playful mood.', correct: false }
+				]
+			},
+			{
+				id: 've4',
+				type: 'image',
+				prompt: 'The pig presses itself against the fence with its head lowered and its tail hanging. How can this be interpreted?',
+				explanation:
+					'Lowered head, hanging tail and a body pressed against the fence: the pig is withdrawing – a possible sign of fear or stress. A pig can look healthy on the outside and still not feel well. Important questions: what frightened it? Are there fights over rank? Does it have enough space and places to retreat?',
+				points: 10,
+				mode: 'choice',
+				mediaKind: 'image',
+				media: [
+					{
+						id: 've4-img',
+						name: 'A spotted pig presses itself against a wooden fence with its head lowered and its tail hanging.',
+						mime: 'image/jpeg',
+						src: '/demo/schwein-angst.jpg'
+					}
+				],
+				options: [
+					{ id: 've4b', text: 'It is relaxed and content.', correct: false },
+					{ id: 've4a', text: 'It is afraid or stressed and is withdrawing.', correct: true },
+					{ id: 've4c', text: 'It is inviting the others to play.', correct: false }
+				]
+			},
+			{
+				id: 've5',
+				type: 'image',
+				prompt:
+					'Why is Emma the pig restless? In the picture, Emma is walking along the bars of her pen – and she does this again and again. What would be a sensible first step?',
+				explanation:
+					'Repeatedly pacing back and forth can have many causes: boredom, hunger, heat, too little space or stress within the group. So observe first: when does it happen? Are feed, water, temperature and enrichment right? Separating her straight away would add stress; ignoring it overlooks a possible animal welfare problem.',
+				points: 10,
+				mode: 'choice',
+				mediaKind: 'image',
+				media: [
+					{
+						id: 've5-img',
+						name: 'Emma the piglet walks through straw along the bars of the pen. Other piglets lie in the background, next to a play ball and a piece of wood.',
+						mime: 'image/jpeg',
+						src: '/demo/schwein-emma-gitter.jpg'
+					}
+				],
+				options: [
+					{ id: 've5a', text: 'Observe the behaviour and look into possible environmental factors.', correct: true },
+					{ id: 've5b', text: 'Separate Emma from the other animals immediately.', correct: false },
+					{ id: 've5c', text: 'Simply ignore the behaviour.', correct: false }
+				]
+			}
+		]
+	},
+	{
+		id: 'q-huhn-zuordnen',
+		topicId: 't-huehner-verhalten',
+		title: 'Was brauchen Hühner?',
+		description: 'Drei Zuordnungen zu Verhalten, Futter und Haltung von Legehennen.',
+		published: true,
+		timerSeconds: null,
+		createdAt: T('2026-11-10'),
+		updatedAt: T('2026-11-10'),
+		questions: [
+			{
+				id: 'hz1',
+				type: 'match',
+				prompt: 'Was bedeutet das Verhalten? Ordne zu.',
+				explanation:
+					'Hennen zeigen diese Verhaltensweisen von sich aus. Fehlt die Gelegenheit dazu – etwa ein Staubbad oder ein Nest –, entsteht Stress.',
+				points: 10,
+				left: [
+					{ id: 'hz1l1', text: 'Staubbaden' },
+					{ id: 'hz1l2', text: 'Auf Sitzstangen ruhen' },
+					{ id: 'hz1l3', text: 'Scharren und Picken' },
+					{ id: 'hz1l4', text: 'Ein Nest aufsuchen' }
+				],
+				right: [
+					{ id: 'hz1r3', text: 'Sucht nach Futter' },
+					{ id: 'hz1r1', text: 'Pflegt das Gefieder, hält Parasiten fern' },
+					{ id: 'hz1r4', text: 'Bereitet die Eiablage vor' },
+					{ id: 'hz1r2', text: 'Fühlt sich erhöht nachts sicher' }
+				],
+				solution: [
+					{ leftId: 'hz1l1', rightId: 'hz1r1' },
+					{ leftId: 'hz1l2', rightId: 'hz1r2' },
+					{ leftId: 'hz1l3', rightId: 'hz1r3' },
+					{ leftId: 'hz1l4', rightId: 'hz1r4' }
+				]
+			},
+			{
+				id: 'hz2',
+				type: 'match',
+				prompt: 'Wofür braucht die Henne das? Ordne zu.',
+				explanation:
+					'Für jedes Ei braucht die Henne viel Calcium. Grit – kleine Steinchen – zerreibt im Muskelmagen das Futter, denn Hühner haben keine Zähne.',
+				points: 10,
+				left: [
+					{ id: 'hz2l1', text: 'Futterkalk (Calcium)' },
+					{ id: 'hz2l2', text: 'Grit' },
+					{ id: 'hz2l3', text: 'Eiweiß im Futter' },
+					{ id: 'hz2l4', text: 'Frisches Wasser' }
+				],
+				right: [
+					{ id: 'hz2r3', text: 'Muskeln und neue Federn' },
+					{ id: 'hz2r4', text: 'Muss immer zugänglich sein' },
+					{ id: 'hz2r1', text: 'Feste Eischale und Knochen' },
+					{ id: 'hz2r2', text: 'Zerkleinert Futter im Muskelmagen' }
+				],
+				solution: [
+					{ leftId: 'hz2l1', rightId: 'hz2r1' },
+					{ leftId: 'hz2l2', rightId: 'hz2r2' },
+					{ leftId: 'hz2l3', rightId: 'hz2r3' },
+					{ leftId: 'hz2l4', rightId: 'hz2r4' }
+				]
+			},
+			{
+				id: 'hz3',
+				type: 'match',
+				prompt: 'Welches Bedürfnis erfüllt das im Stall? Ein Begriff kann mehrere Verbindungen haben.',
+				explanation:
+					'Der Auslauf erfüllt gleich zwei Bedürfnisse: Futtersuche und Bewegung. Eine gute Haltung bietet für jedes Bedürfnis passende Möglichkeiten.',
+				points: 10,
+				allowMultiple: true,
+				left: [
+					{ id: 'hz3l1', text: 'Erhöhte Sitzstange' },
+					{ id: 'hz3l2', text: 'Staubbad mit Sand' },
+					{ id: 'hz3l3', text: 'Auslauf mit Grünfläche' }
+				],
+				right: [
+					{ id: 'hz3r3', text: 'Futtersuche' },
+					{ id: 'hz3r1', text: 'Ruhen' },
+					{ id: 'hz3r4', text: 'Bewegung' },
+					{ id: 'hz3r2', text: 'Gefiederpflege' }
+				],
+				solution: [
+					{ leftId: 'hz3l1', rightId: 'hz3r1' },
+					{ leftId: 'hz3l2', rightId: 'hz3r2' },
+					{ leftId: 'hz3l3', rightId: 'hz3r3' },
+					{ leftId: 'hz3l3', rightId: 'hz3r4' }
+				]
+			}
+		]
+	},
+	{
+		id: 'q-huhn-zuordnen-en',
+		topicId: 't-huehner-verhalten',
+		lang: 'en',
+		translationOf: 'q-huhn-zuordnen',
+		title: 'What do hens need?',
+		description: 'Three matching tasks on the behaviour, feed and housing of laying hens.',
+		published: true,
+		timerSeconds: null,
+		createdAt: T('2026-11-10'),
+		updatedAt: T('2026-11-10'),
+		questions: [
+			{
+				id: 'hze1',
+				type: 'match',
+				prompt: 'What does the behaviour mean? Match them up.',
+				explanation:
+					'Hens show these behaviours on their own. If they lack the opportunity – a dust bath or a nest, for example – they become stressed.',
+				points: 10,
+				left: [
+					{ id: 'hze1l1', text: 'Dust bathing' },
+					{ id: 'hze1l2', text: 'Resting on perches' },
+					{ id: 'hze1l3', text: 'Scratching and pecking' },
+					{ id: 'hze1l4', text: 'Looking for a nest' }
+				],
+				right: [
+					{ id: 'hze1r3', text: 'Searches for food' },
+					{ id: 'hze1r1', text: 'Cares for its feathers, keeps parasites away' },
+					{ id: 'hze1r4', text: 'Prepares to lay an egg' },
+					{ id: 'hze1r2', text: 'Feels safe up high at night' }
+				],
+				solution: [
+					{ leftId: 'hze1l1', rightId: 'hze1r1' },
+					{ leftId: 'hze1l2', rightId: 'hze1r2' },
+					{ leftId: 'hze1l3', rightId: 'hze1r3' },
+					{ leftId: 'hze1l4', rightId: 'hze1r4' }
+				]
+			},
+			{
+				id: 'hze2',
+				type: 'match',
+				prompt: 'What does the hen need it for? Match them up.',
+				explanation:
+					'A hen needs a lot of calcium for every egg. Grit – small stones – grinds the feed in the gizzard, because chickens have no teeth.',
+				points: 10,
+				left: [
+					{ id: 'hze2l1', text: 'Feed limestone (calcium)' },
+					{ id: 'hze2l2', text: 'Grit' },
+					{ id: 'hze2l3', text: 'Protein in the feed' },
+					{ id: 'hze2l4', text: 'Fresh water' }
+				],
+				right: [
+					{ id: 'hze2r3', text: 'Muscles and new feathers' },
+					{ id: 'hze2r4', text: 'Must always be available' },
+					{ id: 'hze2r1', text: 'Firm eggshells and bones' },
+					{ id: 'hze2r2', text: 'Grinds feed in the gizzard' }
+				],
+				solution: [
+					{ leftId: 'hze2l1', rightId: 'hze2r1' },
+					{ leftId: 'hze2l2', rightId: 'hze2r2' },
+					{ leftId: 'hze2l3', rightId: 'hze2r3' },
+					{ leftId: 'hze2l4', rightId: 'hze2r4' }
+				]
+			},
+			{
+				id: 'hze3',
+				type: 'match',
+				prompt: 'Which need does it meet in the barn? One item can have several connections.',
+				explanation:
+					'The outdoor run meets two needs at once: searching for food and exercise. Good housing offers suitable options for every need.',
+				points: 10,
+				allowMultiple: true,
+				left: [
+					{ id: 'hze3l1', text: 'Raised perch' },
+					{ id: 'hze3l2', text: 'Sand dust bath' },
+					{ id: 'hze3l3', text: 'Outdoor run with grass' }
+				],
+				right: [
+					{ id: 'hze3r3', text: 'Searching for food' },
+					{ id: 'hze3r1', text: 'Resting' },
+					{ id: 'hze3r4', text: 'Exercise' },
+					{ id: 'hze3r2', text: 'Feather care' }
+				],
+				solution: [
+					{ leftId: 'hze3l1', rightId: 'hze3r1' },
+					{ leftId: 'hze3l2', rightId: 'hze3r2' },
+					{ leftId: 'hze3l3', rightId: 'hze3r3' },
+					{ leftId: 'hze3l3', rightId: 'hze3r4' }
 				]
 			}
 		]

@@ -19,27 +19,46 @@
 	import type { Game, GameFile } from '$lib/types';
 
 	let gameId = page.params.id ?? '';
-	const existing = content.getGame(gameId);
-	let draft = $state<Game | null>(existing ? structuredClone($state.snapshot(existing)) : null);
+	// Die Dateien kommen asynchron aus IndexedDB. Der Entwurf entsteht erst danach,
+	// sonst würde ein leeres Paket bearbeitet und beim Speichern das Spiel überschrieben.
+	let draft = $state<Game | null>(null);
+	let missing = $state(false);
 
 	let step = $state<'basics' | 'content'>(
 		page.url.searchParams.get('step') === 'content' ? 'content' : 'basics'
 	);
-	let previewSource = $state(draft ? bundleGame(draft) : '');
+	let previewSource = $state('');
 	let previewKey = $state(0);
 	let iframe = $state<HTMLIFrameElement>();
 	let device = $state<'desktop' | 'tablet' | 'mobile'>('desktop');
-	let selectedPath = $state(entryFile(draft?.files ?? [])?.path ?? draft?.files[0]?.path ?? '');
+	let selectedPath = $state('');
 	let zipInput = $state<HTMLInputElement>();
 	let dragging = $state(false);
 	let uploadError = $state('');
 	let blockedFiles = $state<string[]>([]);
-	let totalBytes = $state(draft?.files.reduce((sum, file) => sum + file.size, 0) ?? 0);
+	let totalBytes = $state(0);
 	let savedAt = $state<string | null>(null);
 	let deleteOpen = $state(false);
 	let leaveOpen = $state(false);
 	let pendingHref = $state<string | null>(null);
-	let initialJson = $state(existing ? JSON.stringify($state.snapshot(existing)) : '');
+	let initialJson = $state('');
+	let saving = $state(false);
+
+	$effect(() => {
+		if (draft || missing || !content.gameFilesReady) return;
+		const existing = content.getGame(gameId);
+		if (!existing) {
+			missing = true;
+			return;
+		}
+		const copy = structuredClone($state.snapshot(existing)) as Game;
+		copy.lang ??= 'de';
+		initialJson = JSON.stringify(copy);
+		selectedPath = entryFile(copy.files)?.path ?? copy.files[0]?.path ?? '';
+		totalBytes = copy.files.reduce((sum, file) => sum + file.size, 0);
+		previewSource = bundleGame(copy);
+		draft = copy;
+	});
 	let allowLeave = false;
 	let bridge = new GameBridge();
 
@@ -128,8 +147,28 @@
 			blockedFiles = result.blocked;
 			totalBytes = result.totalBytes;
 			selectedPath = entryFile(result.files)?.path ?? result.files[0]?.path ?? '';
+			// Einstellungen aus game.json übernehmen (ID bleibt die des Spiels im CMS).
+			if (result.manifest) {
+				const m = result.manifest;
+				draft.title = m.title;
+				draft.description = m.description ?? draft.description;
+				draft.maxPoints = m.maxPoints;
+				draft.triggerWarning = m.triggerWarning ?? draft.triggerWarning;
+				draft.lang = m.lang ?? draft.lang;
+				if (m.translationOf) draft.translationOf = m.translationOf;
+				const topicId = content.resolveTopic(m);
+				if (topicId) draft.topicId = topicId;
+			}
 			refreshPreview();
-			toasts.push(`${result.files.length} Dateien übernommen`);
+			toasts.push(
+				result.manifest
+					? `${result.files.length} Dateien und Einstellungen aus game.json übernommen`
+					: `${result.files.length} Dateien übernommen – ohne game.json, bitte Einstellungen prüfen`,
+				result.manifest ? 'success' : 'info'
+			);
+			if (result.manifestErrors.length) {
+				uploadError = `game.json nicht übernommen: ${result.manifestErrors.join(' ')}`;
+			}
 		} catch (error) {
 			uploadError = error instanceof Error ? error.message : 'ZIP konnte nicht gelesen werden.';
 		}
@@ -173,22 +212,26 @@
 		}
 	}
 
-	function save(): boolean {
-		if (!draft) return false;
+	async function save(): Promise<boolean> {
+		if (!draft || saving) return false;
+		saving = true;
 		const snapshot = structuredClone($state.snapshot(draft));
-		initialJson = JSON.stringify(snapshot);
-		const ok = content.updateGame(snapshot);
+		// Vor updateGame festhalten: das setzt updatedAt neu, der Entwurf aber nicht.
+		const savedJson = JSON.stringify(snapshot);
+		const ok = await content.updateGame(snapshot);
+		saving = false;
 		if (!ok) {
 			toasts.push('Speichern fehlgeschlagen – Browser-Speicher voll', 'error');
 			return false;
 		}
+		initialJson = savedJson;
 		savedAt = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
 		toasts.push('Spiel gespeichert');
 		return true;
 	}
 
-	function saveAndLeave() {
-		if (!save()) return;
+	async function saveAndLeave() {
+		if (!(await save())) return;
 		allowLeave = true;
 		leaveOpen = false;
 		goto(pendingHref ?? '/admin/spiele');
@@ -210,7 +253,9 @@
 
 <svelte:head><title>Spiel-Editor · CMS</title></svelte:head>
 
-{#if !draft}
+{#if !draft && !missing}
+	<p class="p-8 text-ink-500" role="status">Spiel wird geladen …</p>
+{:else if !draft}
 	<main class="mx-auto max-w-3xl p-8">
 		<div class="card text-center">
 			<p class="mb-4">Dieses Spiel gibt es nicht (mehr).</p>
@@ -268,6 +313,15 @@
 		<div class="grid gap-4 lg:grid-cols-[1fr_320px]">
 			<div class="card space-y-3">
 				<h2 class="font-serif text-xl font-semibold text-brand-700">Grundeinstellungen</h2>
+				{#if draft.package}
+					<p class="flex gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-[13px] text-ink-700">
+						<Icon name="inventory_2" size={18} class="shrink-0" />
+						<span>
+							Dieses Spiel kommt aus dem Projektordner <code>games/{draft.package.source}</code>. Maßgeblich sind dort das ZIP
+							und seine <code>game.json</code>: Bei einer neuen Version werden Einstellungen und Dateien hier überschrieben.
+						</span>
+					</p>
+				{/if}
 
 				<div>
 					<label class="lbl" for="game-title">Titel</label>
@@ -277,6 +331,26 @@
 				<div>
 					<label class="lbl" for="game-module">Themenschwerpunkt</label>
 					<TopicSelect id="game-module" bind:value={draft.topicId} />
+				</div>
+
+				<!-- Wie beim Quiz: eigene Fassung je Sprache, verknüpft mit dem Original. -->
+				<div>
+					<label class="lbl" for="game-lang">Sprache</label>
+					<select id="game-lang" class="inp" bind:value={draft.lang}>
+						<option value="de">Deutsch</option>
+						<option value="en">Englisch</option>
+					</select>
+					<p class="mt-1 text-[13px] text-ink-500">Für eine englische Fassung ein eigenes Spiel anlegen und unten das Original wählen.</p>
+				</div>
+
+				<div>
+					<label class="lbl" for="game-orig">Übersetzung von</label>
+					<select id="game-orig" class="inp" bind:value={draft.translationOf}>
+						<option value={undefined}>– keine (Original) –</option>
+						{#each content.games.filter((g) => g.id !== draft?.id && !g.translationOf) as g (g.id)}
+							<option value={g.id}>{g.title}</option>
+						{/each}
+					</select>
 				</div>
 
 				<div>
@@ -320,7 +394,7 @@
 
 		<div class="mt-4 flex flex-wrap items-center gap-2 border-t border-sand-200 pt-3">
 			<a class="b3" href="/admin/spiele">Abbrechen</a>
-			<button class="b2" onclick={save}>Speichern</button>
+			<button class="b2" onclick={save} disabled={saving}>{saving ? 'Speichert …' : 'Speichern'}</button>
 			<button class="b1" onclick={() => (step = 'content')}>Weiter zu Dateien &amp; Vorschau</button>
 			<span class="ml-auto text-[13px] text-ink-500">Schritt 1 von 2</span>
 		</div>
@@ -349,7 +423,7 @@
 						<p class="mt-1 font-medium text-brand-700">
 							{draft.files.length ? 'ZIP ersetzen' : 'ZIP hochladen'}
 						</p>
-						<small>oder hierher ziehen · max. 2,5 MB entpackt</small>
+						<small>oder hierher ziehen · max. 5 MB entpackt</small>
 					</div>
 					<input
 						bind:this={zipInput}
@@ -482,7 +556,7 @@
 						<button class="b2" onclick={() => refreshPreview(true)}>Vorschau aktualisieren</button>
 					</div>
 
-					<div class="overflow-hidden rounded-2xl border border-sand-200 bg-[#F1F8F4] p-2">
+					<div class="overflow-hidden rounded-2xl border border-sand-200 bg-[#F2F4F7] p-2">
 						{#key previewKey}
 							<iframe
 								bind:this={iframe}
@@ -545,7 +619,7 @@
 				<Icon name="arrow_back" size={18} />Einstellungen
 			</button>
 			<a class="b3" href="/admin/spiele">Abbrechen</a>
-			<button class="b1" onclick={save}>Änderungen speichern</button>
+			<button class="b1" onclick={save} disabled={saving}>{saving ? 'Speichert …' : 'Änderungen speichern'}</button>
 			<span class="ml-auto text-[13px] text-ink-500">Schritt 2 von 2</span>
 		</div>
 	{/if}

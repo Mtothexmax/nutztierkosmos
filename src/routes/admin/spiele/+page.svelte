@@ -22,6 +22,8 @@
 
 	let search = $state('');
 	let filter = $state<'alle' | 'quiz' | 'html'>('alle');
+	/** Kategorie (Tierart) – maßgeblich für die Einordnung, nicht die Art. */
+	let categoryFilter = $state('');
 	let newOpen = $state(page.url.searchParams.get('new') === '1');
 	let pendingDelete = $state<Row | null>(null);
 
@@ -60,11 +62,13 @@
 	let filtered = $derived(
 		rows.filter((row) => {
 			const matchesFilter = filter === 'alle' || row.kind === filter;
+			const matchesCategory =
+				!categoryFilter || content.getTopic(row.topicId)?.categoryId === categoryFilter;
 			const matchesSearch =
 				!search ||
 				row.title.toLowerCase().includes(search.toLowerCase()) ||
 				row.typeLabel.toLowerCase().includes(search.toLowerCase());
-			return matchesFilter && matchesSearch;
+			return matchesFilter && matchesCategory && matchesSearch;
 		})
 	);
 
@@ -154,7 +158,15 @@
 			</button>
 		{/each}
 	</div>
-	<input class="inp !w-64" bind:value={search} placeholder="Suchen…" />
+	<label class="sr-only" for="activity-category">Kategorie</label>
+	<select id="activity-category" class="inp !w-52" bind:value={categoryFilter}>
+		<option value="">Alle Kategorien</option>
+		{#each content.categories as category (category.id)}
+			<option value={category.id}>{category.title.de}</option>
+		{/each}
+	</select>
+	<label class="sr-only" for="activity-search">Suchen</label>
+	<input id="activity-search" class="inp !w-64" bind:value={search} placeholder="Suchen…" />
 </div>
 
 <div class="card overflow-x-auto !p-0">
@@ -162,8 +174,8 @@
 		<thead>
 			<tr>
 				<th>Titel</th>
-				<th>Themenschwerpunkt</th>
-				<th>Spielart</th>
+				<th>Kategorie · Thema</th>
+				<th>Art</th>
 				<th>Punkte</th>
 				<th>Status</th>
 				<th>Geändert</th>
@@ -176,7 +188,13 @@
 					<td>
 						<a class="font-medium text-brand-700" href={row.editorHref}>{row.title}</a>
 					</td>
-					<td>{content.getTopic(row.topicId)?.title.de ?? '–'}</td>
+					<td>
+						{#if content.getTopic(row.topicId)}
+							{@const topic = content.getTopic(row.topicId)}
+							<span class="block text-[13px] text-ink-500">{content.getCategory(topic?.categoryId)?.title.de ?? '–'}</span>
+							{topic?.title.de}
+						{:else}–{/if}
+					</td>
 					<td><span class="bdg">{row.typeLabel}</span></td>
 					<td>{row.points}</td>
 					<td>
@@ -220,7 +238,7 @@
 	{#if filtered.length === 0}
 		<div class="p-10 text-center text-ink-500">
 			<Icon name="sports_esports" size={40} class="text-brand-100" />
-			<p>Keine Spiele gefunden.</p>
+			<p>Keine Quizze oder Spiele gefunden.</p>
 		</div>
 	{/if}
 </div>

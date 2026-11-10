@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { onMount } from 'svelte';
+	import { onMount, tick as nextTick } from 'svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { content } from '$lib/stores/content.svelte';
 	import { session } from '$lib/stores/session.svelte';
@@ -67,6 +67,7 @@
 	let elapsed = $state(0);
 
 	let selected = $state<string[]>([]);
+	let feedbackEl = $state<HTMLDivElement>();
 	let tfAnswer = $state<boolean | null>(null);
 	let inputAnswer = $state('');
 	type Box = { x: number; y: number; w: number; h: number };
@@ -111,6 +112,13 @@
 	});
 
 	let question = $derived<Question | undefined>(quiz?.questions[index]);
+	/** Zweispaltig (Desktop): alle Typen außer Zuordnung, die die volle Breite braucht. */
+	let split = $derived(!!question && question.type !== 'match');
+	/** Auswahlfragen markieren die richtige Antwort direkt an der Option. */
+	let optionsShowVerdict = $derived(
+		!!question &&
+			(question.type === 'mc' || question.type === 'tf' || (question.type === 'image' && question.mode === 'choice'))
+	);
 	let total = $derived(quiz?.questions.length ?? 0);
 	let maxPoints = $derived(quiz?.questions.reduce((s, q) => s + q.points, 0) ?? 0);
 	let questionPoints = $derived(question?.points ?? 0);
@@ -189,6 +197,11 @@
 		};
 	}
 
+	/** Linienfarben der Zuordnung: vor der Auswertung schwarz, danach grün/rot. */
+	const LINE_NEUTRAL = '#111111';
+	const LINE_OK = '#1c6b4c';
+	const LINE_ERR = '#b4372c';
+
 	// Reine Ableitung aus Zustand + gemessener Geometrie. Kein innerHTML, kein
 	// imperatives Nachmalen: die Linien können nicht mehr "weggeblitzt" werden.
 	let matchLines = $derived.by((): MatchLine[] => {
@@ -198,9 +211,7 @@
 			const l = matchGeometry.left[leftId];
 			const r = matchGeometry.right[rightId];
 			if (!l || !r) return [];
-			const correct =
-				phase === 'feedback' &&
-				q.solution.some((p) => p.leftId === leftId && p.rightId === rightId);
+			const correct = q.solution.some((p) => p.leftId === leftId && p.rightId === rightId);
 			return [
 				{
 					key: `${leftId}::${rightId}`,
@@ -208,7 +219,8 @@
 					y1: l.y + l.h / 2,
 					x2: r.x,
 					y2: r.y + r.h / 2,
-					stroke: correct ? '#22c55e' : '#ef4444'
+					// Vor der Auswertung neutral, danach richtig/falsch wie im übrigen Quiz.
+					stroke: phase !== 'feedback' ? LINE_NEUTRAL : correct ? LINE_OK : LINE_ERR
 				}
 			];
 		});
@@ -227,7 +239,7 @@
 			y1: l.y + l.h / 2,
 			x2: drag.x,
 			y2: drag.y,
-			stroke: '#ef4444'
+			stroke: LINE_NEUTRAL
 		};
 	});
 
@@ -321,7 +333,7 @@
 		ctx.closePath();
 		ctx.fillStyle = lastCorrect ? 'rgba(34, 197, 94, 0.35)' : 'rgba(239, 68, 68, 0.35)';
 		ctx.fill();
-		ctx.strokeStyle = lastCorrect ? '#22c55e' : '#ef4444';
+		ctx.strokeStyle = lastCorrect ? LINE_OK : LINE_ERR;
 		ctx.lineWidth = 3;
 		ctx.stroke();
 	}
@@ -341,6 +353,9 @@
 		const ro = new ResizeObserver(() => measureMatch());
 		ro.observe(container);
 		window.addEventListener('resize', measureMatch);
+		// Sofort messen (der Effekt läuft nach der DOM-Aktualisierung) und zur Sicherheit
+		// im nächsten Frame noch einmal – rAF allein kann in Hintergrund-Tabs ausbleiben.
+		measureMatch();
 		const frame = requestAnimationFrame(() => measureMatch());
 		return () => {
 			cancelAnimationFrame(frame);
@@ -490,6 +505,28 @@
 		if (lastCorrect) earned += question.points;
 		results = [...results, { id: question.id, correct: lastCorrect, points: lastCorrect ? question.points : 0 }];
 		phase = 'feedback';
+		void revealFeedback();
+	}
+
+	/** Rückmeldung ins Bild holen, falls sie unterhalb des sichtbaren Bereichs liegt (v. a. am Handy). */
+	async function revealFeedback() {
+		await nextTick();
+		const el = feedbackEl;
+		if (!el) return;
+		// Sichtbar = oberhalb der (am Handy unten klebenden) Weiter-Leiste.
+		const visible = () => {
+			const r = el.getBoundingClientRect();
+			const bar = document.querySelector<HTMLElement>('.quiz-actions');
+			const limit = bar && getComputedStyle(bar).position === 'sticky' ? bar.getBoundingClientRect().top : window.innerHeight;
+			return r.top >= 0 && r.bottom <= limit + 1;
+		};
+		if (visible()) return;
+		const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		el.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+		// Absicherung: Läuft sanftes Scrollen nicht (z. B. Hintergrund-Tab), direkt springen.
+		setTimeout(() => {
+			if (!visible()) el.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+		}, 700);
 	}
 
 	function resetAnswer() {
@@ -613,6 +650,131 @@
 	}
 </script>
 
+<!-- Links: Kästchen zeigt immer, was angekreuzt ist – auch nach der Auswertung. -->
+{#snippet tick(checked: boolean)}
+	<span
+		aria-hidden="true"
+		class="grid h-6 w-6 shrink-0 place-items-center rounded-[4px] border-2 transition {checked
+			? 'border-brand-600 bg-brand-600 text-white'
+			: 'border-ink-500/50 bg-white'}"
+	>
+		{#if checked}<Icon name="check" size={18} />{/if}
+	</span>
+{/snippet}
+
+<!-- Rechts, nur bei der Auswertung: Ergebnis in Worten (nicht nur über Farbe). -->
+{#snippet verdict(checked: boolean, correct: boolean)}
+	{#if phase === 'feedback'}
+		{#if checked && correct}
+			<span class="verdict verdict-ok"><Icon name="check_circle" size={18} />{L('Richtig gewählt', 'Correct choice')}</span>
+		{:else if checked}
+			<span class="verdict verdict-err"><Icon name="cancel" size={18} />{L('Falsch gewählt', 'Wrong choice')}</span>
+		{:else if correct}
+			<span class="verdict verdict-miss"><Icon name="check_circle" size={18} />{L('Richtige Antwort', 'Correct answer')}</span>
+		{/if}
+	{/if}
+{/snippet}
+
+<!-- Bild/Video/Audio einer Bildfrage – steht am Desktop links neben den Antworten. -->
+{#snippet media()}
+			<div class="rounded-xl bg-brand-100 text-brand-700">
+				{#if mediaAssets.length === 0}
+					<div class="grid aspect-video place-items-center">
+						<div class="text-center">
+							<Icon name={mediaIcon[mediaKind]} size={54} />
+							<p class="text-[13px]">Medium folgt</p>
+							<p class="mt-1 text-[12px] opacity-80">{mediaKindLabel[mediaKind]}</p>
+						</div>
+					</div>
+				{:else if mediaKind === 'video'}
+					<video
+						class="aspect-video w-full rounded-xl bg-black object-contain"
+						controls
+						preload="metadata"
+						src={mediaAssets[0].src}
+					>
+						<track kind="captions" />
+					</video>
+				{:else if mediaKind === 'audio'}
+					<div class="grid aspect-video place-items-center gap-3 p-6">
+						<Icon name="audio_file" size={54} />
+						<p class="max-w-full truncate text-[13px] font-semibold text-ink-700">
+							{mediaAssets[0].name}
+						</p>
+						<audio
+							class="w-full max-w-md"
+							controls
+							preload="metadata"
+							src={mediaAssets[0].src}
+						></audio>
+					</div>
+				{:else if mediaAssets.length === 1}
+					<div class="grid aspect-video place-items-center p-2">
+						{#if mediaAssets[0].mime.startsWith('image/')}
+							<img
+								src={mediaAssets[0].src}
+								alt={mediaAssets[0].name}
+								class="max-h-full max-w-full rounded-lg object-contain"
+							/>
+						{:else}
+							<div class="text-center">
+								<div class="text-6xl">{mediaAssets[0].src}</div>
+								<p class="text-[13px]">Bild folgt</p>
+							</div>
+						{/if}
+					</div>
+				{:else}
+					<!-- Bildergalerie: großes Bild plus Thumbnail-Navigation. -->
+					<div class="p-2">
+						<div class="relative grid aspect-video place-items-center">
+							{#if galleryCurrent}
+								<img
+									src={galleryCurrent.src}
+									alt={galleryCurrent.name}
+									class="max-h-full max-w-full rounded-lg object-contain"
+								/>
+							{/if}
+							<button
+								class="absolute left-2 rounded-full bg-white/80 px-2 py-1 text-ink-700 disabled:opacity-40"
+								aria-label={L('Vorheriges Bild', 'Previous image')}
+								disabled={galleryIndex === 0}
+								onclick={() => (galleryIndex = Math.max(0, galleryIndex - 1))}
+							>
+								<Icon name="chevron_left" size={18} />
+							</button>
+							<button
+								class="absolute right-2 rounded-full bg-white/80 px-2 py-1 text-ink-700 disabled:opacity-40"
+								aria-label={L('Nächstes Bild', 'Next image')}
+								disabled={galleryIndex >= mediaAssets.length - 1}
+								onclick={() =>
+									(galleryIndex = Math.min(mediaAssets.length - 1, galleryIndex + 1))}
+							>
+								<Icon name="chevron_right" size={18} />
+							</button>
+						</div>
+						<div class="mt-2 flex gap-2 overflow-x-auto">
+							{#each mediaAssets as asset, i (asset.id)}
+								<button
+									class="h-12 w-16 shrink-0 overflow-hidden rounded-lg border-2 {i === galleryIndex
+										? 'border-brand-600'
+										: 'border-transparent'}"
+									aria-label={`Bild ${i + 1} anzeigen`}
+									onclick={() => (galleryIndex = i)}
+								>
+									<img src={asset.src} alt="" class="h-full w-full object-cover" />
+								</button>
+							{/each}
+						</div>
+					</div>
+				{/if}
+			</div>
+			{#if mediaAssets.length > 1}
+				<p class="mt-1 text-[12px] text-ink-500">
+					{L('Bild', 'Image')} {galleryIndex + 1} / {mediaAssets.length}
+				</p>
+			{/if}
+{/snippet}
+
 <svelte:head><title>Quiz · {quiz?.title ?? 'Nutztierkosmos'}</title></svelte:head>
 
 <a class="skip-link" href="#quiz-main">{L('Zur Frage springen', 'Skip to question')}</a>
@@ -632,7 +794,11 @@
 		</div>
 	</main>
 {:else}
-	<div class="mx-auto max-w-[760px] space-y-4 p-4" lang={quiz.lang ?? 'de'} id="quiz-main">
+	<div
+		class="mx-auto space-y-4 p-4 {split ? 'max-w-6xl' : question?.type === 'match' ? 'max-w-[960px]' : 'max-w-[760px]'}"
+		lang={quiz.lang ?? 'de'}
+		id="quiz-main"
+	>
 		<div class="flex flex-wrap items-center gap-3">
 			<button class="b3 !p-2" aria-label={L('Zurück', 'Back')} onclick={() => goto(backHref)}>
 				<Icon name="arrow_back" />
@@ -651,12 +817,23 @@
 			<div class="h-2 rounded-full bg-lime-500" style:width="{((index + 1) / total) * 100}%"></div>
 		</div>
 
-		<div class="card space-y-4" class:match-card={question?.type === 'match'}>
+		<div class="card space-y-4" class:match-card={question?.type === 'match'} class:quiz-split={split}
+			class:quiz-wide-answer={question?.type === 'image' && question.mode === 'click'}
+		>
 			{#if question}
-				<p class="ovl">{L('Frage', 'Question')} {index + 1}</p>
-				<h2 class="font-serif text-[26px] leading-tight font-semibold sm:text-[28px]">
-					{question.prompt}
-				</h2>
+				<!-- Aufgabe: Frage und ggf. Bild. Am Desktop links, damit Antworten und Rückmeldung
+				     rechts daneben ohne Scrollen sichtbar sind. -->
+				<div class="quiz-task space-y-4">
+					<p class="ovl">{L('Frage', 'Question')} {index + 1}</p>
+					<h2 class="font-serif text-[24px] leading-tight font-semibold sm:text-[28px]">
+						{question.prompt}
+					</h2>
+					{#if question.type === 'image' && question.mode !== 'click'}
+						{@render media()}
+					{/if}
+				</div>
+
+				<div class="quiz-answer space-y-4">
 
 				{#if question.type === 'mc'}
 					<div class="space-y-3">
@@ -667,15 +844,17 @@
 								class:ok={phase === 'feedback' && option.correct}
 								class:err={phase === 'feedback' && selected.includes(option.id) && !option.correct}
 								disabled={phase === 'feedback'}
+								aria-pressed={selected.includes(option.id)}
 								onclick={() => toggleOption(option.id)}
 							>
-								<b class="grid h-8 w-8 place-items-center rounded-lg bg-brand-100">
+								{@render tick(selected.includes(option.id))}
+								<b class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-100">
 									{String.fromCharCode(65 + i)}
 								</b>
-								<span class="flex-1">{option.text}</span>
-								{#if phase === 'feedback' && option.correct}
-									<Icon name="check_circle" class="text-brand-600" />
-								{/if}
+								<span class="flex-1">
+									{option.text}
+									{@render verdict(selected.includes(option.id), option.correct)}
+								</span>
 							</button>
 						{/each}
 						{#if question.multiple}
@@ -685,126 +864,37 @@
 				{:else if question.type === 'tf'}
 					<div class="grid gap-3 sm:grid-cols-2">
 						<button
-							class="opt justify-center py-8"
+							class="opt py-8"
 							class:sel={tfAnswer === true}
 							class:ok={phase === 'feedback' && question.correct === true}
 							class:err={phase === 'feedback' && tfAnswer === true && !question.correct}
 							disabled={phase === 'feedback'}
+							aria-pressed={tfAnswer === true}
 							onclick={() => chooseTf(true)}
 						>
-							<Icon name="check_circle" /> {L('Richtig', 'True')}
+							{@render tick(tfAnswer === true)}
+							<span class="flex flex-1 flex-col items-center gap-1">
+								<span class="flex items-center gap-2"><Icon name="check_circle" /> {L('Richtig', 'True')}</span>
+								{@render verdict(tfAnswer === true, question.correct === true)}
+							</span>
 						</button>
 						<button
-							class="opt justify-center py-8"
+							class="opt py-8"
 							class:sel={tfAnswer === false}
 							class:ok={phase === 'feedback' && question.correct === false}
 							class:err={phase === 'feedback' && tfAnswer === false && question.correct}
 							disabled={phase === 'feedback'}
+							aria-pressed={tfAnswer === false}
 							onclick={() => chooseTf(false)}
 						>
-							<Icon name="cancel" /> {L('Falsch', 'False')}
+							{@render tick(tfAnswer === false)}
+							<span class="flex flex-1 flex-col items-center gap-1">
+								<span class="flex items-center gap-2"><Icon name="cancel" /> {L('Falsch', 'False')}</span>
+								{@render verdict(tfAnswer === false, question.correct === false)}
+							</span>
 						</button>
 					</div>
 				{:else if question.type === 'image'}
-					{#if question.mode !== 'click'}
-						<div class="rounded-xl bg-brand-100 text-brand-700">
-							{#if mediaAssets.length === 0}
-								<div class="grid aspect-video place-items-center">
-									<div class="text-center">
-										<Icon name={mediaIcon[mediaKind]} size={54} />
-										<p class="text-[13px]">Medium folgt</p>
-										<p class="mt-1 text-[12px] opacity-80">{mediaKindLabel[mediaKind]}</p>
-									</div>
-								</div>
-							{:else if mediaKind === 'video'}
-								<video
-									class="aspect-video w-full rounded-xl bg-black object-contain"
-									controls
-									preload="metadata"
-									src={mediaAssets[0].src}
-								>
-									<track kind="captions" />
-								</video>
-							{:else if mediaKind === 'audio'}
-								<div class="grid aspect-video place-items-center gap-3 p-6">
-									<Icon name="audio_file" size={54} />
-									<p class="max-w-full truncate text-[13px] font-semibold text-ink-700">
-										{mediaAssets[0].name}
-									</p>
-									<audio
-										class="w-full max-w-md"
-										controls
-										preload="metadata"
-										src={mediaAssets[0].src}
-									></audio>
-								</div>
-							{:else if mediaAssets.length === 1}
-								<div class="grid aspect-video place-items-center p-2">
-									{#if mediaAssets[0].mime.startsWith('image/')}
-										<img
-											src={mediaAssets[0].src}
-											alt={mediaAssets[0].name}
-											class="max-h-full max-w-full rounded-lg object-contain"
-										/>
-									{:else}
-										<div class="text-center">
-											<div class="text-6xl">{mediaAssets[0].src}</div>
-											<p class="text-[13px]">Bild folgt</p>
-										</div>
-									{/if}
-								</div>
-							{:else}
-								<!-- Bildergalerie: großes Bild plus Thumbnail-Navigation. -->
-								<div class="p-2">
-									<div class="relative grid aspect-video place-items-center">
-										{#if galleryCurrent}
-											<img
-												src={galleryCurrent.src}
-												alt={galleryCurrent.name}
-												class="max-h-full max-w-full rounded-lg object-contain"
-											/>
-										{/if}
-										<button
-											class="absolute left-2 rounded-full bg-white/80 px-2 py-1 text-ink-700 disabled:opacity-40"
-											aria-label={L('Vorheriges Bild', 'Previous image')}
-											disabled={galleryIndex === 0}
-											onclick={() => (galleryIndex = Math.max(0, galleryIndex - 1))}
-										>
-											<Icon name="chevron_left" size={18} />
-										</button>
-										<button
-											class="absolute right-2 rounded-full bg-white/80 px-2 py-1 text-ink-700 disabled:opacity-40"
-											aria-label={L('Nächstes Bild', 'Next image')}
-											disabled={galleryIndex >= mediaAssets.length - 1}
-											onclick={() =>
-												(galleryIndex = Math.min(mediaAssets.length - 1, galleryIndex + 1))}
-										>
-											<Icon name="chevron_right" size={18} />
-										</button>
-									</div>
-									<div class="mt-2 flex gap-2 overflow-x-auto">
-										{#each mediaAssets as asset, i (asset.id)}
-											<button
-												class="h-12 w-16 shrink-0 overflow-hidden rounded-lg border-2 {i === galleryIndex
-													? 'border-brand-600'
-													: 'border-transparent'}"
-												aria-label={`Bild ${i + 1} anzeigen`}
-												onclick={() => (galleryIndex = i)}
-											>
-												<img src={asset.src} alt="" class="h-full w-full object-cover" />
-											</button>
-										{/each}
-									</div>
-								</div>
-							{/if}
-						</div>
-						{#if mediaAssets.length > 1}
-							<p class="mt-1 text-[12px] text-ink-500">
-								{L('Bild', 'Image')} {galleryIndex + 1} / {mediaAssets.length}
-							</p>
-						{/if}
-					{/if}
-
 					{#if question.mode === 'input'}
 						<div class="flex flex-wrap gap-2">
 							<input
@@ -863,17 +953,22 @@
 							{/if}
 						{/if}
 					{:else}
-						<div class="flex flex-wrap gap-2">
+						<div class="space-y-3">
 							{#each question.options ?? [] as option (option.id)}
 								<button
-									class="opt !w-auto"
+									class="opt"
 									class:sel={selected.includes(option.id)}
 									class:ok={phase === 'feedback' && option.correct}
 									class:err={phase === 'feedback' && selected.includes(option.id) && !option.correct}
 									disabled={phase === 'feedback'}
+									aria-pressed={selected.includes(option.id)}
 									onclick={() => toggleOption(option.id)}
 								>
-									{option.text}
+									{@render tick(selected.includes(option.id))}
+									<span>
+										{option.text}
+										{@render verdict(selected.includes(option.id), option.correct)}
+									</span>
 								</button>
 							{/each}
 						</div>
@@ -982,20 +1077,28 @@
 							</div>
 						</div>
 
-						{#if question.allowMultiple}
+						<!-- Bedienhinweise nur während der Aufgabe; nach der Auswertung schafft das Platz. -->
+						{#if phase === 'question'}
+							{#if question.allowMultiple}
+								<p class="text-[13px] text-ink-500 text-center mt-2">
+									{L(
+										'Mehrere Verbindungen sind erlaubt. Erneut auf ein Ziel klicken entfernt die Verbindung.',
+										'Several connections are allowed. Click a target again to remove the connection.'
+									)}
+								</p>
+							{/if}
 							<p class="text-[13px] text-ink-500 text-center mt-2">
-								Mehrere Verbindungen sind erlaubt. Erneut auf eine Kategorie klicken entfernt die Verbindung.
+								{L('Tippe oder klicke erst links, dann rechts – oder ziehe die Verbindung mit Maus oder Finger von links nach rechts.', 'Tap or click left, then right – or drag the connection from left to right with mouse or finger.')}
 							</p>
 						{/if}
-						<p class="text-[13px] text-ink-500 text-center mt-2">
-							{L('Tippe oder klicke erst links, dann rechts – oder ziehe die Verbindung mit Maus oder Finger von links nach rechts.', 'Tap or click left, then right – or drag the connection from left to right with mouse or finger.')}
-						</p>
 					</div>
 				{/if}
 
 				{#if phase === 'feedback'}
 					<div
-						class="rounded-xl border-2 p-4 {lastCorrect
+						bind:this={feedbackEl}
+						role="status"
+						class="quiz-feedback scroll-mb-24 rounded-xl border-2 p-4 {lastCorrect
 							? 'border-ok-fg bg-ok-bg'
 							: 'border-err-fg bg-err-bg'}"
 					>
@@ -1009,7 +1112,8 @@
 						{#if question.explanation}
 							<p class="mt-1 text-ink-700">{question.explanation}</p>
 						{/if}
-						{#if !lastCorrect}
+						<!-- Bei Auswahlfragen zeigen die Optionen selbst „Richtige Antwort“ – dann keine Wiederholung. -->
+						{#if !lastCorrect && !optionsShowVerdict}
 							<p class="mt-2 text-[13px] text-ink-700">
 								{L('Richtig wäre', 'Correct answer')}: <b>{correctAnswerText()}</b>
 							</p>
@@ -1017,7 +1121,8 @@
 					</div>
 				{/if}
 
-				<div class="flex items-center justify-between">
+				<!-- Am Handy bleibt die Leiste unten am Bildschirm stehen. -->
+				<div class="quiz-actions flex items-center justify-between">
 					<span class="text-ink-500">{L('Punkte', 'Points')}: {earned}</span>
 					{#if phase === 'question'}
 						<button class="b1" disabled={!canCheck} onclick={check}>{L('Prüfen', 'Check')}</button>
@@ -1027,12 +1132,87 @@
 						</button>
 					{/if}
 				</div>
+				</div>
 			{/if}
 		</div>
 	</div>
 {/if}
 
 <style>
+	/* Zweispaltig ab 1024 px: links Aufgabe, rechts Antworten, Rückmeldung und Weiter. */
+	@media (min-width: 1024px) {
+		.quiz-split {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			column-gap: 2.5rem;
+			align-items: start;
+		}
+		.quiz-split > :global(*) {
+			margin: 0 !important;
+		}
+		/* Klick ins Bild: Das Bild ist die Antwortfläche und braucht mehr Breite. */
+		.quiz-split.quiz-wide-answer {
+			grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+		}
+		/* Etwas kompakter, damit auch lange Erklärungen auf 768 px Höhe passen. */
+		.quiz-split .opt {
+			padding-block: 0.7rem;
+		}
+		.quiz-split .quiz-feedback {
+			padding: 0.75rem 1rem;
+			font-size: 15px;
+			line-height: 1.5;
+		}
+		.quiz-split .quiz-task {
+			position: sticky;
+			top: 1rem;
+		}
+	}
+	/* Handy/Tablet: Punkte und Weiter bleiben am unteren Bildschirmrand erreichbar. */
+	@media (max-width: 1023px) {
+		.quiz-actions {
+			position: sticky;
+			bottom: 0;
+			z-index: 5;
+			margin: 0 -1.5rem -1.5rem;
+			padding: 0.75rem 1.5rem;
+			background: #fff;
+			border-top: 1px solid var(--color-sand-200);
+			border-radius: 0 0 4px 4px;
+		}
+	}
+	/* Steht unter dem Antworttext – so passt es auch auf schmale Bildschirme. */
+	.verdict {
+		display: flex;
+		width: fit-content;
+		margin-top: 0.4rem;
+		align-items: center;
+		gap: 0.25rem;
+		border-radius: 999px;
+		padding: 0.15rem 0.6rem 0.15rem 0.4rem;
+		font-size: 13px;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+	.verdict-ok {
+		background: var(--color-ok-fg);
+		color: #fff;
+	}
+	.verdict-err {
+		background: var(--color-err-fg);
+		color: #fff;
+	}
+	/* Übersehene richtige Antwort: nicht ausgefüllt, damit sie sich vom Angekreuzten abhebt. */
+	.verdict-miss {
+		border: 2px solid var(--color-ok-fg);
+		color: var(--color-ok-fg);
+		background: #fff;
+	}
+	/* Bei der Auswertung bleiben die Optionen gut lesbar (nicht ausgegraut). */
+	.opt:disabled {
+		opacity: 1;
+		cursor: default;
+	}
 	/* Nur die linken Buttons sind Zieh-Griffe. touch-action:none verhindert, dass
 	   der Browser die Berührung als Scroll-Geste übernimmt und pointercancel schickt. */
 	.match-opt {
@@ -1043,12 +1223,25 @@
 		user-select: none;
 	}
 
+	/* Ab Tablet: deutlicher Abstand zwischen den Spalten, damit die Verbindungslinien
+	   als Linien erkennbar sind (sonst nur kurze Kreuzchen). */
+	@media (min-width: 768px) {
+		.match-grid {
+			column-gap: clamp(4rem, 10vw, 8rem);
+		}
+	}
+
 	/* Auf schmalen Displays: genug Platz zwischen den Spalten für sichtbare
 	   Verbindungslinien, ohne dass lange Begriffe die Buttons aufdehnen. */
 	@media (max-width: 639px) {
 		.match-card {
 			padding-left: 1rem;
 			padding-right: 1rem;
+		}
+		/* Die klebende Weiter-Leiste an den schmaleren Innenabstand anpassen. */
+		.match-card .quiz-actions {
+			margin-inline: -1rem;
+			padding-inline: 1rem;
 		}
 		.match-grid {
 			column-gap: 1.75rem;

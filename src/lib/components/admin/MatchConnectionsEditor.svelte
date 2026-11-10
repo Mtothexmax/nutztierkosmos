@@ -41,8 +41,6 @@
 
 	let solution = $derived<Connection[]>(question.solution ?? []);
 	let allowMultiple = $derived(!!question.allowMultiple);
-	let leftCount = $derived(question.left?.length ?? 0);
-	let rightCount = $derived(question.right?.length ?? 0);
 	let pairCount = $derived(solution.length);
 	let layoutKey = $derived(
 		JSON.stringify({
@@ -82,13 +80,6 @@
 		if (selectedLeft === id) selectedLeft = null;
 	}
 
-	function pairInOrder() {
-		if (leftCount === 0 || rightCount === 0) return;
-		question.solution = question.left.flatMap((item, i) =>
-			question.right[i] ? [{ leftId: item.id, rightId: question.right[i].id }] : []
-		);
-	}
-
 	function connect(leftId: string, rightId: string) {
 		if (!question.left?.some((l) => l.id === leftId)) return;
 		if (!question.right?.some((r) => r.id === rightId)) return;
@@ -110,11 +101,6 @@
 		question.solution = (question.solution ?? []).filter(
 			(p) => !(p.leftId === leftId && p.rightId === rightId)
 		);
-	}
-
-	function clearPairs() {
-		question.solution = [];
-		selectedLeft = null;
 	}
 
 	function setAllowMultiple(value: boolean) {
@@ -333,22 +319,6 @@
 </script>
 
 <div data-match-editor class="space-y-3">
-	<div class="flex flex-wrap items-center justify-between gap-2">
-		<p class="lbl mb-0">Lösungen verbinden</p>
-		<div class="flex flex-wrap items-center gap-2">
-			<button
-				class="b2 px-3 py-1.5 text-[13px]"
-				onclick={pairInOrder}
-				disabled={leftCount === 0 || rightCount === 0}
-			>
-				<Icon name="link" size={16} />Wie oben nebeneinander
-			</button>
-			<button class="b3 px-3 py-1.5 text-[13px]" onclick={clearPairs} disabled={pairCount === 0}>
-				Alle löschen
-			</button>
-		</div>
-	</div>
-
 	<label class="flex items-center gap-2 text-[13px] font-semibold text-ink-700">
 		<input
 			id="q-match-multiple"
@@ -373,14 +343,6 @@
 		erst links, dann rechts. Ein Klick auf eine Verbindung unten entfernt sie. Über den Stift
 		änderst du den Text eines Eintrags.
 	</p>
-	<p class="text-[12px] text-ink-500">
-		Der Button verbindet den 1. Begriff mit der 1. Kategorie, den 2. mit der 2. usw. – genau in
-		der Reihenfolge, in der beide Listen oben nebeneinander stehen. Bestehende Zuordnungen werden
-		ersetzt.
-	</p>
-	{#if leftCount !== rightCount}
-		<p class="text-[12px] text-amber-500">Unterschiedliche Anzahl: es werden nur {Math.min(leftCount, rightCount)} Paare gesetzt.</p>
-	{/if}
 
 	<div bind:this={board} data-match-board class="match-editor-board">
 		<svg class="match-editor-svg" aria-hidden="true">
@@ -390,7 +352,7 @@
 					y1={line.y1}
 					x2={line.x2}
 					y2={line.y2}
-					stroke="#b4372c"
+					stroke="#111111"
 					stroke-width="3"
 					stroke-linecap="round"
 				></line>
@@ -401,7 +363,7 @@
 					y1={preview.y1}
 					x2={preview.x2}
 					y2={preview.y2}
-					stroke="#b4372c"
+					stroke="#111111"
 					stroke-width="3"
 					stroke-linecap="round"
 					stroke-dasharray="7 5"

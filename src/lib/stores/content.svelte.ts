@@ -1,6 +1,7 @@
 import { browser } from '$app/env';
 import { i18n } from '$lib/i18n.svelte';
 import { read, storageKeys, write, type StorageKey } from '$lib/storage/db';
+import { loadAllGameFiles, replaceAllGameFiles } from '$lib/storage/files-db';
 import {
 	SEED_VERSION,
 	seedAudit,
@@ -20,8 +21,11 @@ import {
 	seedTopics,
 	seedUsers
 } from '$lib/storage/seed';
-import { starterIndexHtml } from '$lib/games/files';
+import { readZipPackage, starterIndexHtml, type GameManifest } from '$lib/games/files';
+import packagedGames from '$lib/games/packaged.json';
 import type {
+	Activity,
+	ActivityBase,
 	Audience,
 	AuditEntry,
 	Block,
@@ -126,6 +130,11 @@ class ContentStore {
 	/** Ergebnisse im Speicher; dauerhaft nur mit aktivem Forscherpass (siehe pass-Store). */
 	scores = $state<Score[]>([]);
 	loaded = $state(false);
+	/** Spieldateien liegen in IndexedDB und kommen kurz nach dem Start dazu. */
+	gameFilesReady = $state(false);
+	/** false, wenn IndexedDB fehlt – dann bleiben die Dateien wie früher im localStorage. */
+	private filesInIdb = true;
+	private filesLoading: Promise<unknown> = Promise.resolve();
 
 	init(): void {
 		if (!browser || this.loaded) return;
@@ -143,6 +152,7 @@ class ContentStore {
 			this.infographics = read(storageKeys.infographics, []);
 			this.quizzes = read(storageKeys.quizzes, []);
 			this.games = read(storageKeys.games, []);
+			this.filesLoading = this.hydrateGameFiles();
 			this.users = read(storageKeys.users, []);
 			this.audit = read(storageKeys.audit, []);
 			this.stats = read(storageKeys.stats, structuredClone(seedStats));
@@ -164,7 +174,10 @@ class ContentStore {
 		this.media = structuredClone(seedMedia);
 		this.infographics = structuredClone(seedInfographics);
 		this.quizzes = structuredClone(seedQuizzes);
-		this.games = structuredClone(seedGames);
+		this.games = [...structuredClone(seedGames), ...packagedGames.map((p) => this.gameFromPackage(p))];
+		// Spiele aus games/ bringen ihre Dateien als ZIP mit – vor dem Speichern laden.
+		this.gameFilesReady = false;
+		this.filesLoading = this.loadPackageFiles().finally(() => (this.gameFilesReady = true));
 		this.users = structuredClone(seedUsers);
 		this.audit = structuredClone(seedAudit);
 		this.stats = structuredClone(seedStats);
@@ -182,6 +195,105 @@ class ContentStore {
 		return write(key, $state.snapshot(value));
 	}
 
+	/** Lädt die Dateipakete aus IndexedDB und zieht alte localStorage-Daten dorthin um. */
+	private async hydrateGameFiles(): Promise<void> {
+		try {
+			const stored = await loadAllGameFiles();
+			let migrate = false;
+			for (const game of this.games) {
+				const files = stored.get(game.id);
+				if (files) game.files = files;
+				else if (game.files?.length) migrate = true;
+			}
+			const packagesChanged = this.syncPackages();
+			const loaded = await this.loadPackageFiles();
+			this.gameFilesReady = true;
+			if (migrate || packagesChanged || loaded) await this.persistGames();
+		} catch {
+			// Ohne IndexedDB: Dateien stehen (wie bisher) direkt im localStorage.
+			this.filesInIdb = false;
+			this.syncPackages();
+			await this.loadPackageFiles();
+			this.gameFilesReady = true;
+		}
+	}
+
+	/** Spiel-Datensatz aus einem Paket in games/ (Einstellungen aus game.json). */
+	private gameFromPackage(pkg: (typeof packagedGames)[number]): Game {
+		const m = pkg.manifest as GameManifest;
+		return {
+			id: m.id,
+			topicId: this.resolveTopic(m),
+			lang: m.lang ?? 'de',
+			translationOf: m.translationOf,
+			title: m.title,
+			description: m.description ?? '',
+			kind: 'html',
+			files: [],
+			maxPoints: m.maxPoints,
+			apiVersion: 1,
+			triggerWarning: m.triggerWarning ?? true,
+			published: m.published ?? true,
+			package: { url: pkg.url, version: pkg.version, source: pkg.source },
+			createdAt: nowIso(),
+			updatedAt: nowIso()
+		};
+	}
+
+	/** "kategorie/thema" (oder topicId) → interne Themen-ID. */
+	resolveTopic(m: GameManifest): string {
+		if (m.topicId && this.getTopic(m.topicId)) return m.topicId;
+		if (m.topic) {
+			const [categorySlug, topicSlug] = m.topic.split('/');
+			const category = this.categories.find((c) => c.slug === categorySlug);
+			const topic = this.topics.find((t) => t.categoryId === category?.id && t.slug === topicSlug);
+			if (topic) return topic.id;
+		}
+		console.warn(`Spielpaket „${m.id}“: Thema „${m.topic ?? m.topicId}“ nicht gefunden.`);
+		return m.topicId ?? '';
+	}
+
+	/**
+	 * Pakete aus games/ mit dem Bestand abgleichen: neue anlegen, bei geänderter
+	 * Version Einstellungen übernehmen und Dateien neu laden.
+	 * @returns true, wenn sich etwas geändert hat
+	 */
+	private syncPackages(): boolean {
+		let changed = false;
+		for (const pkg of packagedGames) {
+			const index = this.games.findIndex((g) => g.id === pkg.id);
+			if (index < 0) {
+				this.games.push(this.gameFromPackage(pkg));
+				changed = true;
+			} else if (this.games[index].package?.version !== pkg.version) {
+				const fresh = this.gameFromPackage(pkg);
+				this.games[index] = { ...fresh, createdAt: this.games[index].createdAt };
+				changed = true;
+			}
+		}
+		return changed;
+	}
+
+	/**
+	 * Lädt die Dateien aller Pakete, die noch keine haben, aus ihrem ZIP.
+	 * @returns true, wenn Dateien geladen wurden
+	 */
+	private async loadPackageFiles(): Promise<boolean> {
+		let loaded = false;
+		for (const game of this.games) {
+			if (!game.package || game.files?.length) continue;
+			try {
+				const response = await fetch(game.package.url);
+				if (!response.ok) throw new Error(`HTTP ${response.status}`);
+				game.files = readZipPackage(await response.arrayBuffer()).files;
+				loaded = true;
+			} catch (error) {
+				console.warn(`Spielpaket „${game.id}“ konnte nicht geladen werden:`, error);
+			}
+		}
+		return loaded;
+	}
+
 	persistAll(): void {
 		this.persist(storageKeys.categories, this.categories);
 		this.persist(storageKeys.topics, this.topics);
@@ -192,7 +304,7 @@ class ContentStore {
 		this.persist(storageKeys.media, this.media);
 		this.persist(storageKeys.infographics, this.infographics);
 		this.persist(storageKeys.quizzes, this.quizzes);
-		this.persist(storageKeys.games, this.games);
+		void this.persistGames();
 		this.persist(storageKeys.users, this.users);
 		this.persist(storageKeys.audit, this.audit);
 		this.persist(storageKeys.stats, this.stats);
@@ -223,8 +335,21 @@ class ContentStore {
 	persistQuizzes(): boolean {
 		return this.persist(storageKeys.quizzes, this.quizzes);
 	}
-	persistGames(): boolean {
-		return this.persist(storageKeys.games, this.games);
+	/** Metadaten in den localStorage, Dateipakete in IndexedDB. */
+	async persistGames(): Promise<boolean> {
+		// Nie speichern, bevor die Dateien geladen sind – sonst würden sie überschrieben.
+		if (!this.gameFilesReady) await this.filesLoading;
+		const games = $state.snapshot(this.games) as Game[];
+		if (!this.filesInIdb) return write(storageKeys.games, games);
+		try {
+			await replaceAllGameFiles(games.map((game) => ({ id: game.id, files: game.files ?? [] })));
+		} catch {
+			return false;
+		}
+		return write(
+			storageKeys.games,
+			games.map((game) => ({ ...game, files: [] }))
+		);
 	}
 	persistUsers(): void {
 		this.persist(storageKeys.users, this.users);
@@ -306,13 +431,66 @@ class ContentStore {
 		);
 	}
 
+	/** Spiel in der passenden Sprache, sonst das Original – wie bei Quizzen. */
+	gameForLocale(gameId: string, locale: Locale): Game | undefined {
+		return this.forLocale(this.games, this.getGame(gameId), locale);
+	}
+
+	private forLocale<T extends ActivityBase>(list: T[], base: T | undefined, locale: Locale): T | undefined {
+		if (!base) return undefined;
+		if ((base.lang ?? 'de') === locale) return base;
+		const originalId = base.translationOf ?? base.id;
+		return (
+			list.find(
+				(x) => x.published && (x.lang ?? 'de') === locale && (x.translationOf === originalId || x.id === originalId)
+			) ?? base
+		);
+	}
+
+	/**
+	 * Quizze und Spiele gemeinsam – gleichrangig, geordnet nach Kategorie und Thema.
+	 * Nur veröffentlichte Originale aktiver Themen, jeweils in der passenden Sprache.
+	 * Ist die Gamification ausgeschaltet, bleibt die Liste leer.
+	 */
+	activities(filter: { categoryId?: string; topicId?: string } = {}, locale: Locale = i18n.active): Activity[] {
+		if (!this.settings.gamification) return [];
+		const topicOk = (topicId: string) => {
+			const topic = this.getTopic(topicId);
+			if (!topic?.active) return false;
+			if (filter.topicId && topic.id !== filter.topicId) return false;
+			if (filter.categoryId && topic.categoryId !== filter.categoryId) return false;
+			return true;
+		};
+		const quizzes: Activity[] = this.quizzes
+			.filter((q) => q.published && !q.translationOf && topicOk(q.topicId))
+			.map((q) => this.quizForLocale(q.id, locale) ?? q)
+			.map((item) => ({ kind: 'quiz', item, href: `/quiz/${item.id}` }));
+		const games: Activity[] = this.games
+			.filter((g) => g.published && !g.translationOf && topicOk(g.topicId))
+			.map((g) => this.gameForLocale(g.id, locale) ?? g)
+			.map((item) => ({ kind: 'game', item, href: `/spielen/${item.id}` }));
+		const rank = (a: Activity) => {
+			const topic = this.getTopic(a.item.topicId);
+			const category = this.getCategory(topic?.categoryId);
+			return [category?.order ?? 999, topic?.order ?? 999] as const;
+		};
+		return [...quizzes, ...games].sort((a, b) => {
+			const [ca, ta] = rank(a);
+			const [cb, tb] = rank(b);
+			return ca - cb || ta - tb || a.item.title.localeCompare(b.item.title, locale);
+		});
+	}
+
 	/** Ausstellung, in der ein Quiz oder Spiel eingebunden ist. */
 	exhibitionWith(ref: { quizId?: string; gameId?: string }): Exhibition | undefined {
+		// Eingebunden ist immer das Original; Übersetzungen finden so dieselbe Ausstellung.
 		const quiz = ref.quizId ? this.getQuiz(ref.quizId) : undefined;
+		const game = ref.gameId ? this.getGame(ref.gameId) : undefined;
 		const quizIds = new Set([ref.quizId, quiz?.translationOf].filter(Boolean));
+		const gameIds = new Set([ref.gameId, game?.translationOf].filter(Boolean));
 		return this.exhibitions.find((e) =>
 			e.blocks.some(
-				(b) => (b.type === 'quiz' && quizIds.has(b.quizId)) || (b.type === 'game' && b.gameId === ref.gameId)
+				(b) => (b.type === 'quiz' && quizIds.has(b.quizId)) || (b.type === 'game' && gameIds.has(b.gameId))
 			)
 		);
 	}
@@ -735,7 +913,7 @@ class ContentStore {
 		this.persistQuizzes();
 	}
 
-	updateGame(game: Game): boolean {
+	updateGame(game: Game): Promise<boolean> {
 		game.updatedAt = nowIso();
 		const idx = this.games.findIndex((g) => g.id === game.id);
 		if (idx >= 0) this.games[idx] = game;
@@ -747,6 +925,8 @@ class ContentStore {
 		const game: Game = {
 			id: uid(),
 			topicId: input.topicId ?? this.topics[0]?.id ?? '',
+			lang: input.lang ?? 'de',
+			translationOf: input.translationOf,
 			title: input.title ?? 'Neues HTML-Spiel',
 			description: input.description ?? '',
 			kind: 'html',
@@ -759,13 +939,13 @@ class ContentStore {
 			updatedAt: nowIso()
 		};
 		this.games.push(game);
-		this.persistGames();
+		void this.persistGames();
 		return game;
 	}
 
 	deleteGame(id: string): void {
 		this.games = this.games.filter((g) => g.id !== id);
-		this.persistGames();
+		void this.persistGames();
 	}
 
 	/** Wird vom Quiz-Player und Spiel-Host aufgerufen. */

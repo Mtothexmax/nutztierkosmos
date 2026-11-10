@@ -93,8 +93,12 @@
 		<h2 class="font-serif text-xl font-semibold text-brand-700">ZIP-Paket</h2>
 		<ul class="list-disc space-y-1 pl-5 text-[14px] text-ink-700">
 			<li>Startseite muss <code>index.html</code> heißen (auch in Unterordnern möglich).</li>
+			<li>
+				Pflicht: <code>game.json</code> im Stammordner mit den Grundeinstellungen (<code>id</code>,
+				<code>title</code>, <code>topic</code> wie <code>rind/hitzestress</code>, <code>maxPoints</code> …). Wird beim Upload übernommen.
+			</li>
 			<li>Erlaubt: <code>.html</code>, <code>.css</code>, <code>.js</code>, <code>.mjs</code>, Bilder, Audio und Video.</li>
-			<li>Maximal 2,5 MB entpackt, 1,5 MB pro Datei und 150 Dateien.</li>
+			<li>Maximal 5 MB entpackt und 150 Dateien.</li>
 			<li>
 				Andere Dateien (z. B. <code>.exe</code>, <code>.swf</code>, <code>.php</code>) werden aus
 				Sicherheitsgründen nicht übernommen.

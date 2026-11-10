@@ -48,7 +48,8 @@
 				? `/ausstellung/${homeExhibition.slug}`
 				: '/mitmachen'
 	);
-	let srcdoc = $derived(game ? bundleGame(game) : '');
+	// Spieldateien kommen aus IndexedDB – erst danach starten.
+	let srcdoc = $derived(game && content.gameFilesReady ? bundleGame(game) : '');
 
 	let iframe = $state<HTMLIFrameElement>();
 	let stage = $state<HTMLDivElement>();
@@ -203,21 +204,36 @@
 
 		<div
 			bind:this={stage}
-			class="stage overflow-hidden rounded-2xl border-4 border-dashed border-brand-100 bg-[#F1F8F4] {fullscreen ||
+			class="stage overflow-hidden rounded-2xl border-4 border-dashed border-brand-100 bg-[#F2F4F7] {fullscreen ||
 			overlayFullscreen
-				? 'fixed inset-0 z-40 w-full h-full !aspect-auto !rounded-none !border-0 bg-[#F1F8F4]'
+				? 'fixed inset-0 z-40 flex w-full h-full flex-col !aspect-auto !rounded-none !border-0 bg-[#F2F4F7]'
 				: 'relative aspect-video'}"
 		>
+			{#if fullscreen || overlayFullscreen}
+				<!-- Eigene Leiste über dem Spiel, damit nichts die Spielfläche verdeckt.
+				     Esc reicht nicht: Hat das Spiel den Fokus, kommt die Taste hier nicht an. -->
+				<div class="flex shrink-0 items-center justify-between gap-3 bg-brand-900 px-3 py-1.5 text-white">
+					<span class="truncate text-[13px] font-semibold">{game.title}</span>
+					<button
+						class="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1 text-[13px] font-semibold hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-white"
+						onclick={toggleFullscreen}
+					>
+						<Icon name="fullscreen_exit" size={18} />Vollbild beenden
+					</button>
+				</div>
+			{/if}
+			{#if content.gameFilesReady}
 			{#key reloadKey}
 				<iframe
 					bind:this={iframe}
 					title={game.title}
 					srcdoc={srcdoc}
 					sandbox="allow-scripts allow-forms allow-popups"
-					class="h-full w-full border-0 bg-white"
+					class="w-full min-h-0 flex-1 border-0 bg-white {fullscreen || overlayFullscreen ? '' : 'h-full'}"
 					onload={onLoad}
 				></iframe>
 			{/key}
+			{/if}
 			<code
 				class="pointer-events-none absolute bottom-2 left-3 font-mono text-[11px] text-ink-500 {fullscreen ||
 				overlayFullscreen
@@ -226,15 +242,6 @@
 			>
 				Spiel erhält: anonymen Gast · api v1
 			</code>
-
-			{#if fullscreen || overlayFullscreen}
-				<button
-					class="absolute top-3 right-3 z-10 inline-flex items-center gap-2 rounded-xl bg-black/55 px-3 py-2 text-[13px] font-semibold text-white backdrop-blur transition hover:bg-black/75"
-					onclick={toggleFullscreen}
-				>
-					<Icon name="fullscreen_exit" />Vollbild beenden
-				</button>
-			{/if}
 		</div>
 	{/if}
 

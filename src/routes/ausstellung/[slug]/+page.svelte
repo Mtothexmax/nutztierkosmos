@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ActivityCard from '$lib/components/site/ActivityCard.svelte';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import Icon from '$lib/components/Icon.svelte';
@@ -167,35 +168,12 @@
 						{:else if block.type === 'quiz' && content.settings.gamification}
 							{@const quiz = content.quizForLocale(block.quizId, i18n.active)}
 							{#if quiz?.published}
-								{@const best = pass.best(quiz.id)}
-								<section class="relative overflow-hidden rounded-3xl bg-brand-900 p-6 text-white sm:p-8">
-									<div class="absolute -top-16 -right-10 h-48 w-48 rounded-full bg-brand-600/40" aria-hidden="true"></div>
-									<div class="relative flex flex-wrap items-center gap-6">
-										<div class="min-w-0 flex-1 space-y-2">
-											<p class="text-[12px] font-semibold tracking-[0.12em] text-lime-500 uppercase">{t('exh.testKnowledge')}</p>
-											<h2 class="font-serif text-[24px] font-semibold" lang={quiz.lang ?? 'de'}>{quiz.title}</h2>
-											<p class="text-white/85" lang={quiz.lang ?? 'de'}>{quiz.description}</p>
-											<p class="text-[13px] text-white/70">
-												{t('exh.questions', { n: quiz.questions.length })} · {t('exh.optional')}
-												{#if best !== undefined} · {t('part.best', { p: Math.round(best * 100) })}{/if}
-											</p>
-										</div>
-										<a class="btn bg-white text-brand-900 hover:bg-brand-50" href="/quiz/{quiz.id}"><Icon name="play_arrow" />{t('exh.startQuiz')}</a>
-									</div>
-								</section>
+								<ActivityCard activity={{ kind: 'quiz', item: quiz, href: `/quiz/${quiz.id}` }} variant="feature" headingLevel={2} />
 							{/if}
 						{:else if block.type === 'game' && content.settings.gamification}
-							{@const game = content.getGame(block.gameId)}
+							{@const game = content.gameForLocale(block.gameId, i18n.active)}
 							{#if game?.published}
-								<section class="flex flex-wrap items-center gap-5 rounded-3xl border border-sand-200 bg-white p-6">
-									<span class="grid h-12 w-12 place-items-center rounded-xl bg-amber-500/15 text-[#8a5a17]"><Icon name="sports_esports" /></span>
-									<div class="min-w-0 flex-1">
-										<p class="eyebrow">{t('exh.game')}</p>
-										<h2 class="h3" lang="de">{game.title}</h2>
-										<p class="text-[15px] text-ink-700" lang="de">{game.description}</p>
-									</div>
-									<a class="b2" href="/spielen/{game.id}"><Icon name="play_arrow" />{t('exh.startGame')}</a>
-								</section>
+								<ActivityCard activity={{ kind: 'game', item: game, href: `/spielen/${game.id}` }} variant="feature" headingLevel={2} />
 							{/if}
 						{/if}
 					</div>

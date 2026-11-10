@@ -13,6 +13,7 @@ type PassData = {
 	enabled: boolean;
 	since: string;
 	read: string[];
+	/** Bestes Ergebnis je Quiz *und* Spiel (ID → 0–1). Name bleibt wegen gespeicherter Daten. */
 	quizzes: Record<string, number>;
 };
 
@@ -26,9 +27,9 @@ class PassStore {
 		const stored = read<PassData | null>(storageKeys.pass, null);
 		if (stored?.enabled) this.data = stored;
 		setPassHook((score) => {
-			if (score.refType !== 'quiz' || !score.maxPoints) return;
-			const ratio = score.points / score.maxPoints;
-			this.recordQuiz(score.refId, ratio);
+			// Quizze und Spiele zählen gleich.
+			if (!score.maxPoints) return;
+			this.record(score.refId, score.points / score.maxPoints);
 		});
 	}
 
@@ -56,9 +57,10 @@ class PassStore {
 		this.save();
 	}
 
-	recordQuiz(quizId: string, ratio: number): void {
+	/** Bestes Ergebnis (0–1) eines Quiz oder Spiels. */
+	record(activityId: string, ratio: number): void {
 		if (!this.enabled) return;
-		this.data.quizzes[quizId] = Math.max(this.data.quizzes[quizId] ?? 0, ratio);
+		this.data.quizzes[activityId] = Math.max(this.data.quizzes[activityId] ?? 0, Math.min(1, ratio));
 		this.save();
 	}
 
@@ -66,8 +68,8 @@ class PassStore {
 		return this.enabled && this.data.read.includes(exhibitionId);
 	}
 
-	best(quizId: string): number | undefined {
-		return this.enabled ? this.data.quizzes[quizId] : undefined;
+	best(activityId: string): number | undefined {
+		return this.enabled ? this.data.quizzes[activityId] : undefined;
 	}
 
 	get badges(): Badge[] {

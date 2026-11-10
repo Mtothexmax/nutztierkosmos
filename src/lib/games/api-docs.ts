@@ -62,7 +62,7 @@ send('COMPLETE', { points: 100, maxPoints: 100, durationMs: 42000 });
 // Ganz am Anfang einmal melden, dass das Spiel geladen ist
 send('READY');`;
 
-export const skillPrompt = `Du baust ein HTML5-Spiel für die Lernplattform „Nutztierkosmos“. Gib mir ein vollständiges ZIP-Paket mit einer index.html und optional CSS-, JS-, Bild-, Audio- oder Video-Dateien.
+export const skillPrompt = `Du baust ein HTML5-Spiel für die Lernplattform „Nutztierkosmos“. Gib mir ein vollständiges ZIP-Paket mit einer index.html, einer game.json (Einstellungen, siehe unten) und optional CSS-, JS-, Bild-, Audio- oder Video-Dateien.
 
 ## Technische Umgebung
 - Das Spiel läuft in einem iframe mit sandbox="allow-scripts allow-forms allow-popups".
@@ -70,7 +70,32 @@ export const skillPrompt = `Du baust ein HTML5-Spiel für die Lernplattform „N
 - Das Spiel muss vollständig eigenständig funktionieren. Externe Netzwerk-Aufrufe sind nicht erlaubt.
 - Erlaubte Dateien: .html, .htm, .css, .js, .mjs, .png, .jpg, .jpeg, .gif, .webp, .svg, .avif, .mp3, .wav, .ogg, .m4a, .aac, .mp4, .webm, .ogv.
 - Alle Pfade sind relativ. Die Startseite muss index.html heißen.
-- Maximal 2,5 MB entpackt, maximal 1,5 MB pro Datei.
+- Maximal 5 MB entpackt (auch eine einzelne Datei darf bis zu 5 MB groß sein).
+- Zusätzlich erlaubt: genau eine game.json im Stammordner.
+
+## Pflicht: Einstellungen in game.json
+Lege in den Stammordner des ZIPs (neben index.html) eine Datei game.json mit den Grundeinstellungen. Ohne sie wird das Paket beim Build abgelehnt.
+
+{
+  "id": "g-heisser-tag",
+  "title": "Ein heißer Tag auf der Weide",
+  "description": "Ein bis zwei Sätze: worum es geht und wie lange es dauert.",
+  "lang": "de",
+  "topic": "rind/hitzestress",
+  "maxPoints": 1000,
+  "triggerWarning": true,
+  "published": true,
+  "version": "1.0.0"
+}
+
+Felder:
+- id (Pflicht): stabile Kennung, nur a–z, 0–9 und Bindestrich, z. B. "g-mein-spiel". Bei neuen Versionen NICHT ändern.
+- title (Pflicht), description: Titel und Kurzbeschreibung, wie sie auf der Website erscheinen.
+- lang: "de" oder "en" (Standard "de"). Für eine Übersetzung zusätzlich "translationOf": "<id des Originals>".
+- topic (Pflicht): Themenschwerpunkt als "kategorie/thema", z. B. "rind/hitzestress", "rind/methan-und-fuetterung", "rind/sensoren-im-stall", "schwein/stallklima", "schwein/beschaeftigung", "gefluegel/verhalten-von-legehennen", "gefluegel/futter-und-gesundheit".
+- maxPoints (Pflicht): Höchstpunktzahl; muss zu SCORE und COMPLETE passen.
+- triggerWarning: true, wenn Blitze, schnelle Bewegungen oder Lichteffekte vorkommen (Standard true).
+- published: Standard true. version: frei, z. B. "1.2.0".
 
 ## postMessage-API v1
 Alle Nachrichten haben das Feld source.
@@ -96,4 +121,5 @@ Spiel -> Plattform:
 4. Kein localStorage, keine Cookies, keine externen Skripte oder Schriften.
 5. Responsive Layout, gut bedienbar per Tastatur, ausreichender Farbkontrast.
 6. Das Spiel soll inhaltlich zum FBN-Forschungsthema Nutztierhaltung passen.
-7. Gib am Ende die komplette Dateistruktur und jeden Dateiinhalt aus, sodass ich daraus ein ZIP bauen kann.`;
+7. Lege immer die game.json mit den Grundeinstellungen bei; maxPoints muss zu SCORE und COMPLETE passen.
+8. Gib am Ende die komplette Dateistruktur und jeden Dateiinhalt aus (inklusive game.json), sodass ich daraus ein ZIP bauen kann.`;

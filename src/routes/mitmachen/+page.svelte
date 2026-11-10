@@ -5,16 +5,18 @@
 	import { showReqs } from '$lib/requirements.svelte';
 	import { content } from '$lib/stores/content.svelte';
 	import { pass } from '$lib/stores/pass.svelte';
+	import ActivityCard from '$lib/components/site/ActivityCard.svelte';
 
 	showReqs(['gamification', 'interactive', 'feedback', 'privacy', 'i18n']);
 	content.trackPage({});
 
-	let quizzes = $derived(
-		content.quizzes
-			.filter((q) => q.published && !q.translationOf && content.getTopic(q.topicId)?.active)
-			.map((q) => content.quizForLocale(q.id, i18n.active) ?? q)
+	// Quizze und Spiele gleichrangig, gegliedert nach Kategorie (Tierart) – nicht nach Art.
+	let groups = $derived(
+		content
+			.activeCategories()
+			.map((category) => ({ category, items: content.activities({ categoryId: category.id }, i18n.active) }))
+			.filter((group) => group.items.length > 0)
 	);
-	let games = $derived(content.games.filter((g) => g.published && content.getTopic(g.topicId)?.active));
 	let readCount = $derived(pass.data.read.length);
 	let quizCount = $derived(Object.keys(pass.data.quizzes).length);
 </script>
@@ -70,49 +72,26 @@
 			{/if}
 		</section>
 
-		<section aria-labelledby="quiz-heading" class="space-y-4">
-			<h2 id="quiz-heading" class="h2">{t('part.quizzes')}</h2>
-			<ul class="grid gap-4 md:grid-cols-2">
-				{#each quizzes as quiz (quiz.id)}
-					{@const topic = content.getTopic(quiz.topicId)}
-					{@const exhibition = content.exhibitionWith({ quizId: quiz.id })}
-					{@const best = pass.best(quiz.id)}
-					<li class="tile flex h-full flex-col gap-3 p-5">
-						<p class="eyebrow">{tr(content.getCategory(topic?.categoryId)?.title)} · {tr(topic?.title)}</p>
-						<h3 class="h3" lang={quiz.lang ?? 'de'}>{quiz.title}</h3>
-						<p class="text-[15px] text-ink-700" lang={quiz.lang ?? 'de'}>{quiz.description}</p>
-						<p class="text-[13px] text-ink-500">
-							{t('exh.questions', { n: quiz.questions.length })}
-							{#if (quiz.lang ?? 'de') !== i18n.active} · {t('lang.missingShort')}{/if}
-							{#if best !== undefined} · {t('part.best', { p: Math.round(best * 100) })}{/if}
-						</p>
-						<div class="mt-auto flex flex-wrap gap-2 pt-2">
-							<a class="b1" href="/quiz/{quiz.id}"><Icon name="play_arrow" size={20} />{t('exh.startQuiz')}</a>
-							{#if exhibition && content.isPublic(exhibition)}
-								<a class="b3" href="/ausstellung/{exhibition.slug}">{t('part.toExhibition')}</a>
-							{/if}
-						</div>
-					</li>
-				{/each}
-			</ul>
+		<section aria-labelledby="activities-heading" class="space-y-8">
+			<header class="space-y-1">
+				<h2 id="activities-heading" class="h2">{t('part.activities')}</h2>
+				<p class="text-[15px] text-ink-700">{t('part.activitiesIntro')}</p>
+			</header>
+			{#each groups as group (group.category.id)}
+				<section aria-labelledby="cat-{group.category.id}" class="space-y-4">
+					<h3 id="cat-{group.category.id}" class="h3 flex items-baseline gap-3 border-b border-sand-200 pb-2">
+						<a class="hover:underline" href="/themen/{group.category.slug}">{tr(group.category.title)}</a>
+						<span class="text-[14px] font-normal text-ink-500">{group.items.length}</span>
+					</h3>
+					<ul class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+						{#each group.items as activity (activity.kind + activity.item.id)}
+							<li><ActivityCard {activity} headingLevel={4} context="topic" showExhibition /></li>
+						{/each}
+					</ul>
+				</section>
+			{:else}
+				<p class="rounded-2xl border border-dashed border-sand-200 p-6 text-[15px] text-ink-500">{t('part.none')}</p>
+			{/each}
 		</section>
-
-		{#if games.length}
-			<section aria-labelledby="game-heading" class="space-y-4">
-				<h2 id="game-heading" class="h2">{t('part.games')}</h2>
-				<ul class="grid gap-4 md:grid-cols-2">
-					{#each games as game (game.id)}
-						<li class="tile flex items-center gap-4 p-5">
-							<span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-amber-500/15 text-[#8a5a17]"><Icon name="sports_esports" /></span>
-							<div class="min-w-0 flex-1">
-								<h3 class="h3" lang="de">{game.title}</h3>
-								<p class="text-[14px] text-ink-700" lang="de">{game.description}</p>
-							</div>
-							<a class="b2" href="/spielen/{game.id}" aria-label="{t('exh.startGame')}: {game.title}"><Icon name="play_arrow" /></a>
-						</li>
-					{/each}
-				</ul>
-			</section>
-		{/if}
 	{/if}
 </div>

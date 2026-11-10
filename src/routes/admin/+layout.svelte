@@ -96,7 +96,9 @@
 	<AdminLogin />
 {:else}
 	<a class="skip-link" href="#admin-main">Zum Inhalt springen</a>
-	<div class="h-screen lg:grid lg:grid-cols-[264px_1fr]">
+	<!-- Genau eine Bildschirmhöhe: Navigation links fest, rechts scrollt nur der Inhalt.
+	     grid-rows-[minmax(0,1fr)] verhindert, dass die Zeile mit dem Inhalt mitwächst. -->
+	<div class="relative h-dvh overflow-hidden lg:grid lg:grid-cols-[264px_1fr] lg:grid-rows-[minmax(0,1fr)]">
 		{#if drawer}
 			<button class="fixed inset-0 z-30 bg-ink-900/40 lg:hidden" aria-label="Menü schließen" onclick={() => (drawer = false)}></button>
 		{/if}
@@ -141,14 +143,16 @@
 			</div>
 		</aside>
 
-		<div class="flex h-full min-w-0 flex-col">
+		<div class="flex h-full min-h-0 min-w-0 flex-col">
 			<div class="flex items-center gap-2 border-b border-sand-200 bg-white px-4 py-2 lg:hidden">
 				<button class="b3 !p-2" aria-label="Menü" aria-expanded={drawer} onclick={() => (drawer = !drawer)}>
 					<Icon name="menu" />
 				</button>
 				<span class="font-serif font-semibold">Redaktion</span>
 			</div>
-			<main id="admin-main" tabindex="-1" class="flex-1 space-y-6 overflow-y-auto p-4 focus:outline-none lg:p-8">
+			<!-- relative: absolut positionierte Elemente (z. B. sr-only) bleiben im Scrollbereich,
+			     statt sich nach <body> zu richten und die Seite zu verlängern. -->
+			<main id="admin-main" tabindex="-1" class="relative min-h-0 flex-1 space-y-6 overflow-y-auto p-4 focus:outline-none lg:p-8">
 				{#if allowed}
 					{@render children()}
 				{:else}

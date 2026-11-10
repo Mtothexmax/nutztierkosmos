@@ -71,8 +71,8 @@ export const uiDictionary = {
 	'exh.contents': { de: 'Inhalt', en: 'Contents' },
 	'exh.testKnowledge': { de: 'Teste dein Wissen', en: 'Test your knowledge' },
 	'exh.optional': {
-		de: 'Freiwillig – die Ausstellung ist auch ohne Quiz vollständig.',
-		en: 'Optional – the exhibition is complete without the quiz.'
+		de: 'Freiwillig – alle Inhalte sind auch ohne Quiz oder Spiel vollständig.',
+		en: 'Optional – all content is complete without any quiz or game.'
 	},
 	'exh.startQuiz': { de: 'Quiz starten', en: 'Start quiz' },
 	'exh.startGame': { de: 'Spiel starten', en: 'Start game' },
@@ -138,8 +138,15 @@ export const uiDictionary = {
 		de: 'Quizze und Spiele sind ein freiwilliges Extra. Alle Inhalte sind auch ohne sie vollständig erreichbar.',
 		en: 'Quizzes and games are an optional extra. All content is fully accessible without them.'
 	},
-	'part.quizzes': { de: 'Quizze', en: 'Quizzes' },
-	'part.games': { de: 'Spiele', en: 'Games' },
+	'part.activities': { de: 'Quizze und Spiele', en: 'Quizzes and games' },
+	'part.activitiesIntro': {
+		de: 'Nach Tierart geordnet. Ob Quiz oder Spiel – alles ist freiwillig und ohne Anmeldung.',
+		en: 'Sorted by animal. Quiz or game – everything is optional and needs no sign-in.'
+	},
+	'part.none': { de: 'Zu dieser Tierart gibt es noch keine Quizze oder Spiele.', en: 'There are no quizzes or games for this animal yet.' },
+	'act.quiz': { de: 'Quiz', en: 'Quiz' },
+	'act.game': { de: 'Spiel', en: 'Game' },
+	'act.gameMeta': { de: 'Interaktives Spiel', en: 'Interactive game' },
 	'part.pass': { de: 'Forscherpass', en: 'Researcher pass' },
 	'part.passIntro': {
 		de: 'Ihr Fortschritt wird nur auf diesem Gerät gespeichert – ohne Namen, ohne Konto, ohne Übertragung an uns.',
@@ -151,7 +158,7 @@ export const uiDictionary = {
 	'part.badges': { de: 'Abzeichen', en: 'Badges' },
 	'part.badgeEarned': { de: '(erreicht)', en: '(earned)' },
 	'part.badgeLocked': { de: '(noch nicht erreicht)', en: '(not yet earned)' },
-	'part.progress': { de: '{a} von {b} Ausstellungen gelesen · {c} Quizze abgeschlossen', en: '{a} of {b} exhibitions read · {c} quizzes completed' },
+	'part.progress': { de: '{a} von {b} Ausstellungen gelesen · {c} Quizze und Spiele abgeschlossen', en: '{a} of {b} exhibitions read · {c} quizzes and games completed' },
 	'part.disabled': { de: 'Spielerische Elemente sind derzeit deaktiviert.', en: 'Game elements are currently switched off.' },
 	'part.toExhibition': { de: 'Zur Ausstellung', en: 'To the exhibition' },
 	'part.best': { de: 'Bestes Ergebnis: {p} %', en: 'Best result: {p}%' },
@@ -159,8 +166,8 @@ export const uiDictionary = {
 	'badge.first.text': { de: 'Eine Ausstellung gelesen', en: 'Read one exhibition' },
 	'badge.explorer': { de: 'Entdecker', en: 'Explorer' },
 	'badge.explorer.text': { de: 'Ausstellungen aus allen Tierarten gelesen', en: 'Read exhibitions on every animal' },
-	'badge.quiz': { de: 'Quiz-Profi', en: 'Quiz pro' },
-	'badge.quiz.text': { de: 'Drei Quizze mit mindestens 80 % abgeschlossen', en: 'Completed three quizzes with at least 80%' },
+	'badge.quiz': { de: 'Wissens-Profi', en: 'Knowledge pro' },
+	'badge.quiz.text': { de: 'Drei Quizze oder Spiele mit mindestens 80 % abgeschlossen', en: 'Completed three quizzes or games with at least 80%' },
 	'badge.heat': { de: 'Hitzeschutz', en: 'Heat guardian' },
 	'badge.heat.text': { de: 'Den Hitzestress-Check bestanden', en: 'Passed the heat stress check' },
 	'footer.institute': { de: 'Ein Angebot des Forschungsinstituts für Nutztierbiologie (FBN), Dummerstorf', en: 'A service of the Research Institute for Farm Animal Biology (FBN), Dummerstorf' },

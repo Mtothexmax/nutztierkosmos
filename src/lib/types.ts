@@ -287,21 +287,30 @@ export type MatchQuestion = QuestionBase & {
 
 export type Question = McQuestion | TfQuestion | ImageQuestion | MatchQuestion;
 
-export type Quiz = {
+/**
+ * Gemeinsame Grundlage für Quiz und Spiel. Beide sind gleichrangige „Mitmach-Angebote“:
+ * Entscheidend ist der Themenschwerpunkt (und damit die Kategorie), nicht die Art.
+ */
+export type ActivityBase = {
 	id: ID;
-	/** Themenschwerpunkt (Ebene 2), dem das Quiz zugeordnet ist. */
+	/** Themenschwerpunkt (Ebene 2); darüber ergibt sich die Kategorie (Ebene 1). */
 	topicId: ID;
-	/** Sprache des Quiz. Fehlt -> Deutsch. */
+	/** Sprache. Fehlt -> Deutsch. */
 	lang?: Locale;
-	/** Bei Übersetzungen: ID des Original-Quiz. */
+	/** Bei Übersetzungen: ID des Originals (gleiche Art). */
 	translationOf?: ID;
 	title: string;
 	description: string;
-	questions: Question[];
 	published: boolean;
-	timerSeconds: number | null;
 	createdAt: string;
 	updatedAt: string;
+};
+
+export type ActivityKind = 'quiz' | 'game';
+
+export type Quiz = ActivityBase & {
+	questions: Question[];
+	timerSeconds: number | null;
 };
 
 export type GameFileKind = 'html' | 'css' | 'js' | 'image' | 'audio' | 'video';
@@ -317,12 +326,7 @@ export type GameFile = {
 	size: number;
 };
 
-export type Game = {
-	id: ID;
-	/** Themenschwerpunkt (Ebene 2), dem das Spiel zugeordnet ist. */
-	topicId: ID;
-	title: string;
-	description: string;
+export type Game = ActivityBase & {
 	/** HTML-Spiele werden immer als Dateipaket gepflegt (ZIP-Upload). */
 	kind: 'html';
 	files: GameFile[];
@@ -330,10 +334,18 @@ export type Game = {
 	apiVersion: 1;
 	/** Epilepsie-Triggerwarnung vor dem Start einblenden. */
 	triggerWarning: boolean;
-	published: boolean;
-	createdAt: string;
-	updatedAt: string;
+	/**
+	 * Spiel aus dem Projektordner games/ (beim Build bereitgestellt). Quelle der Wahrheit ist
+	 * dann das ZIP samt game.json: Ändert sich die Version, werden Einstellungen und Dateien
+	 * beim nächsten Laden übernommen.
+	 */
+	package?: { url: string; version: string; source: string };
 };
+
+/** Quiz oder Spiel, aufbereitet für öffentliche Listen (Mitmachen, Themenseiten). */
+export type Activity =
+	| { kind: 'quiz'; item: Quiz; href: string }
+	| { kind: 'game'; item: Game; href: string };
 
 export type Preferences = {
 	/** Global vom Spieler bestätigt: Warnung nie wieder anzeigen. */

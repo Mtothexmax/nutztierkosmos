@@ -63,8 +63,8 @@
 		<p class="text-[13px] text-ink-500">Seitenaufrufe, letzte 30 Tage</p>
 		<p class="font-serif text-[34px] font-semibold">{total.toLocaleString('de-DE')}</p>
 		<svg viewBox="0 0 100 40" class="mt-2 h-16 w-full" preserveAspectRatio="none" role="img" aria-label="Verlauf der Seitenaufrufe über 30 Tage">
-			<polygon points="0,40 {points(days)} 100,40" fill="#dcefe5" />
-			<polyline points={points(days)} fill="none" stroke="#1c6b4c" stroke-width="1.2" vector-effect="non-scaling-stroke" />
+			<polygon points="0,40 {points(days)} 100,40" fill="#e5e9ee" />
+			<polyline points={points(days)} fill="none" stroke="#002555" stroke-width="1.2" vector-effect="non-scaling-stroke" />
 		</svg>
 	</div>
 	<div class="card !p-5">

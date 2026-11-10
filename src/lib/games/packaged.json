@@ -1,0 +1,23 @@
+[
+	{
+		"id": "g-heisser-tag",
+		"version": "618c1144699d",
+		"url": "/games/g-heisser-tag.zip",
+		"source": "Nutztierkosmos-Spiel.zip",
+		"settingsFrom": [
+			"games/Nutztierkosmos-Spiel.json"
+		],
+		"fileCount": 11,
+		"unpackedBytes": 2266536,
+		"manifest": {
+			"id": "g-heisser-tag",
+			"title": "Ein heißer Tag auf der Weide",
+			"description": "Interaktives 3D-Lernspiel zu Hitzestress bei Milchkühen: Kühe beobachten, das Mikroklima messen, passende Maßnahmen umsetzen. Dauer etwa 8–12 Minuten.",
+			"lang": "de",
+			"topic": "rind/hitzestress",
+			"maxPoints": 1000,
+			"triggerWarning": true,
+			"published": true
+		}
+	}
+]

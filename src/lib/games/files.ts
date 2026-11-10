@@ -1,4 +1,14 @@
 import { unzipSync } from 'fflate';
+import {
+	findManifestPath,
+	isJunkPath,
+	MANIFEST_FILE,
+	MAX_FILE_BYTES,
+	MAX_FILES,
+	MAX_TOTAL_BYTES,
+	validateManifest,
+	type GameManifest
+} from './package-rules.js';
 import type { Game, GameFile, GameFileKind } from '$lib/types';
 
 const KIND_BY_EXT: Record<string, GameFileKind> = {
@@ -48,14 +58,17 @@ const MIME_BY_EXT: Record<string, string> = {
 };
 
 export const ALLOWED_EXTENSIONS = Object.keys(KIND_BY_EXT);
-export const MAX_TOTAL_BYTES = 2.5 * 1024 * 1024;
-export const MAX_FILE_BYTES = 1.5 * 1024 * 1024;
-export const MAX_FILES = 150;
+// Grenzen und Einstellungsdatei: gemeinsam mit dem Build-Skript in package-rules.js.
+export { MANIFEST_FILE, MAX_FILE_BYTES, MAX_FILES, MAX_TOTAL_BYTES, type GameManifest };
 
 export type ZipResult = {
 	files: GameFile[];
 	blocked: string[];
 	totalBytes: number;
+	/** Einstellungen aus game.json, falls im ZIP vorhanden und gültig. */
+	manifest: GameManifest | null;
+	/** Probleme mit game.json (das Paket selbst ist trotzdem nutzbar). */
+	manifestErrors: string[];
 };
 
 export function extensionOf(path: string): string {
@@ -127,11 +140,28 @@ export function readZipPackage(buffer: ArrayBuffer): ZipResult {
 	const files: GameFile[] = [];
 	const blocked: string[] = [];
 	let totalBytes = 0;
+	let manifest: GameManifest | null = null;
+	let manifestErrors: string[] = [];
+
+	const paths = Object.keys(entries)
+		.filter((raw) => !raw.endsWith('/'))
+		.map(normalizePath)
+		.filter((path) => path && !isJunkPath(path));
+	const manifestPath = findManifestPath(paths);
 
 	for (const [rawPath, bytes] of Object.entries(entries)) {
 		const path = normalizePath(rawPath);
 		if (!path || rawPath.endsWith('/')) continue;
-		if (path.startsWith('__MACOSX/') || path.endsWith('.DS_Store') || path.endsWith('Thumbs.db')) {
+		if (isJunkPath(path)) continue;
+
+		if (path === manifestPath) {
+			try {
+				const result = validateManifest(JSON.parse(new TextDecoder().decode(bytes)));
+				manifest = result.manifest;
+				manifestErrors = result.errors;
+			} catch {
+				manifestErrors = [`${MANIFEST_FILE} ist kein gültiges JSON.`];
+			}
 			continue;
 		}
 
@@ -143,11 +173,11 @@ export function readZipPackage(buffer: ArrayBuffer): ZipResult {
 		}
 
 		if (bytes.length > MAX_FILE_BYTES) {
-			throw new Error(`„${path}“ ist zu groß (max. 1,5 MB pro Datei).`);
+			throw new Error(`„${path}“ ist zu groß (max. 5 MB pro Datei).`);
 		}
 		totalBytes += bytes.length;
 		if (totalBytes > MAX_TOTAL_BYTES) {
-			throw new Error('Das Paket ist zu groß (max. 2,5 MB entpackt).');
+			throw new Error('Das Paket ist zu groß (max. 5 MB entpackt).');
 		}
 		if (files.length >= MAX_FILES) {
 			throw new Error(`Zu viele Dateien (max. ${MAX_FILES}).`);
@@ -165,7 +195,7 @@ export function readZipPackage(buffer: ArrayBuffer): ZipResult {
 	}
 
 	files.sort((a, b) => a.path.localeCompare(b.path, 'de'));
-	return { files, blocked: blocked.sort(), totalBytes };
+	return { files, blocked: blocked.sort(), totalBytes, manifest, manifestErrors };
 }
 
 /** Liefert das Dateipaket – inklusive Fallback für alte Einzel-HTML-Spiele. */

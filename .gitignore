@@ -24,3 +24,12 @@ vite.config.ts.timestamp-*
 
 # Vergabeunterlagen (nicht versionieren)
 vergabeunterlagen/
+
+# Aus static/logo.svg erzeugt (scripts/generate-icons.mjs, läuft bei dev/build)
+/static/apple-touch-icon.png
+/static/favicon-32.png
+/static/icon-192.png
+/static/icon-512.png
+
+# Aus games/*.zip bereitgestellt (scripts/sync-games.mjs, läuft bei dev/build)
+/static/games/

@@ -48,7 +48,7 @@
 			<p class="ovl">{result.title}</p>
 			<div
 				class="mx-auto grid h-[140px] w-[140px] place-items-center rounded-full"
-				style="background:conic-gradient(#2a8560 {quote}%, #E7E0CE 0)"
+				style="background:conic-gradient(#002555 {quote}%, #CCD3DD 0)"
 				role="img"
 				aria-label="{quote} %"
 			>

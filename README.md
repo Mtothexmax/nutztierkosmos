@@ -45,6 +45,15 @@ npm run build
 | `/quiz/[id]`, `/spielen/[id]`, `/ergebnis/[typ]/[id]` | Quiz-Player, Spiel-Host, Ergebnis |
 | `/admin/...` | Redaktion: Übersicht, Ausstellungen, Struktur, Publikationen, Schlagwörter, Medien, Quiz & Spiele, Infografiken, Texte & Übersetzungen, Statistik, Benutzer & Rollen, Protokoll, Einstellungen, Spiel-API |
 
+## Logo und Icons
+
+Logo, Favicon und App-Icons kommen alle aus **`static/logo.svg`**. Nur diese Datei bearbeiten.
+Die PNGs (`apple-touch-icon.png`, `favicon-32.png`, `icon-192.png`, `icon-512.png`) erzeugt
+`scripts/generate-icons.mjs` automatisch bei `npm run dev` und `npm run build`; im Dev-Server
+auch sofort, wenn `logo.svg` gespeichert wird. Manuell: `npm run icons`. Die PNGs sind nicht
+versioniert (`.gitignore`). Der Hintergrund des iOS-Icons wird aus der Füllfarbe des ersten
+`<rect>` im SVG übernommen.
+
 ## Projektstruktur
 
 ```
@@ -57,7 +66,11 @@ src/lib/components/site/         Öffentliche Komponenten (Header, Karten, Medie
 src/lib/components/info/         Interaktive Infografiken (THI-Rechner, Balken, Hotspots)
 src/lib/components/admin/        Redaktions-Komponenten (zweisprachige Felder, Quiz-Editor …)
 static/demo/                     Platzhalter-Medien (SVG, MP4 + WebVTT, MP3, PDF)
-static/fonts/                    Inter und Lora lokal (keine externen Abrufe)
+static/logo.svg                  Bildmarke – einzige Quelle für Logo, Favicon und PNG-Icons
+scripts/generate-icons.mjs       erzeugt daraus die PNGs (@resvg/resvg-js), automatisch bei dev/build
+games/                           Spiel-ZIPs (mit game.json); werden bei dev/build geprüft und als Spiele angelegt
+scripts/sync-games.mjs           holt die neueste ZIP-Version aus den Quellen (package.json) und prüft alle Pakete
+@fontsource-variable/open-sans    Open Sans (SIL OFL 1.1), lokal gebündelt – keine externen Abrufe
 ```
 
 ## Aufräumen nach dem Umbau

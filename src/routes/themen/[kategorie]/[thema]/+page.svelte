@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
-	import Icon from '$lib/components/Icon.svelte';
 	import Breadcrumbs from '$lib/components/site/Breadcrumbs.svelte';
+	import ActivityCard from '$lib/components/site/ActivityCard.svelte';
 	import ExhibitionCard from '$lib/components/site/ExhibitionCard.svelte';
 	import LangNotice from '$lib/components/site/LangNotice.svelte';
 	import { i18n, t, tr } from '$lib/i18n.svelte';
@@ -16,14 +16,8 @@
 		category ? content.topicsOf(category.id).find((x) => x.slug === page.params.thema) : undefined
 	);
 	let exhibitions = $derived(topic ? content.exhibitionsOfTopic(topic.id) : []);
-	let quizzes = $derived(
-		topic && content.settings.gamification
-			? content
-					.quizzesForTopic(topic.id)
-					.filter((q) => !q.translationOf)
-					.map((q) => content.quizForLocale(q.id, i18n.active) ?? q)
-			: []
-	);
+	// Quizze und Spiele zu diesem Thema – gleichrangig.
+	let activities = $derived(topic ? content.activities({ topicId: topic.id }, i18n.active) : []);
 
 	onMount(() => {
 		if (category) content.trackPage({ categoryId: category.id });
@@ -63,15 +57,13 @@
 			<p class="rounded-2xl border border-dashed border-sand-200 p-6 text-[15px] text-ink-500">{t('topics.none')}</p>
 		{/if}
 
-		{#if quizzes.length}
-			<section aria-labelledby="topic-quizzes" class="rounded-3xl bg-brand-50 p-6 sm:p-8">
-				<h2 id="topic-quizzes" class="h3 mb-1">{t('exh.testKnowledge')}</h2>
+		{#if activities.length}
+			<section aria-labelledby="topic-activities" class="rounded-3xl bg-brand-50 p-6 sm:p-8">
+				<h2 id="topic-activities" class="h3 mb-1">{t('exh.testKnowledge')}</h2>
 				<p class="mb-4 text-[14px] text-ink-700">{t('exh.optional')}</p>
-				<ul class="flex flex-wrap gap-3">
-					{#each quizzes as quiz (quiz.id)}
-						<li>
-							<a class="b2" href="/quiz/{quiz.id}" lang={quiz.lang ?? 'de'}><Icon name="quiz" size={20} />{quiz.title}</a>
-						</li>
+				<ul class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+					{#each activities as activity (activity.kind + activity.item.id)}
+						<li><ActivityCard {activity} headingLevel={3} /></li>
 					{/each}
 				</ul>
 			</section>

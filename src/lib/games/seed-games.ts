@@ -7,24 +7,51 @@ export const pansenPuzzleHtml = `<!doctype html>
 <style>
   :root{--green:#1C6B4C;--lime:#8DBF3F;--sand:#F1F8F4}
   *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--sand);color:#101915;padding:18px}
-  header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
-  h1{font-size:18px;margin:0}
-  .who{font-size:12px;color:#5B6B63;background:#fff;border-radius:999px;padding:4px 10px}
-  .bar{height:8px;border-radius:999px;background:#DCEFE5;overflow:hidden;margin-bottom:16px}
+  /* Füllt immer genau die verfügbare Fläche: Kopf oben, Fuß unten, das Raster nimmt den Rest. */
+  html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--sand);color:#101915;
+    display:flex;flex-direction:column;gap:clamp(8px,2vmin,16px);padding:clamp(10px,3vmin,24px);overflow:hidden}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  h1{font-size:clamp(16px,3vmin,24px);margin:0}
+  .who{font-size:clamp(11px,1.8vmin,14px);color:#5B6B63;background:#fff;border-radius:999px;padding:4px 10px;white-space:nowrap}
+  .bar{flex:none;height:8px;border-radius:999px;background:#DCEFE5;overflow:hidden}
   .bar>i{display:block;height:100%;width:0;background:var(--lime);transition:width .2s}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  .tile{aspect-ratio:1;border-radius:16px;border:2px solid #DCEFE5;background:#fff;cursor:pointer;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:13px;
-    font-weight:600;color:#2C3A33;padding:6px;transition:transform .12s,border-color .12s}
+  /* Querformat 3 × 2, Hochformat 2 × 3. Begrenzte Breite, damit Kacheln nicht zu flachen Streifen werden. */
+  .grid{flex:1;min-height:0;width:100%;max-width:calc(150vh);margin:0 auto;display:grid;
+    grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:clamp(6px,2vmin,14px)}
+  @media (orientation:portrait){.grid{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(3,1fr)}}
+  .tile{min-width:0;min-height:0;width:100%;height:100%;border-radius:16px;border:2px solid #DCEFE5;background:#fff;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(2px,1vmin,8px);
+    font-size:clamp(12px,2.6vmin,20px);font-weight:600;color:#2C3A33;padding:6px;transition:transform .12s,border-color .12s;
+    container-type:size}
   .tile:hover{transform:translateY(-2px);border-color:var(--green)}
-  .tile b{font-size:26px}
-  .tile.ok{border-color:var(--green);background:#E8F5EE}
-  .tile.bad{border-color:#B4372C;background:#FBEAE8}
-  footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px}
-  button{border:0;border-radius:12px;padding:10px 16px;font-weight:600;font-size:14px;cursor:pointer;background:var(--green);color:#fff}
+  .tile b{font-size:clamp(20px,9vmin,72px);line-height:1}
+  /* Emoji und Beschriftung wachsen mit der Kachel, nicht mit dem Fenster. */
+  @supports (font-size:1cqmin){.tile{font-size:clamp(12px,8cqmin,20px)}.tile b{font-size:clamp(20px,38cqmin,110px)}}
+  /* Kästchen links oben: zeigt immer, was angekreuzt ist – auch nach der Auswertung. */
+  .tile{position:relative}
+  .box{position:absolute;top:clamp(6px,1.4vmin,10px);left:clamp(6px,1.4vmin,10px);width:clamp(18px,3.4vmin,26px);height:clamp(18px,3.4vmin,26px);
+    border:2px solid #8A9A92;border-radius:4px;background:#fff;display:grid;place-items:center;color:#fff;font-size:.8em;line-height:1}
+  .tile.picked{border-color:#2C4F7C;box-shadow:inset 0 0 0 2px #2C4F7C}
+  .tile.picked .box{background:#2C4F7C;border-color:#2C4F7C}
+  .tile.picked .box::after{content:"✓";font-weight:700}
+  /* Auswertung – zusätzlich in Worten, nicht nur über Farbe. */
+  .verdict{display:none;font-size:clamp(11px,1.8vmin,14px);font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap}
+  .tile.hit,.tile.miss{border-color:var(--green);background:#E8F5EE;box-shadow:none}
+  .tile.wrong{border-color:#B4372C;background:#FBEAE8;box-shadow:none}
+  .tile.miss{border-style:dashed}
+  .tile.hit .verdict{display:inline-block;background:var(--green);color:#fff}
+  .tile.wrong .verdict{display:inline-block;background:#B4372C;color:#fff}
+  .tile.miss .verdict{display:inline-block;border:2px solid var(--green);color:var(--green);background:#fff}
+  .tile:disabled{cursor:default;transform:none}
+  footer{flex:none;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:10px}
+  button{border:0;border-radius:12px;padding:clamp(8px,1.6vmin,12px) clamp(14px,2.4vmin,20px);font-weight:600;font-size:clamp(13px,2vmin,16px);cursor:pointer;background:var(--green);color:#fff}
   button.ghost{background:#fff;color:var(--green);border:1px solid #DCEFE5}
-  #msg{font-size:13px;color:#5B6B63;flex:1}
+  #msg{font-size:clamp(12px,2vmin,16px);color:#5B6B63;flex:1 1 220px}
+  @media (max-width:480px){#msg{flex-basis:100%}}
+  /* Sehr niedrige Flächen: lieber scrollen als unlesbar klein. */
+  @media (max-height:240px){body{overflow:auto}.grid{flex:none;height:200px}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
@@ -65,9 +92,10 @@ export const pansenPuzzleHtml = `<!doctype html>
     TILES.forEach(function (t, i) {
       var b = document.createElement('button');
       b.className = 'tile';
-      b.innerHTML = '<b>' + t.emoji + '</b>' + t.label;
+      b.innerHTML = '<span class="box" aria-hidden="true"></span><b>' + t.emoji + '</b>' + t.label + '<span class="verdict"></span>';
+      b.setAttribute('aria-pressed', picked[i] ? 'true' : 'false');
       b.onclick = function () { pick(i); };
-      if (picked[i]) b.classList.add('ok');
+      if (picked[i]) b.classList.add('picked');
       board.appendChild(b);
     });
     var count = Object.keys(picked).length;
@@ -86,15 +114,18 @@ export const pansenPuzzleHtml = `<!doctype html>
   }
 
   function check() {
+    if (done) return;
     done = true;
     var hits = Object.keys(picked).filter(function (k) { return TILES[k].good; }).length;
     points = Math.max(0, hits * 60 - (Object.keys(picked).length - hits) * 20);
     document.getElementById('msg').textContent =
       hits + ' von 3 richtig – ' + points + ' Punkte';
     document.querySelectorAll('.tile').forEach(function (el, i) {
-      el.classList.remove('ok');
-      if (TILES[i].good) el.classList.add('ok');
-      else if (picked[i]) el.classList.add('bad');
+      var v = el.querySelector('.verdict');
+      el.disabled = true;
+      if (picked[i] && TILES[i].good) { el.classList.add('hit'); v.textContent = '✓ Richtig gewählt'; }
+      else if (picked[i]) { el.classList.add('wrong'); v.textContent = '✗ Falsch gewählt'; }
+      else if (TILES[i].good) { el.classList.add('miss'); v.textContent = 'Richtige Antwort'; }
     });
     send('COMPLETE', { points: points, maxPoints: 200, durationMs: 45000 });
   }
@@ -122,7 +153,6 @@ export const pansenPuzzleHtml = `<!doctype html>
 
   render();
   send('READY');
-  send('RESIZE', { height: 460 });
 <\/script>
 </body>
 </html>`;
