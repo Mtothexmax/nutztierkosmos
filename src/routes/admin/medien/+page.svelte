@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { withBase } from '$lib/paths';
 	import { page } from '$app/state';
 	import L10nInput from '$lib/components/admin/L10nInput.svelte';
 	import Icon from '$lib/components/Icon.svelte';
@@ -142,9 +143,9 @@
 				<button class="w-full overflow-hidden rounded-2xl border-2 bg-white text-left transition {selectedId === m.id ? 'border-brand-600' : 'border-sand-200 hover:border-brand-500/60'}" aria-current={selectedId === m.id} onclick={() => (selectedId = m.id)}>
 					<span class="relative grid aspect-[16/9] place-items-center bg-sand-100">
 						{#if m.type === 'image'}
-							<img src={m.src} alt="" class="h-full w-full object-cover" width="320" height="180" />
+							<img src={withBase(m.src)} alt="" class="h-full w-full object-cover" width="320" height="180" />
 						{:else if m.poster}
-							<img src={m.poster} alt="" class="h-full w-full object-cover" width="320" height="180" />
+							<img src={withBase(m.poster)} alt="" class="h-full w-full object-cover" width="320" height="180" />
 						{:else}
 							<Icon name={typeIcon[m.type]} size={40} class="text-ink-500" />
 						{/if}
@@ -166,12 +167,12 @@
 		<form class="card space-y-4 self-start xl:sticky xl:top-0" onsubmit={(e) => (e.preventDefault(), save())}>
 			<h2 class="font-serif text-lg font-semibold">Medium bearbeiten</h2>
 			{#if draft.type === 'image'}
-				<img src={draft.src} alt="" class="aspect-[16/9] w-full rounded-xl object-cover" width="440" height="248" />
+				<img src={withBase(draft.src)} alt="" class="aspect-[16/9] w-full rounded-xl object-cover" width="440" height="248" />
 			{:else if draft.type === 'video'}
 				<!-- svelte-ignore a11y_media_has_caption -->
-				<video src={draft.src} poster={draft.poster} controls class="aspect-[16/9] w-full rounded-xl bg-ink-900"></video>
+				<video src={withBase(draft.src)} poster={withBase(draft.poster)} controls class="aspect-[16/9] w-full rounded-xl bg-ink-900"></video>
 			{:else if draft.type === 'audio'}
-				<audio src={draft.src} controls class="w-full"></audio>
+				<audio src={withBase(draft.src)} controls class="w-full"></audio>
 			{/if}
 			<L10nInput id="m-title" label="Titel" bind:value={draft.title} required />
 			<L10nInput id="m-alt" label={draft.type === 'image' ? 'Alternativtext (Pflicht)' : 'Kurzbeschreibung'} bind:value={draft.alt} multiline rows={2} required={draft.type === 'image'} hint={draft.type === 'image' ? 'Beschreibt, was auf dem Bild zu sehen ist – für Menschen, die es nicht sehen können. Rein dekorative Bilder bleiben leer.' : undefined} />

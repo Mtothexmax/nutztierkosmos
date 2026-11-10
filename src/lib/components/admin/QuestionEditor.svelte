@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { withBase } from '$lib/paths';
 	import Icon from '$lib/components/Icon.svelte';
 	import ImageHotspotEditor from '$lib/components/admin/ImageHotspotEditor.svelte';
 	import MatchConnectionsEditor from '$lib/components/admin/MatchConnectionsEditor.svelte';
@@ -298,14 +299,14 @@
 			{#if assets.length > 0}
 				<span class="bdg">{mediaKindLabel[currentKind]}</span>
 				{#if currentKind === 'video'}
-					<video class="max-h-56 w-full rounded-lg bg-black" controls src={assets[0].src}>
+					<video class="max-h-56 w-full rounded-lg bg-black" controls src={withBase(assets[0].src)}>
 						<track kind="captions" />
 					</video>
 					<p class="text-[12px] text-ink-500">{assets[0].name}</p>
 				{:else if currentKind === 'audio'}
 					<div class="rounded-xl border border-sand-200 bg-sand-50 p-3">
 						<p class="mb-2 truncate text-[13px] font-semibold">{assets[0].name}</p>
-						<audio class="w-full" controls src={assets[0].src}></audio>
+						<audio class="w-full" controls src={withBase(assets[0].src)}></audio>
 					</div>
 				{:else}
 					<div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -313,7 +314,7 @@
 							<div class="relative">
 								{#if asset.mime.startsWith('image/')}
 									<img
-										src={asset.src}
+										src={withBase(asset.src)}
 										alt={asset.name}
 										class="h-24 w-full rounded-lg border border-sand-200 bg-white object-contain"
 									/>

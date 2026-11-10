@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { withBase } from '$lib/paths';
 	import { i18n, t, tr } from '$lib/i18n.svelte';
 	import { content } from '$lib/stores/content.svelte';
 	import type { Infographic } from '$lib/types';
@@ -14,7 +15,7 @@
 <div class="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
 	<div class="media-frame aspect-[16/9]">
 		{#if image}
-			<img src={image.src} alt={tr(image.alt)} class="h-full w-full object-cover" width="1600" height="900" />
+			<img src={withBase(image.src)} alt={tr(image.alt)} class="h-full w-full object-cover" width="1600" height="900" />
 		{/if}
 		{#each spots as spot, i (spot.id)}
 			{@const on = selected === spot.id}

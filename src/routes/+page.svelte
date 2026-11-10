@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { withBase } from '$lib/paths';
+	import { goto } from '$lib/paths';
 	import Icon from '$lib/components/Icon.svelte';
 	import ExhibitionCard from '$lib/components/site/ExhibitionCard.svelte';
 	import { i18n, t, tr, type UiKey } from '$lib/i18n.svelte';
@@ -95,7 +96,7 @@
 			<li>
 				<a href="/themen/{category.slug}" class="tile flex items-center gap-4 overflow-hidden p-3 pr-5">
 					<span class="block h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-sand-100">
-						{#if image}<img src={image.src} alt="" class="h-full w-full object-cover" width="96" height="80" />{/if}
+						{#if image}<img src={withBase(image.src)} alt="" class="h-full w-full object-cover" width="96" height="80" />{/if}
 					</span>
 					<span class="min-w-0">
 						<span class="block font-serif text-[20px] font-semibold text-ink-900" lang={i18n.langOf(category.title)}>{tr(category.title)}</span>

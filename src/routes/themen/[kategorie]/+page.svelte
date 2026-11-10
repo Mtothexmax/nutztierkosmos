@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { withBase } from '$lib/paths';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import Icon from '$lib/components/Icon.svelte';
@@ -38,7 +39,7 @@
 				<a class="link text-[15px]" href="/suche?tier={category.id}"><Icon name="search" size={18} /> {t('nav.search')}: {tr(category.title)}</a>
 			</div>
 			<div class="media-frame aspect-[4/3] max-md:hidden">
-				{#if image}<img src={image.src} alt="" class="h-full w-full object-cover" width="800" height="600" />{/if}
+				{#if image}<img src={withBase(image.src)} alt="" class="h-full w-full object-cover" width="800" height="600" />{/if}
 			</div>
 		</div>
 	</section>

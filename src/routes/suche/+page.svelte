@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { replaceState } from '$app/navigation';
+	import { withBase } from '$lib/paths';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import Icon from '$lib/components/Icon.svelte';
@@ -47,7 +48,8 @@
 		if (audience) sp.set('zielgruppe', audience);
 		if (sort !== 'relevance') sp.set('sort', sort);
 		const next = `/suche${sp.size ? `?${sp}` : ''}`;
-		if (next !== location.pathname + location.search) replaceState(next, {});
+		const target = withBase(next);
+		if (target !== location.pathname + location.search) replaceState(target, {});
 	});
 
 	onMount(() => {
@@ -174,7 +176,7 @@
 							<article class="tile relative flex gap-4 p-4 sm:p-5">
 								{#if image}
 									<span class="hidden h-24 w-36 shrink-0 overflow-hidden rounded-xl bg-sand-100 sm:block">
-										<img src={image.src} alt="" class="h-full w-full object-cover" width="144" height="96" loading="lazy" />
+										<img src={withBase(image.src)} alt="" class="h-full w-full object-cover" width="144" height="96" loading="lazy" />
 									</span>
 								{:else}
 									<span class="hidden h-14 w-14 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700 sm:grid"><Icon name={typeIcon[hit.type]} /></span>

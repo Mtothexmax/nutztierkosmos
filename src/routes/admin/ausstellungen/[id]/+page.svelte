@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { beforeNavigate, goto } from '$app/navigation';
+	import { withBase } from '$lib/paths';
+	import { beforeNavigate } from '$app/navigation';
+	import { goto } from '$lib/paths';
 	import { page } from '$app/state';
 	import L10nInput from '$lib/components/admin/L10nInput.svelte';
 	import TopicSelect from '$lib/components/admin/TopicSelect.svelte';
@@ -217,7 +219,7 @@
 									<p class="mt-1 text-[13px] text-danger-500">Diesem Bild fehlt ein Alternativtext. <a class="link" href="/admin/medien?id={hero.id}">In der Medienbibliothek ergänzen</a></p>
 								{/if}
 							</div>
-							{#if hero}<img src={hero.src} alt="" class="h-20 w-36 rounded-lg object-cover" width="144" height="80" />{/if}
+							{#if hero}<img src={withBase(hero.src)} alt="" class="h-20 w-36 rounded-lg object-cover" width="144" height="80" />{/if}
 						</div>
 					</section>
 
@@ -270,7 +272,7 @@
 											{@const on = block.mediaIds.includes(m.id)}
 											<label class="relative cursor-pointer overflow-hidden rounded-xl border-2 {on ? 'border-brand-600' : 'border-sand-200'}">
 												<input type="checkbox" class="absolute top-2 left-2 h-4 w-4" checked={on} onchange={() => (block.mediaIds = toggle(block.mediaIds, m.id))} />
-												<img src={m.src} alt="" class="aspect-[16/9] w-full object-cover" width="160" height="90" />
+												<img src={withBase(m.src)} alt="" class="aspect-[16/9] w-full object-cover" width="160" height="90" />
 												<span class="block truncate px-2 py-1 text-[12px]">{m.title.de}</span>
 											</label>
 										{/each}

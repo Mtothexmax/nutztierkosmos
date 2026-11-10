@@ -1,0 +1,28 @@
+%%{init: {"theme": "base", "htmlLabels": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 420, "curve": "basis"}, "themeVariables": {"fontFamily": "Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "18px", "primaryColor": "#e5e9ee", "primaryBorderColor": "#002555", "primaryTextColor": "#002555", "lineColor": "#44546a", "clusterBkg": "#f6f7f9", "clusterBorder": "#99a8bb"}}}%%
+flowchart TB
+    subgraph build["Build: npm run build / export.ps1"]
+        direction LR
+        quelle["Quellcode<br/>SvelteKit 3, Svelte 5, Tailwind 4"]
+        games["games/*.zip + game.json<br/>Spielpakete, geprüft"]
+        logo["static/logo.svg<br/>→ PNG-Icons"]
+        docs["docs/<br/>statischer Export"]
+        quelle --> docs
+        games --> docs
+        logo --> docs
+    end
+
+    pages["GitHub Pages<br/>liefert docs/ aus"]
+    docs -- "git push" --> pages
+
+    subgraph browser["Browser der Besucherin / des Besuchers"]
+        direction LR
+        spa["Single-Page-App<br/>Website + simulierte Redaktion"]
+        ls[("localStorage<br/>Inhalte, Einstellungen,<br/>Forscherpass")]
+        idb[("IndexedDB<br/>Dateien der HTML-Spiele")]
+        frame["Spiel im iframe<br/>Sandbox, postMessage-API"]
+        spa --> ls
+        spa --> idb
+        spa <-- "postMessage" --> frame
+    end
+
+    pages -- "HTTPS" --> spa

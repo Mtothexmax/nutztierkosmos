@@ -2,6 +2,8 @@
 	import '../app.css';
 	import { browser } from '$app/env';
 	import { page } from '$app/state';
+	import { onMount } from 'svelte';
+	import { fixBaseLinks, stripBase } from '$lib/paths';
 	import ReqPanel from '$lib/components/ReqPanel.svelte';
 	import SiteFooter from '$lib/components/site/SiteFooter.svelte';
 	import SiteHeader from '$lib/components/site/SiteHeader.svelte';
@@ -22,7 +24,11 @@
 
 	/** Redaktion, Quiz, Spiel und Ergebnis laufen ohne Website-Kopf (Fokusmodus). */
 	const bare = ['/admin', '/quiz', '/spielen', '/ergebnis'];
-	let withChrome = $derived(!bare.some((p) => page.url.pathname === p || page.url.pathname.startsWith(p + '/')));
+	let path = $derived(stripBase(page.url.pathname));
+	let withChrome = $derived(!bare.some((p) => path === p || path.startsWith(p + '/')));
+
+	// Statischer Export unter Unterpfad (GitHub Pages): Links und Medien mit "/…" ergänzen.
+	onMount(() => fixBaseLinks());
 </script>
 
 {#if withChrome}

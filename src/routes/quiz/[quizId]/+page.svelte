@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, withBase } from '$lib/paths';
 	import { page } from '$app/state';
 	import { onMount, tick as nextTick } from 'svelte';
 	import Icon from '$lib/components/Icon.svelte';
@@ -691,7 +691,7 @@
 						class="aspect-video w-full rounded-xl bg-black object-contain"
 						controls
 						preload="metadata"
-						src={mediaAssets[0].src}
+						src={withBase(mediaAssets[0].src)}
 					>
 						<track kind="captions" />
 					</video>
@@ -705,14 +705,14 @@
 							class="w-full max-w-md"
 							controls
 							preload="metadata"
-							src={mediaAssets[0].src}
+							src={withBase(mediaAssets[0].src)}
 						></audio>
 					</div>
 				{:else if mediaAssets.length === 1}
 					<div class="grid aspect-video place-items-center p-2">
 						{#if mediaAssets[0].mime.startsWith('image/')}
 							<img
-								src={mediaAssets[0].src}
+								src={withBase(mediaAssets[0].src)}
 								alt={mediaAssets[0].name}
 								class="max-h-full max-w-full rounded-lg object-contain"
 							/>
@@ -729,7 +729,7 @@
 						<div class="relative grid aspect-video place-items-center">
 							{#if galleryCurrent}
 								<img
-									src={galleryCurrent.src}
+									src={withBase(galleryCurrent.src)}
 									alt={galleryCurrent.name}
 									class="max-h-full max-w-full rounded-lg object-contain"
 								/>
@@ -761,7 +761,7 @@
 									aria-label={`Bild ${i + 1} anzeigen`}
 									onclick={() => (galleryIndex = i)}
 								>
-									<img src={asset.src} alt="" class="h-full w-full object-cover" />
+									<img src={withBase(asset.src)} alt="" class="h-full w-full object-cover" />
 								</button>
 							{/each}
 						</div>
@@ -933,7 +933,7 @@
 							>
 								<img
 									bind:this={clickImg}
-									src={clickSrc}
+									src={withBase(clickSrc)}
 									alt=""
 									class="max-h-48 rounded-lg cursor-crosshair"
 								/>

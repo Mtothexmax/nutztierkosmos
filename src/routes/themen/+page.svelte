@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { withBase } from '$lib/paths';
 	import Icon from '$lib/components/Icon.svelte';
 	import Breadcrumbs from '$lib/components/site/Breadcrumbs.svelte';
 	import { i18n, t, tr } from '$lib/i18n.svelte';
@@ -24,7 +25,7 @@
 		<section class="grid gap-6 rounded-3xl border border-sand-200 bg-white p-5 sm:p-7 lg:grid-cols-[18rem_1fr]" aria-labelledby="cat-{category.id}">
 			<div class="space-y-3">
 				<div class="media-frame aspect-[4/3]">
-					{#if image}<img src={image.src} alt="" class="h-full w-full object-cover" width="400" height="300" />{/if}
+					{#if image}<img src={withBase(image.src)} alt="" class="h-full w-full object-cover" width="400" height="300" />{/if}
 				</div>
 				<h2 id="cat-{category.id}" class="h2" lang={i18n.langOf(category.title)}>
 					<a class="hover:text-brand-700" href="/themen/{category.slug}">{tr(category.title)}</a>

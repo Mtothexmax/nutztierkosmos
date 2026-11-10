@@ -2,6 +2,7 @@ import { browser } from '$app/env';
 import { i18n } from '$lib/i18n.svelte';
 import { read, storageKeys, write, type StorageKey } from '$lib/storage/db';
 import { loadAllGameFiles, replaceAllGameFiles } from '$lib/storage/files-db';
+import { withBase } from '$lib/paths';
 import {
 	SEED_VERSION,
 	seedAudit,
@@ -283,7 +284,7 @@ class ContentStore {
 		for (const game of this.games) {
 			if (!game.package || game.files?.length) continue;
 			try {
-				const response = await fetch(game.package.url);
+				const response = await fetch(withBase(game.package.url));
 				if (!response.ok) throw new Error(`HTTP ${response.status}`);
 				game.files = readZipPackage(await response.arrayBuffer()).files;
 				loaded = true;

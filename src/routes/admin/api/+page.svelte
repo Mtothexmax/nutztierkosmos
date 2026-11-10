@@ -114,7 +114,7 @@
 			<li>Kein <code>allow-same-origin</code>: kein localStorage, keine Cookies, kein DOM-Zugriff auf die Plattform.</li>
 			<li>Kommunikation ausschließlich über <code>postMessage</code> mit <code>source</code>-Feld.</li>
 			<li>Externe Netzwerk-Aufrufe und externe Skripte sind nicht vorgesehen.</li>
-			<li>Die vollständige Doku liegt im Repository unter <code>docs/GAME-API.md</code>.</li>
+			<li>Die vollständige Doku liegt im Repository unter <code>konzept/GAME-API.md</code>.</li>
 		</ul>
 	</div>
 </div>

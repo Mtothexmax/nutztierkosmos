@@ -1,0 +1,4 @@
+/* Wird von mmdc in die SVG eingebettet (npm run diagrams). */
+svg, text, tspan, .nodeLabel, .edgeLabel, .cluster-label {
+	font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { withBase } from '$lib/paths';
 	import Icon from '$lib/components/Icon.svelte';
 	import { i18n, t, tr } from '$lib/i18n.svelte';
 	import { content } from '$lib/stores/content.svelte';
@@ -33,7 +34,7 @@
 {#if media.type === 'image'}
 	<figure>
 		<div class="media-frame" style:aspect-ratio={ratio}>
-			<img src={media.src} alt={tr(media.alt)} lang={i18n.langOf(media.alt)} class="h-full w-full object-cover" loading="lazy" width={media.width} height={media.height} />
+			<img src={withBase(media.src)} alt={tr(media.alt)} lang={i18n.langOf(media.alt)} class="h-full w-full object-cover" loading="lazy" width={media.width} height={media.height} />
 		</div>
 		{@render meta()}
 	</figure>
@@ -45,16 +46,16 @@
 				class="h-full w-full"
 				controls
 				preload="metadata"
-				poster={media.poster}
+				poster={withBase(media.poster)}
 				aria-label={tr(media.title)}
 				controlslist={downloadable ? undefined : 'nodownload'}
 			>
-				<source src={media.src} type={media.mime} />
+				<source src={withBase(media.src)} type={media.mime} />
 				{#if media.captions?.de}
-					<track kind="subtitles" srclang="de" label="Deutsch" src={media.captions.de} default={i18n.active === 'de'} />
+					<track kind="subtitles" srclang="de" label="Deutsch" src={withBase(media.captions.de)} default={i18n.active === 'de'} />
 				{/if}
 				{#if media.captions?.en}
-					<track kind="subtitles" srclang="en" label="English" src={media.captions.en} default={i18n.active === 'en'} />
+					<track kind="subtitles" srclang="en" label="English" src={withBase(media.captions.en)} default={i18n.active === 'en'} />
 				{/if}
 			</video>
 		</div>
@@ -74,7 +75,7 @@
 			<strong class="font-semibold" lang={i18n.langOf(media.title)}>{tr(media.title)}</strong>
 		</div>
 		<audio class="w-full" controls preload="metadata" aria-label={tr(media.title)} controlslist={downloadable ? undefined : 'nodownload'}>
-			<source src={media.src} type={media.mime} />
+			<source src={withBase(media.src)} type={media.mime} />
 		</audio>
 		{@render meta()}
 		{@render transcript()}

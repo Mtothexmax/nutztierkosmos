@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, stripBase } from '$lib/paths';
 	import { page } from '$app/state';
 	import Icon from '$lib/components/Icon.svelte';
 	import { t } from '$lib/i18n.svelte';
@@ -18,7 +18,10 @@
 		{ href: '/info/ueber', label: t('nav.about'), icon: 'info' }
 	]);
 
-	const isCurrent = (href: string) => page.url.pathname === href || page.url.pathname.startsWith(href + '/');
+	const isCurrent = (href: string) => {
+		const path = stripBase(page.url.pathname);
+		return path === href || path.startsWith(href + '/');
+	};
 
 	function search(event: SubmitEvent) {
 		event.preventDefault();

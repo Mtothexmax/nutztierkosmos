@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto } from '$lib/paths';
 	import { onMount } from 'svelte';
 
 	onMount(() => goto('/admin/spiele?new=1', { replaceState: true }));

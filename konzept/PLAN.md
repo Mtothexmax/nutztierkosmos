@@ -276,7 +276,7 @@ src/
     lernen/…  quiz/…  spielen/…  ergebnis/…
     admin/+layout.svelte  admin/… (siehe §4)
   static/
-docs/
+konzept/
   PLAN.md
   DESIGN-BRIEF-CLAUDE.md
 ```
@@ -286,7 +286,7 @@ docs/
 ## 8. Phasen
 
 ### Phase 0 – Design-Brief für Claude Design ⬅️ **jetzt**
-- `docs/DESIGN-BRIEF-CLAUDE.md` schreiben (Screens, Komponenten, Buttons, Copy, Mock-Daten, Output-Format).
+- `konzept/DESIGN-BRIEF-CLAUDE.md` schreiben (Screens, Komponenten, Buttons, Copy, Mock-Daten, Output-Format).
 - Ergebnis: ein `design.html` vom Nutzer → Grundlage für Phase 1.
 - **Fertig wenn:** Brief ist copy-paste-fertig, alle Screens + Zustände beschrieben, Rückgabedatei klar definiert.
 
@@ -316,7 +316,7 @@ docs/
 ### Phase 6 – Spiele: ZIP-Editor, Bridge, API-Doku
 - HTML-Spiel-Editor mit ZIP-Upload, Datei-Explorer, Texteditor für HTML/CSS/JS, Medienvorschau und Live-iframe inkl. Bridge-Log.
 - Dateitypen-Prüfung (nur HTML, CSS, JS, Bilder, Audio, Video), Größenlimits, Asset-Inlining für `srcdoc`, Sandbox-Härtung, Protokoll-Validierung.
-- Copy-Paste-Bridge-Snippet, KI-Skill und API-Dokumentation unter `/admin/api` und `docs/GAME-API.md`.
+- Copy-Paste-Bridge-Snippet, KI-Skill und API-Dokumentation unter `/admin/api` und `konzept/GAME-API.md`.
 - **Fertig wenn:** Beispielspiel meldet Name korrekt an, Score kommt zurück, ZIP-Paket läuft isoliert, blockierte Dateien werden gemeldet.
 
 ### Phase 7 – Feinschliff

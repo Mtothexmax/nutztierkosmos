@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { withBase } from '$lib/paths';
 	import Icon from '$lib/components/Icon.svelte';
 	import { i18n, t, tr } from '$lib/i18n.svelte';
 	import { content } from '$lib/stores/content.svelte';
@@ -16,7 +17,7 @@
 <article class="tile group relative flex h-full flex-col overflow-hidden">
 	<div class="media-frame aspect-[16/9] !rounded-none">
 		{#if hero}
-			<img src={hero.src} alt="" class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" loading="lazy" width="1600" height="900" />
+			<img src={withBase(hero.src)} alt="" class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" loading="lazy" width="1600" height="900" />
 		{/if}
 		{#if read}
 			<span class="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[12px] font-semibold text-brand-700">

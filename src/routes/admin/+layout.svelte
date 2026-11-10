@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, stripBase } from '$lib/paths';
 	import { page } from '$app/state';
 	import AdminLogin from '$lib/components/admin/AdminLogin.svelte';
 	import Icon from '$lib/components/Icon.svelte';
@@ -67,18 +67,18 @@
 		['/admin/einstellungen', 'settings.edit']
 	];
 
-	let required = $derived(routePerms.find(([prefix]) => page.url.pathname.startsWith(prefix))?.[1]);
+	let required = $derived(routePerms.find(([prefix]) => stripBase(page.url.pathname).startsWith(prefix))?.[1]);
 	let allowed = $derived(!required || session.can(required));
 
 	$effect(() => {
 		if (session.isAdmin && !allowed) {
-			const path = page.url.pathname;
+			const path = stripBase(page.url.pathname);
 			untrack(() => content.log(session.user!.id, 'Zugriff verweigert', path, 'security'));
 		}
 	});
 
 	function isActive(href: string): boolean {
-		const path = page.url.pathname;
+		const path = stripBase(page.url.pathname);
 		if (href === '/admin') return path === '/admin';
 		if (href === '/admin/spiele') return path.startsWith('/admin/spiele') || path.startsWith('/admin/quiz') || path.startsWith('/admin/api');
 		return path === href || path.startsWith(`${href}/`);

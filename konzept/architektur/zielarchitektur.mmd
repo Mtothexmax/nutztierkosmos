@@ -1,0 +1,40 @@
+%%{init: {"theme": "base", "htmlLabels": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 420, "curve": "basis", "nodeSpacing": 40, "rankSpacing": 55}, "themeVariables": {"fontFamily": "Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "18px", "primaryColor": "#e5e9ee", "primaryBorderColor": "#002555", "primaryTextColor": "#002555", "lineColor": "#44546a", "clusterBkg": "#f6f7f9", "clusterBorder": "#99a8bb", "edgeLabelBackground": "#ffffff"}}}%%
+flowchart TB
+    besucher(["Besucherinnen und Besucher<br/>Browser, Handy"])
+    redaktion(["Redaktion FBN<br/>4 Rollen, Login"])
+
+    subgraph hetzner["Hetzner Cloud · Rechenzentrum in Deutschland"]
+        direction TB
+        fw{{"Cloud Firewall<br/>nur HTTPS, SSH nur Admin"}}
+
+        subgraph prod["Produktivserver · Docker Compose"]
+            direction LR
+            caddy["Caddy<br/>Reverse Proxy, HTTPS"]
+            web["Web-App · SvelteKit<br/>Website + Redaktion"]
+            matomo["Matomo<br/>cookielos"]
+            api["API · ASP.NET Core<br/>Inhalte, Workflow, Rechte"]
+            db[("PostgreSQL<br/>Inhalte, Versionen,<br/>Protokoll")]
+            caddy --> web
+            caddy --> matomo
+            web -- "REST / JSON" --> api
+            api --> db
+        end
+
+        storage[("Object Storage<br/>Medien, PDFs,<br/>Spiel-ZIPs")]
+        box[("Storage Box<br/>nächtliche Backups")]
+        staging["Staging-Server<br/>Abnahme, Schulung"]
+
+        fw --> caddy
+        api -- "signierte URLs" --> storage
+        db -. "pg_dump" .-> box
+    end
+
+    subgraph ci["Auslieferung"]
+        direction TB
+        repo["Git-Repository"] --> actions["CI: Check, Tests,<br/>Build"] --> registry["Container-<br/>Registry"]
+    end
+
+    besucher -- "HTTPS" --> fw
+    redaktion -- "HTTPS" --> fw
+    registry -. "1. Staging" .-> staging
+    registry -- "2. Produktion" --> prod

@@ -13,13 +13,16 @@
 		"preview": "vite preview",
 		"icons": "node scripts/generate-icons.mjs",
 		"games": "node scripts/sync-games.mjs",
+		"diagrams": "mmdc -p konzept/architektur/puppeteer.json -C konzept/architektur/diagramm.css -i konzept/architektur/zielarchitektur.mmd -o konzept/architektur/zielarchitektur.svg -b white && mmdc -p konzept/architektur/puppeteer.json -C konzept/architektur/diagramm.css -i konzept/architektur/demo-architektur.mmd -o konzept/architektur/demo-architektur.svg -b white",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
 	"devDependencies": {
+		"@mermaid-js/mermaid-cli": "^12.2.0",
 		"@resvg/resvg-js": "^2.6.2",
 		"@sveltejs/adapter-auto": "^8.0.0",
+		"@sveltejs/adapter-static": "^4.0.1",
 		"@sveltejs/kit": "^3.0.0",
 		"@sveltejs/vite-plugin-svelte": "^7.2.0",
 		"@tailwindcss/vite": "^4.3.0",

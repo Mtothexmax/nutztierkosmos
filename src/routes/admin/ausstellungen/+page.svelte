@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto } from '$lib/paths';
 	import { page } from '$app/state';
 	import TopicSelect from '$lib/components/admin/TopicSelect.svelte';
 	import Icon from '$lib/components/Icon.svelte';

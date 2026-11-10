@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { withBase } from '$lib/paths';
 	import L10nInput from '$lib/components/admin/L10nInput.svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import InfographicView from '$lib/components/info/InfographicView.svelte';
@@ -135,7 +136,7 @@
 					<p class="text-[13px] text-ink-500">Punkt in der Liste wählen und ins Bild klicken, um ihn zu platzieren. Ohne Auswahl entsteht ein neuer Punkt. Für Tastatur: Position unten als Zahl (0–1) eingeben.</p>
 					<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 					<div class="media-frame relative aspect-[16/9] cursor-crosshair" onclick={placeSpot}>
-						{#if image}<img src={image.src} alt="" class="h-full w-full object-cover" width="800" height="450" />{/if}
+						{#if image}<img src={withBase(image.src)} alt="" class="h-full w-full object-cover" width="800" height="450" />{/if}
 						{#each draft.hotspots as s, i (s.id)}
 							<span class="pointer-events-none absolute grid h-8 w-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-white text-[13px] font-bold text-white {activeSpot === s.id ? 'bg-ink-900' : 'bg-brand-600'}" style:left="{s.x * 100}%" style:top="{s.y * 100}%">{i + 1}</span>
 						{/each}

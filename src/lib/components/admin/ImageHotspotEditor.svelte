@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import { withBase } from '$lib/paths';
 	type Props = { question: any };
 	let { question }: Props = $props();
 
@@ -29,7 +30,7 @@
 			image = img;
 			if (canvas) draw();
 		};
-		img.src = imageUrl;
+		img.src = withBase(imageUrl);
 	}
 
 	function getPointFromEvent(event: MouseEvent): { x: number; y: number } | null {

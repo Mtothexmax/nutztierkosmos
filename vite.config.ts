@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import tailwindcss from '@tailwindcss/vite';
-import adapter from '@sveltejs/adapter-auto';
+import adapterAuto from '@sveltejs/adapter-auto';
+import adapterStatic from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig, type Plugin } from 'vite';
 import { generateIcons, LOGO_SVG } from './scripts/generate-icons.mjs';
@@ -77,6 +78,14 @@ function gamesFromFolder(): Plugin {
 	};
 }
 
+/**
+ * Statischer Export (export.ps1 setzt NTK_BASE_PATH, z. B. "/nutztierkosmos" für GitHub Pages):
+ * adapter-static mit 404.html als SPA-Fallback, App unter dem Unterpfad. Ohne Variable
+ * bleibt alles wie im normalen Betrieb (adapter-auto, kein Unterpfad).
+ */
+const exportBase = process.env.NTK_BASE_PATH;
+const isExport = exportBase !== undefined;
+
 export default defineConfig({
 	resolve: {
 		alias: {
@@ -97,7 +106,10 @@ export default defineConfig({
 			// adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.
 			// If your environment is not supported, or you settled on a specific environment, switch out the adapter.
 			// See https://svelte.dev/docs/kit/adapters for more information about adapters.
-			adapter: adapter()
+			adapter: isExport
+				? adapterStatic({ pages: 'build', assets: 'build', fallback: '404.html', precompress: false, strict: false })
+				: adapterAuto(),
+			paths: { base: (exportBase ?? '').replace(/\/$/, '') as '' | `/${string}` }
 		})
 	]
 });

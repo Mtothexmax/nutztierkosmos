@@ -1,6 +1,7 @@
 <script lang="ts">
 	import TopicSelect from '$lib/components/admin/TopicSelect.svelte';
-	import { beforeNavigate, goto } from '$app/navigation';
+	import { beforeNavigate } from '$app/navigation';
+	import { goto } from '$lib/paths';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import Icon from '$lib/components/Icon.svelte';

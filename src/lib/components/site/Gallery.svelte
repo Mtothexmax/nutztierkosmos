@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { withBase } from '$lib/paths';
 	import Icon from '$lib/components/Icon.svelte';
 	import { i18n, t, tr } from '$lib/i18n.svelte';
 	import type { MediaItem } from '$lib/types';
@@ -23,7 +24,7 @@
 	<section aria-roledescription="carousel" aria-label={heading ?? 'Galerie'} class="space-y-3">
 		<!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
 		<div class="media-frame aspect-[16/9]" tabindex="0" role="group" aria-roledescription="slide" aria-label={t('media.imageOf', { i: index + 1, n: items.length })} onkeydown={onKey}>
-			<img src={current.src} alt={tr(current.alt)} lang={i18n.langOf(current.alt)} class="h-full w-full object-cover" width="1600" height="900" />
+			<img src={withBase(current.src)} alt={tr(current.alt)} lang={i18n.langOf(current.alt)} class="h-full w-full object-cover" width="1600" height="900" />
 			<div class="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-black/55 to-transparent p-3">
 				<button type="button" class="grid h-10 w-10 place-items-center rounded-full bg-white/95 text-ink-900 hover:bg-white" aria-label={t('media.prev')} onclick={() => go(-1)}>
 					<Icon name="chevron_left" />
@@ -44,7 +45,7 @@
 					aria-current={i === index ? 'true' : undefined}
 					onclick={() => (index = i)}
 				>
-					<img src={item.src} alt="" class="h-full w-full object-cover" width="96" height="64" />
+					<img src={withBase(item.src)} alt="" class="h-full w-full object-cover" width="96" height="64" />
 				</button>
 			{/each}
 		</div>
