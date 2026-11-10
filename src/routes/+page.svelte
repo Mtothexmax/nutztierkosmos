@@ -1,103 +1,160 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import Icon from '$lib/components/Icon.svelte';
+	import ExhibitionCard from '$lib/components/site/ExhibitionCard.svelte';
+	import { i18n, t, tr, type UiKey } from '$lib/i18n.svelte';
+	import { showReqs } from '$lib/requirements.svelte';
 	import { content } from '$lib/stores/content.svelte';
-	import { session } from '$lib/stores/session.svelte';
+	import type { Audience } from '$lib/types';
 
-	const avatars = ['🦊', '🐻', '🦉', '🐺', '🐰', '🐴'];
+	showReqs(['browser', 'audiences', 'hierarchy', 'search', 'gamification', 'design', 'responsive', 'i18n', 'a11y', 'privacy']);
+	content.trackPage({});
 
-	let name = $state('');
-	let avatar = $state(avatars[0]);
-	let error = $state('');
-
-	let moduleCount = $derived(content.modules.filter((m) => m.published).length);
-	let stationCount = $derived(
-		content.quizzes.filter((q) => q.published).length +
-			content.games.filter((g) => g.published).length
+	let q = $state('');
+	let exhibitions = $derived(content.publicExhibitions());
+	let featured = $derived(exhibitions[0]);
+	let latest = $derived(exhibitions.slice(1, 4));
+	let quizCount = $derived(content.quizzes.filter((x) => x.published && (x.lang ?? 'de') === 'de').length);
+	let publicationCount = $derived(
+		new Set(exhibitions.flatMap((e) => e.publicationIds)).size
+	);
+	let popular = $derived(
+		Object.entries(content.stats.searches)
+			.sort((a, b) => b[1] - a[1])
+			.slice(0, 5)
+			.map(([term]) => term)
 	);
 
-	function start() {
-		const player = session.login(name, avatar);
-		if (!player) {
-			error = 'Bitte gib mindestens 2 Zeichen ein.';
-			return;
-		}
-		error = '';
-		goto('/lernen');
-	}
+	const audiences: { id: Audience; icon: string }[] = [
+		{ id: 'allgemein', icon: 'diversity_3' },
+		{ id: 'schule', icon: 'school' },
+		{ id: 'studium', icon: 'science' },
+		{ id: 'presse', icon: 'newspaper' }
+	];
 
-	function enterAdmin() {
-		session.enterAdmin();
-		goto('/admin');
+	function submit(event: SubmitEvent) {
+		event.preventDefault();
+		goto(`/suche?q=${encodeURIComponent(q.trim())}`);
 	}
 </script>
 
-<svelte:head><title>Anmelden · Nutztierkosmos</title></svelte:head>
+<svelte:head>
+	<title>Nutztierkosmos – {t('site.tagline')}</title>
+	<meta name="description" content={tr(content.settings.subtitle)} />
+</svelte:head>
 
-<section class="grid min-h-screen lg:grid-cols-[55fr_45fr]">
-	<div
-		class="flex flex-col justify-center gap-6 bg-gradient-to-br from-brand-900 to-brand-600 p-8 text-white lg:p-16"
-	>
-		<div class="text-6xl">🐄</div>
-		<h1 class="font-serif text-[34px] leading-[1.1] font-bold lg:text-5xl">Nutztierkosmos</h1>
-		<p class="max-w-md text-white/80">{content.settings.subtitle}</p>
-		<div class="flex flex-wrap gap-2">
-			<span class="bdg !bg-white/15 !text-white">{moduleCount} Module</span>
-			<span class="bdg !bg-white/15 !text-white">{stationCount} Spiele & Quizze</span>
-			<span class="bdg !bg-white/15 !text-white">Forschen & punkten</span>
-		</div>
-	</div>
+<section class="border-b border-sand-200 bg-gradient-to-b from-white to-sand-50">
+	<div class="wrap grid items-center gap-10 py-10 sm:py-14 lg:grid-cols-[1.05fr_1fr] lg:py-20">
+		<div class="space-y-6">
+			<p class="eyebrow">Forschungsinstitut für Nutztierbiologie (FBN)</p>
+			<h1 class="display">{t('home.title')}</h1>
+			<p class="lead max-w-xl">{tr(content.settings.subtitle)}</p>
 
-	<div class="flex items-center justify-center p-6">
-		<form class="card w-full max-w-md space-y-4" onsubmit={(e) => (e.preventDefault(), start())}>
-			<p class="ovl">Willkommen</p>
-			<h2 class="h1">Wie heißt du?</h2>
-			<p class="text-ink-500">Dein Name erscheint in der Bestenliste. Kein Passwort, keine E-Mail.</p>
+			<form role="search" class="max-w-xl" onsubmit={submit}>
+				<label for="home-search" class="mb-2 block text-[15px] font-semibold text-ink-900">{t('home.searchLabel')}</label>
+				<div class="flex gap-2">
+					<div class="relative flex-1">
+						<Icon name="search" class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-ink-500" />
+						<input id="home-search" type="search" class="inp !h-12 !pl-11 !text-[16px]" placeholder={t('home.searchPlaceholder')} bind:value={q} autocomplete="off" />
+					</div>
+					<button class="b1 !h-12 !px-5" type="submit">{t('search.submit')}</button>
+				</div>
+			</form>
 
-			<div>
-				<label class="lbl" for="nm">Dein Name</label>
-				<input id="nm" class="inp" bind:value={name} placeholder="z. B. Lena" maxlength="20" />
-				<p class="mt-1 text-[13px] text-ink-500">2–20 Zeichen</p>
-				{#if error}<p class="mt-1 text-[13px] text-danger-500">{error}</p>{/if}
-			</div>
-
-			<div>
-				<p class="lbl">Wähle deinen Avatar</p>
-				<div class="flex flex-wrap gap-2" role="radiogroup" aria-label="Avatar">
-					{#each avatars as option (option)}
-						<button
-							type="button"
-							role="radio"
-							aria-checked={avatar === option}
-							class="grid h-12 w-12 place-items-center rounded-full text-2xl transition {avatar === option
-								? 'bg-brand-50 ring-2 ring-brand-600'
-								: 'border border-sand-200 hover:bg-sand-50'}"
-							onclick={() => (avatar = option)}
-						>
-							{option}
-						</button>
+			{#if popular.length}
+				<div class="flex flex-wrap items-center gap-2">
+					<span class="text-[13px] text-ink-500">{t('home.popular')}:</span>
+					{#each popular as term (term)}
+						<a class="chip" href="/suche?q={encodeURIComponent(term)}">{term}</a>
 					{/each}
 				</div>
-			</div>
-
-			<button class="b1 w-full" type="submit">
-				Los geht's <Icon name="arrow_forward" />
-			</button>
-			<button class="b3 w-full" type="button" onclick={enterAdmin}>
-				<Icon name="admin_panel_settings" /> Als Redaktion anmelden
-			</button>
-			<p class="text-center text-[13px] text-ink-500">
-				Demo-Modus · Daten bleiben nur in diesem Browser.
-			</p>
-
-			{#if session.player}
-				<p class="text-center text-[13px] text-ink-500">
-					Angemeldet als {session.player.avatar}
-					<button type="button" class="text-brand-600 underline" onclick={() => goto('/lernen')}>
-						weiterlernen
-					</button>
-				</p>
 			{/if}
-		</form>
+
+			<p class="text-[14px] text-ink-500">
+				{t('home.stats', { n: exhibitions.length, p: publicationCount, q: quizCount })}
+			</p>
+		</div>
+
+		{#if featured}
+			<div>
+				<ExhibitionCard exhibition={featured} headingLevel={2} large />
+			</div>
+		{/if}
 	</div>
 </section>
+
+<section class="wrap py-14" aria-labelledby="by-animal">
+	<div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+		<h2 id="by-animal" class="h2">{t('home.byAnimal')}</h2>
+		<a class="link text-[15px]" href="/themen">{t('nav.topics')} →</a>
+	</div>
+	<ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+		{#each content.activeCategories() as category (category.id)}
+			{@const count = content.exhibitionsOfCategory(category.id).length}
+			{@const image = content.getMedia(category.imageId)}
+			<li>
+				<a href="/themen/{category.slug}" class="tile flex items-center gap-4 overflow-hidden p-3 pr-5">
+					<span class="block h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-sand-100">
+						{#if image}<img src={image.src} alt="" class="h-full w-full object-cover" width="96" height="80" />{/if}
+					</span>
+					<span class="min-w-0">
+						<span class="block font-serif text-[20px] font-semibold text-ink-900" lang={i18n.langOf(category.title)}>{tr(category.title)}</span>
+						<span class="block text-[14px] text-ink-500">
+							{count === 1 ? t('topics.exhibitions1') : t('topics.exhibitions', { n: count })} · {content.topicsOf(category.id).length} {t('topics.focus')}
+						</span>
+					</span>
+					<Icon name="arrow_forward" class="ml-auto text-brand-600" />
+				</a>
+			</li>
+		{/each}
+	</ul>
+</section>
+
+{#if latest.length}
+	<section class="border-y border-sand-200 bg-white py-14" aria-labelledby="latest">
+		<div class="wrap">
+			<div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+				<h2 id="latest" class="h2">{t('home.latest')}</h2>
+				<a class="link text-[15px]" href="/suche?sort=date&type=exhibition">{t('home.allExhibitions')} →</a>
+			</div>
+			<ul class="grid gap-5 md:grid-cols-3">
+				{#each latest as exhibition (exhibition.id)}
+					<li><ExhibitionCard {exhibition} /></li>
+				{/each}
+			</ul>
+		</div>
+	</section>
+{/if}
+
+<section class="wrap py-14" aria-labelledby="audiences">
+	<h2 id="audiences" class="h2 mb-6">{t('home.audiencesTitle')}</h2>
+	<ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+		{#each audiences as a (a.id)}
+			<li>
+				<a href="/suche?zielgruppe={a.id}" class="tile flex h-full flex-col gap-2 p-5">
+					<span class="grid h-11 w-11 place-items-center rounded-xl bg-brand-50 text-brand-700"><Icon name={a.icon} /></span>
+					<span class="font-semibold text-ink-900">{t(`audience.${a.id}` as UiKey)}</span>
+					<span class="text-[14px] text-ink-500">{t(`audience.${a.id}.text` as UiKey)}</span>
+				</a>
+			</li>
+		{/each}
+	</ul>
+</section>
+
+{#if content.settings.gamification}
+	<section class="wrap" aria-labelledby="participate">
+		<div class="relative overflow-hidden rounded-3xl bg-brand-900 p-8 text-white sm:p-10">
+			<div class="absolute -top-20 -right-16 h-64 w-64 rounded-full bg-brand-600/40" aria-hidden="true"></div>
+			<div class="absolute -bottom-24 right-32 h-48 w-48 rounded-full bg-lime-500/20" aria-hidden="true"></div>
+			<div class="relative grid items-center gap-6 md:grid-cols-[1.4fr_auto]">
+				<div class="space-y-3">
+					<h2 id="participate" class="font-serif text-[26px] font-semibold sm:text-[30px]">{t('home.participateTitle')}</h2>
+					<p class="max-w-xl text-white/85">{t('home.participateText')}</p>
+				</div>
+				<a href="/mitmachen" class="btn bg-white text-brand-900 hover:bg-brand-50">
+					<Icon name="extension" />{t('home.participateCta')}
+				</a>
+			</div>
+		</div>
+	</section>
+{/if}

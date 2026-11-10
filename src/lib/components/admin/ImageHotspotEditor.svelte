@@ -1,13 +1,15 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	type Props = { question: any };
 	let { question }: Props = $props();
 
 	let canvas = $state<HTMLCanvasElement | null>(null);
 	let image = $state<HTMLImageElement | null>(null);
-	let imageUrl = $state(question.clickImageUrl ?? question.image ?? '');
+	// Lokale, editierbare Kopie – bewusst nur mit dem Anfangswert initialisiert.
+	let imageUrl = $state(untrack(() => question.clickImageUrl ?? question.image ?? ''));
 	let points = $state<{ x: number; y: number }[]>(
-		question.clickPolygon?.map((p: { x: number; y: number }) => ({ x: p.x, y: p.y })) ?? []
+		untrack(() => question.clickPolygon?.map((p: { x: number; y: number }) => ({ x: p.x, y: p.y })) ?? [])
 	);
 	let drawing = $state(false);
 	let dragIndex = $state<number | null>(null);
@@ -217,6 +219,18 @@
 							reader.onload = () => {
 								imageUrl = reader.result as string;
 								question.image = imageUrl;
+								// Haupteditor und Polygon-Editor auf denselben Stand bringen.
+								if (!question.mediaKind) question.mediaKind = 'image';
+								question.media = [
+									{
+										id: crypto.randomUUID(),
+										name: file.name,
+										mime: file.type || 'image/png',
+										src: imageUrl
+									}
+								];
+								question.clickImageUrl = imageUrl;
+								question.clickPolygon = [];
 								points = [];
 								loadImage();
 							};
@@ -229,12 +243,24 @@
 					<button
 						class="rounded-lg p-1 text-ink-500 hover:bg-err-bg hover:text-danger-500"
 						aria-label="Bild entfernen"
-						onclick={(e) => { e.stopPropagation(); imageUrl = ''; question.image = undefined; points = []; }}
+						onclick={(e) => {
+								e.stopPropagation();
+								imageUrl = '';
+								question.image = undefined;
+								question.media = [];
+								question.clickImageUrl = undefined;
+								question.clickPolygon = [];
+								points = [];
+							}}
 					>
 						<Icon name="close" size={14} />
 					</button>
 				{/if}
 			</div>
+			<p class="mt-1 text-[12px] text-ink-500">
+				Der Klick-Bereich bezieht sich auf dieses Bild; bei einer Bildergalerie auf das erste
+				Bild. Ein Polygon ist nur bei Bildern und Infografiken möglich.
+			</p>
 		</div>
 
 		{#if imageUrl}

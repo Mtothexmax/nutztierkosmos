@@ -11,7 +11,7 @@
 		id: string;
 		kind: 'quiz' | 'html';
 		title: string;
-		moduleId: string;
+		topicId: string;
 		typeLabel: string;
 		points: number;
 		published: boolean;
@@ -30,7 +30,7 @@
 			id: quiz.id,
 			kind: 'quiz',
 			title: quiz.title,
-			moduleId: quiz.moduleId,
+			topicId: quiz.topicId,
 			typeLabel: quiz.questions.length
 				? `Quiz · ${questionTypeLabel[quiz.questions[0].type]}`
 				: 'Quiz',
@@ -45,7 +45,7 @@
 			id: game.id,
 			kind: 'html',
 			title: game.title,
-			moduleId: game.moduleId,
+			topicId: game.topicId,
 			typeLabel: 'HTML-Spiel · ZIP',
 			points: game.maxPoints,
 			published: game.published,
@@ -109,7 +109,7 @@
 	};
 
 	function createQuizOfType(type: Question['type']) {
-		const quiz = content.createQuiz(content.modules[0]?.id ?? '');
+		const quiz = content.createQuiz(content.topics[0]?.id ?? '');
 		quiz.title = quizTitles[type];
 		quiz.questions.push(emptyQuestion(type));
 		content.updateQuiz(structuredClone($state.snapshot(quiz)));
@@ -131,16 +131,16 @@
 	}
 </script>
 
-<svelte:head><title>Spiele · CMS</title></svelte:head>
+<svelte:head><title>Quiz & Spiele · Redaktion</title></svelte:head>
 
 <div class="flex flex-wrap items-start justify-between gap-3">
 	<div>
-		<h1 class="h1">Spiele</h1>
+		<h1 class="h1">Quiz & Spiele</h1>
 		<p class="text-ink-500">
-			{rows.length} Einträge · Quizze und HTML-Spiele an einem Ort
+			{rows.length} Einträge · Quizze und HTML-Spiele an einem Ort. Einbinden in eine Ausstellung über den Baustein „Quiz“ bzw. „Spiel“.
 		</p>
 	</div>
-	<button class="b1" onclick={() => (newOpen = true)}>+ Neues Spiel</button>
+	<button class="b1" onclick={() => (newOpen = true)}>+ Neues Element</button>
 </div>
 
 <div class="flex flex-wrap items-center gap-2">
@@ -162,7 +162,7 @@
 		<thead>
 			<tr>
 				<th>Titel</th>
-				<th>Modul</th>
+				<th>Themenschwerpunkt</th>
 				<th>Spielart</th>
 				<th>Punkte</th>
 				<th>Status</th>
@@ -176,7 +176,7 @@
 					<td>
 						<a class="font-medium text-brand-700" href={row.editorHref}>{row.title}</a>
 					</td>
-					<td>{content.getModule(row.moduleId)?.title ?? '–'}</td>
+					<td>{content.getTopic(row.topicId)?.title.de ?? '–'}</td>
 					<td><span class="bdg">{row.typeLabel}</span></td>
 					<td>{row.points}</td>
 					<td>

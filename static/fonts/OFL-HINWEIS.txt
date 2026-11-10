@@ -1,0 +1,4 @@
+Inter (c) The Inter Project Authors, https://github.com/rsms/inter
+Lora (c) The Lora Project Authors, https://github.com/cyrealtype/Lora-Cyrillic
+Beide Schriften stehen unter der SIL Open Font License 1.1 (https://openfontlicense.org).
+Die Dateien hier sind auf lateinische Zeichen reduziert (Subset), um Ladezeiten zu verkürzen.

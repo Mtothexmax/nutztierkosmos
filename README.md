@@ -1,77 +1,70 @@
-# Nutztierkosmos
+# Nutztierkosmos – Click-Dummy (Grobkonzept)
 
-Frontend-only Click-Dummy einer Lernplattform zum FBN-Forschungsthema Nutztierhaltung: SvelteKit, Tailwind CSS, alles im Browser gespeichert. Kein Backend, keine Datenbank, kein echter Login.
+Klickbarer Entwurf der **webbasierten Informations- und Wissensplattform mit Gamification-Elementen** für das Forschungsinstitut für Nutztierbiologie (FBN). Grundlage ist die Leistungsbeschreibung (Stand August 2026) unter `vergabeunterlagen/`.
+
+Technik: SvelteKit, Svelte 5, Tailwind CSS 4. Kein Backend – alle Daten liegen im `localStorage` des Browsers. Die Speicherschicht (`src/lib/storage/db.ts`) ist so gekapselt, dass sie später gegen eine API/ein CMS getauscht werden kann.
 
 ## Starten
 
 ```sh
 npm install
-npm run dev
-```
-
-Danach `http://localhost:5173` öffnen. Build und Typecheck:
-
-```sh
-npm run check
+npm run dev      # http://localhost:5173
+npm run check    # Typprüfung
 npm run build
-npm run preview
 ```
 
-## Demo-Modus
+## Rundgang für die Vorstellung
 
-- **Spielerbereich:** Name und Avatar wählen, Module, Quizze und Spiele durchspielen. Punkte und Fortschritt landen in `localStorage`.
-- **Redaktion:** Auf der Startseite „Als Redaktion anmelden“. Der Adminbereich ist eine Demo-Sitzung ohne Guard.
-- **Zurücksetzen:** Unter *Einstellungen → Demo-Daten zurücksetzen* werden alle `ntk:v1:*`-Keys neu geseedet.
+1. **Startseite** `/` – Suche, Einstieg nach Tierart, neue Ausstellungen, Einstiege für Zielgruppen.
+2. **Beispiel-Ausstellung** `/ausstellung/wenn-es-der-kuh-zu-heiss-wird` – enthält alle Medienformate: Kernaussagen, Text, interaktiver THI-Rechner, Video mit Untertiteln DE/EN, Hotspot-Grafik, Galerie, Audio mit Transkript, PDF, Quiz, Publikationen mit Quellenangabe.
+3. **Sprachumschalter DE/EN** oben rechts – die Seite bleibt gleich; fehlt eine Übersetzung, kommt ein Hinweis (z. B. bei „Methan aus dem Pansen“).
+4. **Suche** `/suche` – Volltext, Filter nach Tierart, Themengebiet, Inhaltstyp, Schlagwort, Zielgruppe; Sortierung nach Relevanz/Aktualität.
+5. **Quiz** „Hitzestress-Check“ – Multiple Choice, Richtig/Falsch, Bilderrätsel (Klick ins Bild), Zuordnung; sofortiges Feedback. Ohne Anmeldung.
+6. **Mitmachen** `/mitmachen` – freiwilliger, anonymer Forscherpass mit Abzeichen (nur nach Zustimmung, nur auf dem Gerät).
+7. **Redaktion** `/admin` – Demo-Konten auf der Anmeldeseite, Passwort `demo`:
+   - Tom Albers (Redaktion) reicht „Kalk für starke Schalen“ zur Prüfung ein,
+   - Dr. Lea Hoffmann (Fachprüfung) gibt frei → Ausstellung ist öffentlich,
+   - Jana Krüger (Administration) sieht Benutzer, Protokoll, Einstellungen.
 
-## Spiele
+**Präsentationsmodus:** Unten rechts zeigt ein Button, welche Anforderungen der Leistungsbeschreibung der aktuelle Screen abdeckt. Abschaltbar unter *Redaktion → Einstellungen*. Die vollständige Zuordnung steht in [`docs/ANFORDERUNGEN.md`](docs/ANFORDERUNGEN.md).
 
-Quizze und HTML-Spiele liegen in einer gemeinsamen Liste unter `/admin/spiele`. „Neues Spiel“ bietet fünf gleichwertige Einstiege:
+**Zurücksetzen:** *Redaktion → Einstellungen → Demo-Daten zurücksetzen* (oder `localStorage` mit Präfix `ntk:` leeren).
 
-1. Multiple Choice
-2. Richtig / Falsch
-3. Bilderrätsel
-4. Zuordnung
-5. HTML-Spiel als ZIP-Paket
-
-Quiz-Editoren haben zwei Screens: Grundeinstellungen und Inhaltseditor. HTML-Spiel-Editoren ebenfalls: Grundeinstellungen sowie Dateien & Vorschau mit ZIP-Upload, Explorer, Texteditor und Live-Preview.
-
-HTML-Spiele laufen isoliert im iframe (`sandbox="allow-scripts allow-forms allow-popups"`, ohne `allow-same-origin`) und kommunizieren ausschließlich per `postMessage`. Erlaubt sind HTML, CSS, JS, Bilder, Audio und Video; andere Dateien werden aus Sicherheitsgründen nicht übernommen. Assets werden beim Start in das HTML eingebettet, weil `srcdoc` keine relativen Dateien laden kann.
-
-- API-Doku: `/admin/api`
-- Vollständige Dokumentation: [`docs/GAME-API.md`](docs/GAME-API.md)
-- Copy-Paste-Skill für KI-Assistenten: Button „KI-Skill kopieren“ im Spiel-Editor bzw. in der API-Doku
+> Alle Publikationen, Personen und Zahlenwerte sind Platzhalter, keine echten FBN-Veröffentlichungen.
 
 ## Routen
 
 | Route | Inhalt |
 |---|---|
-| `/` | Anmeldung |
-| `/lernen` | Module, Fortschritt, Bestenliste |
-| `/lernen/[moduleId]` | Modul mit Stationen |
-| `/quiz/[quizId]` | Quiz-Player |
-| `/spielen/[gameId]` | HTML-Spiel im iframe |
-| `/ergebnis/[type]/[id]` | Ergebnis |
-| `/admin` | Redaktions-Dashboard |
-| `/admin/spiele` | Gemeinsame Spiele-Liste |
-| `/admin/quiz/[id]` | Quiz-Editor |
-| `/admin/spiele/[id]` | HTML-Spiel-Editor |
-| `/admin/api` | Spiel-API v1 und KI-Skill (verlinkt im ZIP-Editor) |
-| `/admin/spieler` | Spieler und Scores |
-| `/admin/einstellungen` | Einstellungen und Reset |
-
-## Speicherung
-
-Alles liegt unter `ntk:v1:*` in `localStorage`. Bei einem Versionssprung von `SEED_VERSION` werden die Demo-Daten neu angelegt. Die Spiele-Pakete werden als `GameFile[]` gespeichert; alte Einzel-HTML-Spiele werden beim Laden automatisch migriert.
+| `/` | Startseite |
+| `/themen`, `/themen/[kategorie]`, `/themen/[kategorie]/[thema]` | Ebene 1 und 2 |
+| `/ausstellung/[slug]` | Ebene 3, mit `?vorschau=1` für angemeldete Redaktion auch unveröffentlicht |
+| `/suche` | Suche mit Filtern (Zustand in der URL) |
+| `/mitmachen` | Quizze, Spiele, Forscherpass |
+| `/info/[seite]` | `ueber`, `barrierefreiheit`, `datenschutz`, `impressum` |
+| `/quiz/[id]`, `/spielen/[id]`, `/ergebnis/[typ]/[id]` | Quiz-Player, Spiel-Host, Ergebnis |
+| `/admin/...` | Redaktion: Übersicht, Ausstellungen, Struktur, Publikationen, Schlagwörter, Medien, Quiz & Spiele, Infografiken, Texte & Übersetzungen, Statistik, Benutzer & Rollen, Protokoll, Einstellungen, Spiel-API |
 
 ## Projektstruktur
 
 ```
-src/lib/bridge/          postMessage-Bridge und Protokollvalidierung
-src/lib/games/           ZIP-Verarbeitung, Asset-Inlining, API-Texte
-src/lib/stores/          Content-, Session- und Toast-Stores
-src/lib/storage/         localStorage-Zugriff und Seed-Daten
-src/routes/admin/        Redaktionsbereich
-src/routes/spielen/      Spiel-Host
-src/routes/quiz/         Quiz-Player
-docs/GAME-API.md         Spiel-API, ZIP-Regeln und KI-Skill
+src/lib/types.ts                 Datenmodell (Kategorie → Thema → Ausstellung, Publikation, Medien …)
+src/lib/i18n.svelte.ts           Oberflächentexte DE/EN, Sprachlogik
+src/lib/requirements.svelte.ts   Anforderungskatalog für den Präsentationsmodus
+src/lib/storage/                 localStorage-Zugriff, Demo-Inhalte (seed.ts)
+src/lib/stores/                  content (Inhalte, Suche, Workflow, Statistik), session (Rollen), pass (Forscherpass)
+src/lib/components/site/         Öffentliche Komponenten (Header, Karten, Medien, Galerie …)
+src/lib/components/info/         Interaktive Infografiken (THI-Rechner, Balken, Hotspots)
+src/lib/components/admin/        Redaktions-Komponenten (zweisprachige Felder, Quiz-Editor …)
+static/demo/                     Platzhalter-Medien (SVG, MP4 + WebVTT, MP3, PDF)
+static/fonts/                    Inter und Lora lokal (keine externen Abrufe)
 ```
+
+## Aufräumen nach dem Umbau
+
+Diese Dateien stammen aus dem ersten Entwurf und sind nur noch Weiterleitungen bzw. leer – sie können gelöscht werden:
+`src/routes/lernen/`, `src/routes/admin/spieler/`, `src/lib/components/PlayerHeader.svelte`.
+
+## Spiel-API
+
+HTML-Spiele (ZIP) laufen weiter isoliert im iframe und kommunizieren über `postMessage` – siehe [`docs/GAME-API.md`](docs/GAME-API.md) und `/admin/api`.

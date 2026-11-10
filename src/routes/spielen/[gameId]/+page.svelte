@@ -13,7 +13,6 @@
 	import { toasts } from '$lib/stores/toast.svelte';
 
 	onMount(() => {
-		if (!session.isLoggedIn) goto('/');
 		const onKey = (event: KeyboardEvent) => {
 			if (event.key !== 'Escape') return;
 			if (overlayFullscreen || fullscreen) {
@@ -40,10 +39,14 @@
 
 	let gameId = $derived(page.params.gameId ?? '');
 	let game = $derived(content.getGame(gameId));
-	let moduleId = $derived(game?.moduleId ?? '');
+	let homeExhibition = $derived(game ? content.exhibitionWith({ gameId: game.id }) : undefined);
 	let adminPreview = $derived(page.url.searchParams.get('from') === 'admin');
 	let backHref = $derived(
-		adminPreview ? `/admin/spiele/${gameId}?step=content` : `/lernen/${moduleId}`
+		adminPreview
+			? `/admin/spiele/${gameId}?step=content`
+			: homeExhibition && content.isPublic(homeExhibition)
+				? `/ausstellung/${homeExhibition.slug}`
+				: '/mitmachen'
 	);
 	let srcdoc = $derived(game ? bundleGame(game) : '');
 
@@ -122,7 +125,7 @@
 	<main class="mx-auto max-w-3xl p-8">
 		<div class="card text-center">
 			<p class="mb-4">Dieses Spiel gibt es nicht (mehr).</p>
-			<a class="b1" href="/lernen">Zurück zu den Modulen</a>
+			<a class="b1" href="/mitmachen">Zu den Spielen</a>
 		</div>
 	</main>
 {:else}
@@ -136,9 +139,7 @@
 			{#if adminPreview}
 				<span class="bdg !bg-berry-500/20 !text-berry-700">Redaktions-Vorschau</span>
 			{/if}
-			{#if session.player}
-				<span class="bdg">{session.player.avatar} {session.player.name}</span>
-			{/if}
+
 			<span class="bdg">{bridge.score} P.</span>
 		</div>
 
@@ -223,7 +224,7 @@
 					? 'hidden'
 					: ''}"
 			>
-				Spiel erhält: {session.player?.name ?? '–'} · api v1
+				Spiel erhält: anonymen Gast · api v1
 			</code>
 
 			{#if fullscreen || overlayFullscreen}

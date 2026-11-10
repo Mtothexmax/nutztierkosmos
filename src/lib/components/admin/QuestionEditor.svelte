@@ -1,22 +1,155 @@
 <script lang="ts">
 	import Icon from '$lib/components/Icon.svelte';
 	import ImageHotspotEditor from '$lib/components/admin/ImageHotspotEditor.svelte';
-	import type { Question } from '$lib/types';
+	import MatchConnectionsEditor from '$lib/components/admin/MatchConnectionsEditor.svelte';
+	import {
+		mediaAccept,
+		mediaAssetsOf,
+		mediaIcon,
+		mediaKindHint,
+		mediaKindLabel,
+		mediaKindOf,
+		mediaMaxFiles,
+		mediaSupportsPolygon,
+		type MediaAsset,
+		type MediaKind,
+		type Question
+	} from '$lib/types';
 	import { uid } from '$lib/utils';
 
 	type Props = { question: Question };
 	let { question }: Props = $props();
 
-	function handleImage(event: Event) {
+	const mediaKindOptions: MediaKind[] = ['image', 'video', 'infographic', 'audio'];
+	const MAX_MEDIA_BYTES = 2 * 1024 * 1024;
+	const MAX_MEDIA_TOTAL = 3 * 1024 * 1024;
+
+	let mediaError = $state('');
+	let currentKind = $derived<MediaKind>(
+		question.type === 'image' ? mediaKindOf(question) : 'image'
+	);
+	let assets = $derived<MediaAsset[]>(
+		question.type === 'image' ? mediaAssetsOf(question) : []
+	);
+	let polygonAllowed = $derived(mediaSupportsPolygon(currentKind));
+	let uploadLabel = $derived(
+		currentKind === 'video'
+			? 'Video auswählen'
+			: currentKind === 'audio'
+				? 'Audiodatei auswählen'
+				: currentKind === 'infographic'
+					? 'Infografik auswählen'
+					: 'Bild(er) auswählen'
+	);
+
+	function readAsDataUrl(file: File): Promise<string> {
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = () => resolve(reader.result as string);
+			reader.onerror = () => reject(reader.error);
+			reader.readAsDataURL(file);
+		});
+	}
+
+	// `image` bleibt als Spiegel des ersten Bildes erhalten: der Polygon-Editor
+	// und ältere Quiz-Daten lesen dieses Feld.
+	function syncLegacyImage() {
+		if (question.type !== 'image') return;
+		const first = (question.media ?? [])[0];
+		question.image =
+			first && mediaSupportsPolygon(mediaKindOf(question)) && first.mime.startsWith('image/')
+				? first.src
+				: undefined;
+	}
+
+	function setMediaKind(value: string) {
+		if (question.type !== 'image') return;
+		const kind = value as MediaKind;
+		const before = mediaKindOf(question);
+		if (kind === before) return;
+		question.mediaKind = kind;
+		mediaError = '';
+		if (!mediaSupportsPolygon(kind) && question.mode === 'click') question.mode = 'choice';
+		// Bild <-> Infografik behält die Dateien. Ein Wechsel zu Video/Audio
+		// entfernt sie, weil sie dort nicht dargestellt werden können.
+		if (mediaSupportsPolygon(before) && mediaSupportsPolygon(kind)) {
+			question.media = (question.media ?? []).slice(0, mediaMaxFiles[kind]);
+			syncLegacyImage();
+			return;
+		}
+		question.media = [];
+		question.image = undefined;
+		question.clickImageUrl = undefined;
+		question.clickPolygon = [];
+	}
+
+	function handleMedia(event: Event) {
+		if (question.type !== 'image') return;
 		const input = event.currentTarget as HTMLInputElement;
-		const file = input.files?.[0];
-		if (!file) return;
-		const reader = new FileReader();
-		reader.onload = () => {
-			question.image = reader.result as string;
-		};
-		reader.readAsDataURL(file);
+		const files = Array.from(input.files ?? []);
 		input.value = '';
+		if (files.length === 0) return;
+		const kind = mediaKindOf(question);
+		const prefix = kind === 'video' ? 'video/' : kind === 'audio' ? 'audio/' : 'image/';
+		const max = mediaMaxFiles[kind];
+		mediaError = '';
+		if (files.some((file) => !file.type.startsWith(prefix))) {
+			mediaError = `Bitte eine passende Datei für „${mediaKindLabel[kind]}“ auswählen.`;
+			return;
+		}
+		const keep: MediaAsset[] = max === 1 ? [] : [...(question.media ?? [])];
+		if (files.length > max - keep.length) {
+			mediaError = `Für „${mediaKindLabel[kind]}“ sind maximal ${max} Dateien möglich.`;
+			return;
+		}
+		const tooBig = files.find((file) => file.size > MAX_MEDIA_BYTES);
+		if (tooBig) {
+			mediaError = `${tooBig.name} ist zu groß (max. 2 MB pro Datei).`;
+			return;
+		}
+		const used = keep.reduce((n, asset) => n + Math.round(asset.src.length * 0.75), 0);
+		const added = files.reduce((n, file) => n + file.size, 0);
+		if (used + added > MAX_MEDIA_TOTAL) {
+			mediaError = 'Max. 3 MB pro Frage – Dateien werden als Data-URL im Browser gespeichert.';
+			return;
+		}
+		Promise.all(files.map(readAsDataUrl))
+			.then((urls) => {
+				if (question.type !== 'image') return;
+				question.media = [
+					...keep,
+					...files.map((file, i) => ({
+						id: uid(),
+						name: file.name,
+						mime: file.type,
+						src: urls[i]
+					}))
+				];
+				syncLegacyImage();
+				// Ein neues Bild macht die alten Polygon-Koordinaten ungültig.
+				question.clickPolygon = [];
+				question.clickImageUrl = undefined;
+			})
+			.catch(() => (mediaError = 'Die Datei konnte nicht gelesen werden.'));
+	}
+
+	function removeMedia(id: string) {
+		if (question.type !== 'image') return;
+		if (!question.media || question.media.length === 0) question.image = undefined;
+		else question.media = question.media.filter((asset) => asset.id !== id);
+		syncLegacyImage();
+		question.clickPolygon = [];
+		question.clickImageUrl = undefined;
+		mediaError = '';
+	}
+
+	function clearMedia() {
+		if (question.type !== 'image') return;
+		question.media = [];
+		question.image = undefined;
+		question.clickImageUrl = undefined;
+		question.clickPolygon = [];
+		mediaError = '';
 	}
 
 	function addOption() {
@@ -43,34 +176,6 @@
 		if (option) option.correct = !option.correct;
 	}
 
-	function addMatchSide(side: 'left' | 'right') {
-		if (question.type !== 'match') return;
-		const entry = { id: uid(), text: '' };
-		if (side === 'left') question.left = [...question.left, entry];
-		else question.right = [...question.right, entry];
-	}
-
-	function removeMatchSide(side: 'left' | 'right', id: string) {
-		if (question.type !== 'match') return;
-		if (side === 'left') question.left = question.left.filter((item) => item.id !== id);
-		else question.right = question.right.filter((item) => item.id !== id);
-		question.solution = question.solution.filter(
-			(pair) => pair.leftId !== id && pair.rightId !== id
-		);
-	}
-
-	function solutionFor(leftId: string): string {
-		if (question.type !== 'match') return '';
-		return question.solution.find((pair) => pair.leftId === leftId)?.rightId ?? '';
-	}
-
-	function setSolution(leftId: string, rightId: string) {
-		if (question.type !== 'match') return;
-		question.solution = [
-			...question.solution.filter((pair) => pair.leftId !== leftId && pair.rightId !== rightId),
-			...(rightId ? [{ leftId, rightId }] : [])
-		];
-	}
 </script>
 
 <div class="space-y-3">
@@ -144,40 +249,92 @@
 			</div>
 		</div>
 	{:else if question.type === 'image'}
-		<div>
-			<label class="lbl" for="q-img">Bild</label>
-			<div class="flex flex-wrap gap-2">
+		<div class="space-y-2">
+			<div>
+				<label class="lbl" for="q-media-kind">Medium</label>
+				<select
+					id="q-media-kind"
+					class="inp"
+					value={currentKind}
+					onchange={(e) => setMediaKind(e.currentTarget.value)}
+				>
+					{#each mediaKindOptions as kind (kind)}
+						<option value={kind}>{mediaKindLabel[kind]}</option>
+					{/each}
+				</select>
+				<p class="mt-1 text-[12px] text-ink-500">{mediaKindHint[currentKind]}</p>
+			</div>
+
+			<div class="flex flex-wrap items-center gap-2">
 				<label class="flex items-center gap-2 rounded-xl border border-sand-200 bg-sand-50 p-3 cursor-pointer">
-					<Icon name="image" class="text-ink-500" />
-					<span>Bilddatei wählen</span>
+					<Icon name={mediaIcon[currentKind]} class="text-ink-500" />
+					<span>{uploadLabel}</span>
 					<input
-						id="q-img"
+						id="q-media-file"
 						type="file"
-						accept="image/*"
+						accept={mediaAccept[currentKind]}
+						multiple={mediaMaxFiles[currentKind] > 1}
 						class="hidden"
-						onchange={handleImage}
+						onchange={handleMedia}
 					/>
 				</label>
-				{#if question.image}
-					<div class="relative">
-						<img
-							src={question.image}
-							alt="Vorschau"
-							class="max-h-32 max-w-32 rounded-lg border border-sand-200"
-						/>
-						<button
-							class="absolute top-1 right-1 rounded-full bg-err-bg p-1 hover:bg-danger-500 hover:text-white transition"
-							aria-label="Bild entfernen"
-							onclick={(e) => { e.stopPropagation(); question.image = undefined; }}
-						>
-							<Icon name="close" size={14} />
-						</button>
+				{#if assets.length > 0}
+					<button class="b3" onclick={clearMedia}>Medium entfernen</button>
+				{/if}
+				<span class="text-[12px] text-ink-500">
+					{assets.length}{mediaMaxFiles[currentKind] > 1 ? ` / ${mediaMaxFiles[currentKind]}` : ''}
+					Datei{assets.length === 1 ? '' : 'en'}
+				</span>
+			</div>
+			{#if mediaError}
+				<p class="text-[12px] text-danger-500" role="alert">{mediaError}</p>
+			{/if}
+			<p class="text-[12px] text-ink-500">
+				Max. 2 MB pro Datei, 3 MB pro Frage. Dateien werden als Data-URL direkt im Quiz
+				gespeichert – bitte kurze Videos und Audios verwenden. Das Wechseln auf eine andere
+				Medienart entfernt bisherige Dateien.
+			</p>
+
+			{#if assets.length > 0}
+				<span class="bdg">{mediaKindLabel[currentKind]}</span>
+				{#if currentKind === 'video'}
+					<video class="max-h-56 w-full rounded-lg bg-black" controls src={assets[0].src}>
+						<track kind="captions" />
+					</video>
+					<p class="text-[12px] text-ink-500">{assets[0].name}</p>
+				{:else if currentKind === 'audio'}
+					<div class="rounded-xl border border-sand-200 bg-sand-50 p-3">
+						<p class="mb-2 truncate text-[13px] font-semibold">{assets[0].name}</p>
+						<audio class="w-full" controls src={assets[0].src}></audio>
+					</div>
+				{:else}
+					<div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+						{#each assets as asset (asset.id)}
+							<div class="relative">
+								{#if asset.mime.startsWith('image/')}
+									<img
+										src={asset.src}
+										alt={asset.name}
+										class="h-24 w-full rounded-lg border border-sand-200 bg-white object-contain"
+									/>
+								{:else}
+									<div class="grid h-24 place-items-center rounded-lg border border-sand-200 bg-white text-4xl">
+										{asset.src}
+									</div>
+								{/if}
+								<button
+									class="absolute top-1 right-1 rounded-full bg-err-bg p-1 hover:bg-danger-500 hover:text-white transition"
+									aria-label={`${asset.name} entfernen`}
+									onclick={() => removeMedia(asset.id)}
+								>
+									<Icon name="close" size={14} />
+								</button>
+								<p class="truncate text-[11px] text-ink-500">{asset.name}</p>
+							</div>
+						{/each}
 					</div>
 				{/if}
-			</div>
-			<p class="mt-1 text-[12px] text-ink-500">
-				PNG, JPG, GIF, WebP. Das Bild wird als Data-URL direkt im Quiz gespeichert.
-			</p>
+			{/if}
 		</div>
 
 		<div>
@@ -200,9 +357,13 @@
 					Eingabe
 				</button>
 				<button
-					class="px-4 py-2 text-[14px] font-semibold {question.mode === 'click'
+					class="px-4 py-2 text-[14px] font-semibold disabled:cursor-not-allowed disabled:opacity-50 {question.mode === 'click'
 						? 'bg-brand-600 text-white'
 						: 'bg-white text-ink-700 hover:bg-sand-50'}"
+					disabled={!polygonAllowed}
+					title={polygonAllowed
+						? 'Polygon auf dem Bild zeichnen'
+						: 'Klick-Bereich ist nur bei Bildern und Infografiken möglich'}
 					onclick={() => {
 						question.mode = 'click';
 						if (!question.clickPolygon) question.clickPolygon = [];
@@ -212,6 +373,11 @@
 					Klick-Bereich
 				</button>
 			</div>
+			{#if !polygonAllowed}
+				<p class="mt-1 text-[12px] text-amber-500">
+					Die Position im Polygon lässt sich nur bei Bildern und Infografiken bestimmen.
+				</p>
+			{/if}
 		</div>
 
 		{#if question.mode === 'choice'}
@@ -254,71 +420,16 @@
 				</div>
 			</div>
 		{:else if question.mode === 'click'}
-			<ImageHotspotEditor {question} />
+			{#if polygonAllowed}
+				<ImageHotspotEditor {question} />
+			{:else}
+				<p class="text-[12px] text-amber-500">
+					Klick-Bereich ist nur bei Bildern und Infografiken möglich.
+				</p>
+			{/if}
 		{/if}
 	{:else if question.type === 'match'}
-		<div class="grid gap-3 sm:grid-cols-2">
-			<div>
-				<p class="lbl">Links (Begriffe)</p>
-				<div class="space-y-2">
-					{#each question.left as item (item.id)}
-						<div class="flex items-center gap-1">
-							<input class="inp" bind:value={item.text} placeholder="Begriff" />
-							<button
-								class="rounded-lg p-1 text-ink-500 hover:text-danger-500"
-								aria-label="Entfernen"
-								onclick={() => removeMatchSide('left', item.id)}
-							>
-								<Icon name="close" size={18} />
-							</button>
-						</div>
-					{/each}
-					<button class="b3" onclick={() => addMatchSide('left')}>
-						<Icon name="add" size={18} />Begriff
-					</button>
-				</div>
-			</div>
-			<div>
-				<p class="lbl">Rechts (Kategorien)</p>
-				<div class="space-y-2">
-					{#each question.right as item (item.id)}
-						<div class="flex items-center gap-1">
-							<input class="inp" bind:value={item.text} placeholder="Kategorie" />
-							<button
-								class="rounded-lg p-1 text-ink-500 hover:text-danger-500"
-								aria-label="Entfernen"
-								onclick={() => removeMatchSide('right', item.id)}
-							>
-								<Icon name="close" size={18} />
-							</button>
-						</div>
-					{/each}
-					<button class="b3" onclick={() => addMatchSide('right')}>
-						<Icon name="add" size={18} />Kategorie
-					</button>
-				</div>
-			</div>
-		</div>
-
-		<div class="space-y-2">
-			<p class="lbl">Lösungen verbinden</p>
-			{#each question.left as item (item.id)}
-				<div class="flex items-center gap-2">
-					<span class="w-28 truncate text-[13px]">{item.text || '–'}</span>
-					<Icon name="arrow_forward" size={16} class="text-ink-500" />
-					<select
-						class="inp"
-						value={solutionFor(item.id)}
-						onchange={(e) => setSolution(item.id, e.currentTarget.value)}
-					>
-						<option value="">– keine –</option>
-						{#each question.right as right (right.id)}
-							<option value={right.id}>{right.text || '–'}</option>
-						{/each}
-					</select>
-				</div>
-			{/each}
-		</div>
+		<MatchConnectionsEditor {question} />
 	{/if}
 
 	<div class="max-w-32">

@@ -1,18 +1,33 @@
 import type {
+	AuditEntry,
+	Category,
+	EditorUser,
+	Exhibition,
+	Field,
 	Game,
 	GameFile,
-	Module,
-	Player,
+	Infographic,
+	Keyword,
+	MediaItem,
+	Preferences,
+	Publication,
 	Quiz,
-	Score,
 	Settings,
-	Preferences
+	StatsConfig,
+	StatsData,
+	Topic
 } from '$lib/types';
 import { pansenPuzzleHtml, stallklimaHtml } from '$lib/games/seed-games';
 
-export const SEED_VERSION = 3;
+/**
+ * Demo-Inhalte für den Click-Dummy.
+ *
+ * WICHTIG: Publikationen, Autorinnen/Autoren und Zahlenwerte sind Platzhalter
+ * und keine echten FBN-Veröffentlichungen. Sie zeigen nur Struktur und Ablauf.
+ */
+export const SEED_VERSION = 12;
 
-const T = (d: string) => new Date(`${d}T09:00:00.000Z`).toISOString();
+const T = (d: string, h = 9) => new Date(`${d}T${String(h).padStart(2, '0')}:00:00.000Z`).toISOString();
 
 const htmlFiles = (content: string): GameFile[] => [
 	{
@@ -25,53 +40,908 @@ const htmlFiles = (content: string): GameFile[] => [
 	}
 ];
 
-export const seedModules: Module[] = [
+/* ------------------------------------------------------------------ */
+/* Struktur                                                            */
+/* ------------------------------------------------------------------ */
+
+export const seedFields: Field[] = [
+	{ id: 'f-tierwohl', title: { de: 'Tierwohl & Verhalten', en: 'Animal welfare & behaviour' }, order: 1 },
+	{ id: 'f-klima', title: { de: 'Klima & Umwelt', en: 'Climate & environment' }, order: 2 },
+	{ id: 'f-gesundheit', title: { de: 'Gesundheit & Ernährung', en: 'Health & nutrition' }, order: 3 },
+	{ id: 'f-technik', title: { de: 'Digitalisierung & Technik', en: 'Digital tools & technology' }, order: 4 }
+];
+
+export const seedCategories: Category[] = [
 	{
-		id: 'm-milch',
-		title: 'Milchkuh & Klima',
-		subtitle: 'Wie aus Gras Milch wird',
-		description: 'Wie aus Gras Milch wird – und was das mit Methan zu tun hat.',
-		emoji: '🐄',
+		id: 'c-rind',
+		slug: 'rind',
+		title: { de: 'Rind', en: 'Cattle' },
+		description: {
+			de: 'Milchkühe und Mastrinder: Wie sie fressen, sich fühlen und mit Hitze umgehen.',
+			en: 'Dairy and beef cattle: how they eat, how they feel and how they cope with heat.'
+		},
+		icon: 'agriculture',
 		color: 'forest',
-		published: true,
-		order: 1
+		imageId: 'md-kat-rind',
+		order: 1,
+		active: true
 	},
 	{
-		id: 'm-schwein',
-		title: 'Schwein & Stallklima',
-		subtitle: 'Wohlfühltemperatur und Luft',
-		description: 'Wohlfühltemperatur, Luft und Verhalten im Stall.',
-		emoji: '🐖',
-		color: 'amber',
-		published: true,
-		order: 2
-	},
-	{
-		id: 'm-gefluegel',
-		title: 'Geflügel & Verhalten',
-		subtitle: 'Was Hühner uns verraten',
-		description: 'Was Hühner uns über gutes Management verraten.',
-		emoji: '🐔',
-		color: 'sky',
-		published: true,
-		order: 3
-	},
-	{
-		id: 'm-praezision',
-		title: 'Präzisionslandwirtschaft',
-		subtitle: 'Sensoren und Daten',
-		description: 'Sensoren, Daten und das Tier im Mittelpunkt.',
-		emoji: '🛰️',
+		id: 'c-schwein',
+		slug: 'schwein',
+		title: { de: 'Schwein', en: 'Pigs' },
+		description: {
+			de: 'Stallklima, Beschäftigung und Verhalten: Was Schweinen guttut.',
+			en: 'Barn climate, enrichment and behaviour: what is good for pigs.'
+		},
+		icon: 'savings',
 		color: 'berry',
-		published: true,
-		order: 4
+		imageId: 'md-kat-schwein',
+		order: 2,
+		active: true
+	},
+	{
+		id: 'c-gefluegel',
+		slug: 'gefluegel',
+		title: { de: 'Geflügel', en: 'Poultry' },
+		description: {
+			de: 'Legehennen und Masthühner: Was ihr Verhalten über gute Haltung verrät.',
+			en: 'Laying hens and broilers: what their behaviour tells us about good husbandry.'
+		},
+		icon: 'egg',
+		color: 'amber',
+		imageId: 'md-kat-gefluegel',
+		order: 3,
+		active: true
+	},
+	{
+		id: 'c-kleinwiederkaeuer',
+		slug: 'schaf-und-ziege',
+		title: { de: 'Schaf & Ziege', en: 'Sheep & goats' },
+		description: {
+			de: 'In Vorbereitung – noch nicht öffentlich sichtbar.',
+			en: 'In preparation – not yet public.'
+		},
+		icon: 'grass',
+		color: 'sky',
+		imageId: 'md-kat-wiederkaeuer',
+		order: 4,
+		active: false
 	}
 ];
 
-export const seedQuizzes: Quiz[] = [
+export const seedTopics: Topic[] = [
+	{
+		id: 't-hitze',
+		categoryId: 'c-rind',
+		slug: 'hitzestress',
+		title: { de: 'Hitzestress bei Rindern', en: 'Heat stress in cattle' },
+		description: {
+			de: 'Warum heiße Sommer für Kühe anstrengend sind und was im Stall hilft.',
+			en: 'Why hot summers are hard on cows and what helps in the barn.'
+		},
+		fieldId: 'f-tierwohl',
+		order: 1,
+		active: true
+	},
+	{
+		id: 't-methan',
+		categoryId: 'c-rind',
+		slug: 'methan-und-fuetterung',
+		title: { de: 'Methan und Fütterung', en: 'Methane and feeding' },
+		description: {
+			de: 'Wie im Pansen Methan entsteht und welche Rolle das Futter spielt.',
+			en: 'How methane forms in the rumen and what role feed plays.'
+		},
+		fieldId: 'f-klima',
+		order: 2,
+		active: true
+	},
+	{
+		id: 't-sensorik',
+		categoryId: 'c-rind',
+		slug: 'sensoren-im-stall',
+		title: { de: 'Sensoren im Stall', en: 'Sensors in the barn' },
+		description: {
+			de: 'Was Halsband, Pedometer und Kamera über die Gesundheit der Tiere verraten.',
+			en: 'What collars, pedometers and cameras reveal about animal health.'
+		},
+		fieldId: 'f-technik',
+		order: 3,
+		active: true
+	},
+	{
+		id: 't-stallklima',
+		categoryId: 'c-schwein',
+		slug: 'stallklima',
+		title: { de: 'Stallklima', en: 'Barn climate' },
+		description: {
+			de: 'Temperatur, Luftfeuchte und frische Luft: Wohlfühlklima für Schweine.',
+			en: 'Temperature, humidity and fresh air: a comfortable climate for pigs.'
+		},
+		fieldId: 'f-tierwohl',
+		order: 1,
+		active: true
+	},
+	{
+		id: 't-beschaeftigung',
+		categoryId: 'c-schwein',
+		slug: 'beschaeftigung',
+		title: { de: 'Beschäftigung und Schwanzbeißen', en: 'Enrichment and tail biting' },
+		description: {
+			de: 'Warum Wühlen und Erkunden für Schweine so wichtig sind.',
+			en: 'Why rooting and exploring matter so much to pigs.'
+		},
+		fieldId: 'f-tierwohl',
+		order: 2,
+		active: true
+	},
+	{
+		id: 't-huehner-verhalten',
+		categoryId: 'c-gefluegel',
+		slug: 'verhalten-von-legehennen',
+		title: { de: 'Verhalten von Legehennen', en: 'Behaviour of laying hens' },
+		description: {
+			de: 'Sitzstangen, Staubbaden und Rangordnung: Was Hühner brauchen.',
+			en: 'Perches, dust bathing and pecking order: what hens need.'
+		},
+		fieldId: 'f-tierwohl',
+		order: 1,
+		active: true
+	},
+	{
+		id: 't-huehner-futter',
+		categoryId: 'c-gefluegel',
+		slug: 'futter-und-gesundheit',
+		title: { de: 'Futter und Gesundheit', en: 'Feed and health' },
+		description: {
+			de: 'Wie die Zusammensetzung des Futters Knochen und Eischale stärkt.',
+			en: 'How feed composition strengthens bones and eggshells.'
+		},
+		fieldId: 'f-gesundheit',
+		order: 2,
+		active: true
+	}
+];
+
+/* ------------------------------------------------------------------ */
+/* Schlagwortkatalog                                                   */
+/* ------------------------------------------------------------------ */
+
+const kw = (id: string, de: string, en: string): Keyword => ({ id, label: { de, en } });
+
+export const seedKeywords: Keyword[] = [
+	kw('k-hitzestress', 'Hitzestress', 'heat stress'),
+	kw('k-thi', 'Temperatur-Feuchte-Index', 'temperature-humidity index'),
+	kw('k-milchkuh', 'Milchkuh', 'dairy cow'),
+	kw('k-tierwohl', 'Tierwohl', 'animal welfare'),
+	kw('k-wasser', 'Wasserversorgung', 'water supply'),
+	kw('k-lueftung', 'Lüftung', 'ventilation'),
+	kw('k-methan', 'Methan', 'methane'),
+	kw('k-fuetterung', 'Fütterung', 'feeding'),
+	kw('k-klima', 'Klimaschutz', 'climate protection'),
+	kw('k-pansen', 'Pansen', 'rumen'),
+	kw('k-sensorik', 'Sensorik', 'sensor technology'),
+	kw('k-praezision', 'Präzisionstierhaltung', 'precision livestock farming'),
+	kw('k-stallklima', 'Stallklima', 'barn climate'),
+	kw('k-schwanzbeissen', 'Schwanzbeißen', 'tail biting'),
+	kw('k-beschaeftigung', 'Beschäftigungsmaterial', 'enrichment material'),
+	kw('k-legehenne', 'Legehenne', 'laying hen'),
+	kw('k-verhalten', 'Verhalten', 'behaviour')
+];
+
+/* ------------------------------------------------------------------ */
+/* Medien                                                              */
+/* ------------------------------------------------------------------ */
+
+const img = (
+	id: string,
+	file: string,
+	title: [string, string],
+	alt: [string, string],
+	credit = 'Illustration: Nutztierkosmos (Platzhalter)'
+): MediaItem => ({
+	id,
+	type: 'image',
+	title: { de: title[0], en: title[1] },
+	alt: { de: alt[0], en: alt[1] },
+	credit,
+	src: `/demo/${file}`,
+	mime: 'image/svg+xml',
+	sizeKb: 5,
+	width: 1600,
+	height: 900,
+	downloadable: true,
+	createdAt: T('2026-10-20'),
+	updatedAt: T('2026-10-20')
+});
+
+export const seedMedia: MediaItem[] = [
+	img(
+		'md-hitze',
+		'hitzestress.svg',
+		['Sommerhitze auf der Weide', 'Summer heat on the pasture'],
+		[
+			'Illustration: Stall und Weide unter greller Sonne, ein Thermometer zeigt hohe Temperatur.',
+			'Illustration: barn and pasture under a blazing sun, a thermometer shows a high temperature.'
+		]
+	),
+	img(
+		'md-stall-schema',
+		'stall-schema.svg',
+		['Schema eines Milchviehstalls', 'Diagram of a dairy barn'],
+		[
+			'Schematischer Stall mit Ventilator links, Sprühdüsen an der Decke, Liegeboxen und Tränke rechts.',
+			'Schematic barn with a fan on the left, sprinklers on the ceiling, cubicles and a water trough on the right.'
+		]
+	),
+	{
+		id: 'md-video-hitze',
+		type: 'video',
+		title: { de: 'Erklärvideo: Hitzestress in 16 Sekunden', en: 'Explainer: heat stress in 16 seconds' },
+		alt: {
+			de: 'Kurzes Erklärvideo mit Text-Einblendungen zum Temperatur-Feuchte-Index.',
+			en: 'Short explainer video with text overlays about the temperature-humidity index.'
+		},
+		caption: {
+			de: 'Platzhalter-Video für die Demo. Untertitel auf Deutsch und Englisch verfügbar.',
+			en: 'Placeholder video for the demo. Subtitles available in German and English.'
+		},
+		credit: 'Video: Nutztierkosmos (Platzhalter)',
+		src: '/demo/hitzestress-erklaervideo.mp4',
+		poster: '/demo/hitzestress-erklaervideo-poster.jpg',
+		mime: 'video/mp4',
+		sizeKb: 140,
+		width: 960,
+		height: 540,
+		captions: {
+			de: '/demo/hitzestress-erklaervideo.de.vtt',
+			en: '/demo/hitzestress-erklaervideo.en.vtt'
+		},
+		transcript: {
+			de: 'Ab etwa 20 Grad Celsius beginnt für Milchkühe der Wärmestress. Entscheidend ist nicht nur die Temperatur, sondern auch die Luftfeuchte. Der Temperatur-Feuchte-Index, kurz THI, fasst beides in einer Zahl zusammen. Schatten, Luftbewegung und viel frisches Wasser helfen den Tieren.',
+			en: 'From around 20 degrees Celsius, dairy cows begin to experience heat stress. What matters is not just temperature, but humidity as well. The temperature-humidity index, THI, combines both into a single number. Shade, air movement and plenty of fresh water help the animals.'
+		},
+		downloadable: false,
+		createdAt: T('2026-10-22'),
+		updatedAt: T('2026-10-22')
+	},
+	{
+		id: 'md-audio-stall',
+		type: 'audio',
+		title: { de: 'Hörstück: Ein Sommertag im Stall', en: 'Audio: a summer day in the barn' },
+		alt: { de: 'Audio-Atmosphäre aus einem Milchviehstall.', en: 'Audio atmosphere from a dairy barn.' },
+		caption: {
+			de: 'Platzhalter-Audio. Im Echtbetrieb z. B. ein Interview mit einer Wissenschaftlerin.',
+			en: 'Placeholder audio. In production, e.g. an interview with a researcher.'
+		},
+		credit: 'Audio: Nutztierkosmos (Platzhalter)',
+		src: '/demo/stall-atmosphaere.mp3',
+		mime: 'audio/mpeg',
+		sizeKb: 94,
+		transcript: {
+			de: '[Leises Rauschen von Ventilatoren, gedämpfte Stallgeräusche.] Transkript-Platzhalter: Hier stünde der vollständige Text des Interviews als barrierefreie Alternative.',
+			en: '[Soft hum of fans, muffled barn sounds.] Transcript placeholder: the full text of the interview would appear here as an accessible alternative.'
+		},
+		downloadable: false,
+		createdAt: T('2026-10-22'),
+		updatedAt: T('2026-10-22')
+	},
+	{
+		id: 'md-pdf-hitze',
+		type: 'pdf',
+		title: { de: 'Faktenblatt Hitzestress (PDF)', en: 'Fact sheet: heat stress (PDF, German)' },
+		alt: {
+			de: 'Einseitiges Faktenblatt mit THI-Formel, Anzeichen und Maßnahmen.',
+			en: 'One-page fact sheet with the THI formula, signs and measures.'
+		},
+		credit: 'Nutztierkosmos (Platzhalter)',
+		src: '/demo/faktenblatt-hitzestress.pdf',
+		mime: 'application/pdf',
+		sizeKb: 3,
+		downloadable: true,
+		createdAt: T('2026-10-23'),
+		updatedAt: T('2026-10-23')
+	},
+	img(
+		'md-methan',
+		'methan.svg',
+		['Methanmolekül über der Weide', 'Methane molecule above the pasture'],
+		[
+			'Illustration: ein Methanmolekül (ein Kohlenstoff-, vier Wasserstoffatome) schwebt über grünen Hügeln.',
+			'Illustration: a methane molecule (one carbon, four hydrogen atoms) floats above green hills.'
+		]
+	),
+	img(
+		'md-stallklima',
+		'stallklima.svg',
+		['Luftströmung im Schweinestall', 'Airflow in a pig barn'],
+		[
+			'Querschnitt eines Stalls mit vier Buchten, gestrichelte Pfeile zeigen die Luftströmung.',
+			'Cross-section of a barn with four pens; dashed arrows show the airflow.'
+		]
+	),
+	img(
+		'md-beschaeftigung',
+		'beschaeftigung.svg',
+		['Beschäftigungsmaterial', 'Enrichment material'],
+		[
+			'Stroh auf dem Boden, zwei hängende Spielelemente an Ketten.',
+			'Straw on the floor, two hanging toys on chains.'
+		]
+	),
+	img(
+		'md-gefluegel',
+		'gefluegel.svg',
+		['Hennen auf Sitzstangen', 'Hens on perches'],
+		[
+			'Illustration: Hennen sitzen auf drei übereinanderliegenden Sitzstangen, Tageslicht fällt ein.',
+			'Illustration: hens on three tiers of perches, daylight streaming in.'
+		]
+	),
+	img(
+		'md-sensoren',
+		'sensoren.svg',
+		['Sensordaten', 'Sensor data'],
+		[
+			'Ein Sensor sendet Signale, daneben eine Kurve aus Messpunkten.',
+			'A sensor sends signals, next to it a curve of data points.'
+		]
+	),
+	img('md-kat-rind', 'kat-rind.svg', ['Kategorie Rind', 'Category cattle'], ['Stilisierte Hügellandschaft als Kategoriebild.', 'Stylised landscape of hills as category image.']),
+	img('md-kat-schwein', 'kat-schwein.svg', ['Kategorie Schwein', 'Category pigs'], ['Stilisierte Hügellandschaft als Kategoriebild.', 'Stylised landscape of hills as category image.']),
+	img('md-kat-gefluegel', 'kat-gefluegel.svg', ['Kategorie Geflügel', 'Category poultry'], ['Stilisierte Hügellandschaft als Kategoriebild.', 'Stylised landscape of hills as category image.']),
+	img('md-kat-wiederkaeuer', 'kat-wiederkaeuer.svg', ['Kategorie Schaf & Ziege', 'Category sheep & goats'], ['Stilisierte Hügellandschaft als Kategoriebild.', 'Stylised landscape of hills as category image.'])
+];
+
+/* ------------------------------------------------------------------ */
+/* Publikationen (Platzhalter!)                                        */
+/* ------------------------------------------------------------------ */
+
+const FBN = 'https://www.fbn-dummerstorf.de/';
+
+export const seedPublications: Publication[] = [
+	{
+		id: 'pub-hitze-1',
+		title: 'Wärmebelastung von Milchkühen im Laufstall: Zusammenhang zwischen THI, Atemfrequenz und Futteraufnahme',
+		authors: ['A. Muster', 'B. Beispiel', 'C. Platzhalter'],
+		date: '2026-03-14',
+		summary: {
+			de: 'Platzhalter-Publikation. Die Studie beschreibt, wie sich steigende THI-Werte auf Atemfrequenz, Liegezeit und Futteraufnahme von Milchkühen auswirken.',
+			en: 'Placeholder publication. The study describes how rising THI values affect respiration rate, lying time and feed intake in dairy cows.'
+		},
+		keywordIds: ['k-hitzestress', 'k-thi', 'k-milchkuh', 'k-tierwohl'],
+		citation: 'Muster A, Beispiel B, Platzhalter C (2026): Wärmebelastung von Milchkühen im Laufstall. Demo-Journal für Nutztierforschung 12(2): 101–118. [Platzhalter]',
+		url: FBN,
+		mediaIds: ['md-pdf-hitze'],
+		createdAt: T('2026-10-01'),
+		updatedAt: T('2026-10-01')
+	},
+	{
+		id: 'pub-hitze-2',
+		title: 'Kühlungsstrategien im Vergleich: Ventilation, Sprühkühlung und Wasserangebot',
+		authors: ['D. Exempel', 'A. Muster'],
+		date: '2025-09-02',
+		summary: {
+			de: 'Platzhalter-Publikation. Vergleich verschiedener Maßnahmen, mit denen sich Hitzestress im Stall verringern lässt.',
+			en: 'Placeholder publication. Comparison of measures that can reduce heat stress in the barn.'
+		},
+		keywordIds: ['k-hitzestress', 'k-lueftung', 'k-wasser'],
+		citation: 'Exempel D, Muster A (2025): Kühlungsstrategien im Vergleich. Demo-Berichte aus der Tierhaltung 7: 33–49. [Platzhalter]',
+		url: FBN,
+		mediaIds: [],
+		createdAt: T('2026-10-01'),
+		updatedAt: T('2026-10-01')
+	},
+	{
+		id: 'pub-methan-1',
+		title: 'Fütterungsstrategien zur Minderung der Methanbildung im Pansen',
+		authors: ['E. Probe', 'F. Vorlage'],
+		date: '2025-11-20',
+		summary: {
+			de: 'Platzhalter-Publikation. Untersucht, wie Ölsaaten und Futterzusätze die Methanbildung bei Milchkühen beeinflussen.',
+			en: 'Placeholder publication. Investigates how oilseeds and feed additives affect methane formation in dairy cows.'
+		},
+		keywordIds: ['k-methan', 'k-fuetterung', 'k-pansen', 'k-klima'],
+		citation: 'Probe E, Vorlage F (2025): Fütterungsstrategien zur Minderung der Methanbildung. Demo-Journal für Nutztierforschung 11(4): 210–228. [Platzhalter]',
+		url: FBN,
+		mediaIds: [],
+		createdAt: T('2026-10-02'),
+		updatedAt: T('2026-10-02')
+	},
+	{
+		id: 'pub-sensor-1',
+		title: 'Sensorgestützte Früherkennung von Erkrankungen bei Milchkühen',
+		authors: ['G. Entwurf', 'B. Beispiel'],
+		date: '2024-06-11',
+		summary: {
+			de: 'Platzhalter-Publikation. Bewegungs- und Wiederkaudaten werden genutzt, um Auffälligkeiten früh zu erkennen.'
+		},
+		keywordIds: ['k-sensorik', 'k-praezision', 'k-milchkuh'],
+		citation: 'Entwurf G, Beispiel B (2024): Sensorgestützte Früherkennung. Demo-Berichte aus der Tierhaltung 6: 12–27. [Platzhalter]',
+		url: FBN,
+		mediaIds: [],
+		createdAt: T('2026-10-02'),
+		updatedAt: T('2026-10-02')
+	},
+	{
+		id: 'pub-stall-1',
+		title: 'Thermoregulation und Liegeverhalten von Mastschweinen bei unterschiedlichem Stallklima',
+		authors: ['H. Muster', 'C. Platzhalter'],
+		date: '2026-01-28',
+		summary: {
+			de: 'Platzhalter-Publikation. Beschreibt, wie Schweine ihr Liegeverhalten an Temperatur und Luftfeuchte anpassen.',
+			en: 'Placeholder publication. Describes how pigs adapt their lying behaviour to temperature and humidity.'
+		},
+		keywordIds: ['k-stallklima', 'k-tierwohl', 'k-verhalten'],
+		citation: 'Muster H, Platzhalter C (2026): Thermoregulation und Liegeverhalten von Mastschweinen. Demo-Journal für Nutztierforschung 12(1): 15–31. [Platzhalter]',
+		url: FBN,
+		mediaIds: [],
+		createdAt: T('2026-10-03'),
+		updatedAt: T('2026-10-03')
+	},
+	{
+		id: 'pub-besch-1',
+		title: 'Organisches Beschäftigungsmaterial und das Auftreten von Schwanzbeißen',
+		authors: ['I. Beispiel', 'D. Exempel'],
+		date: '2026-05-05',
+		summary: {
+			de: 'Platzhalter-Publikation. Vergleich verschiedener Beschäftigungsmaterialien in der Schweinehaltung.'
+		},
+		keywordIds: ['k-schwanzbeissen', 'k-beschaeftigung', 'k-tierwohl'],
+		citation: 'Beispiel I, Exempel D (2026): Organisches Beschäftigungsmaterial und Schwanzbeißen. Demo-Berichte aus der Tierhaltung 8: 3–19. [Platzhalter]',
+		url: FBN,
+		mediaIds: [],
+		createdAt: T('2026-10-03'),
+		updatedAt: T('2026-10-03')
+	},
+	{
+		id: 'pub-huhn-1',
+		title: 'Nutzung erhöhter Sitzstangen durch Legehennen im Tagesverlauf',
+		authors: ['J. Vorlage', 'E. Probe'],
+		date: '2025-04-17',
+		summary: {
+			de: 'Platzhalter-Publikation. Wann und wie intensiv Hennen erhöhte Ebenen nutzen.',
+			en: 'Placeholder publication. When and how intensively hens use elevated tiers.'
+		},
+		keywordIds: ['k-legehenne', 'k-verhalten', 'k-tierwohl'],
+		citation: 'Vorlage J, Probe E (2025): Nutzung erhöhter Sitzstangen durch Legehennen. Demo-Journal für Nutztierforschung 11(1): 44–59. [Platzhalter]',
+		url: FBN,
+		mediaIds: [],
+		createdAt: T('2026-10-04'),
+		updatedAt: T('2026-10-04')
+	}
+];
+
+/* ------------------------------------------------------------------ */
+/* Interaktive Infografiken                                            */
+/* ------------------------------------------------------------------ */
+
+export const seedInfographics: Infographic[] = [
+	{
+		id: 'ig-thi',
+		kind: 'thi',
+		title: { de: 'THI-Rechner: Wie heiß ist es für die Kuh?', en: 'THI calculator: how hot is it for the cow?' },
+		description: {
+			de: 'Stelle Temperatur und Luftfeuchte ein. Der Rechner zeigt den Temperatur-Feuchte-Index und die Belastungsstufe.',
+			en: 'Set temperature and humidity. The calculator shows the temperature-humidity index and the stress level.'
+		},
+		source: 'Formel nach NRC (1971); Schwellenwerte vereinfacht für die Demo.',
+		createdAt: T('2026-10-24'),
+		updatedAt: T('2026-10-24')
+	},
+	{
+		id: 'ig-massnahmen',
+		kind: 'hotspots',
+		title: { de: 'Was im Stall gegen Hitze hilft', en: 'What helps against heat in the barn' },
+		description: {
+			de: 'Wähle die Punkte im Stall aus, um mehr über die einzelnen Maßnahmen zu erfahren.',
+			en: 'Select the points in the barn to learn more about each measure.'
+		},
+		imageId: 'md-stall-schema',
+		hotspots: [
+			{
+				id: 'h1',
+				x: 0.17,
+				y: 0.32,
+				title: { de: 'Ventilator', en: 'Fan' },
+				text: {
+					de: 'Luftbewegung im Tierbereich führt Wärme vom Körper ab. Wichtig ist, dass die Luft dort ankommt, wo die Tiere liegen und fressen.',
+					en: 'Air movement in the animal area carries heat away from the body. The air must reach the places where the animals lie and feed.'
+				}
+			},
+			{
+				id: 'h2',
+				x: 0.48,
+				y: 0.22,
+				title: { de: 'Sprühkühlung', en: 'Sprinklers' },
+				text: {
+					de: 'Wasser auf dem Fell verdunstet und kühlt. Zusammen mit einem Ventilator wirkt Sprühkühlung besonders gut.',
+					en: 'Water on the coat evaporates and cools. Sprinklers work best in combination with fans.'
+				}
+			},
+			{
+				id: 'h3',
+				x: 0.83,
+				y: 0.55,
+				title: { de: 'Tränke', en: 'Water trough' },
+				text: {
+					de: 'An heißen Tagen trinkt eine Milchkuh deutlich mehr als sonst. Genug Tränkeplätze und sauberes Wasser sind entscheidend.',
+					en: 'On hot days a dairy cow drinks considerably more than usual. Enough drinking places and clean water are essential.'
+				}
+			},
+			{
+				id: 'h4',
+				x: 0.33,
+				y: 0.58,
+				title: { de: 'Liegebereich', en: 'Lying area' },
+				text: {
+					de: 'Gestresste Kühe stehen mehr und liegen weniger. Ein kühler, trockener Liegebereich hilft ihnen, sich zu erholen.',
+					en: 'Stressed cows stand more and lie down less. A cool, dry lying area helps them recover.'
+				}
+			}
+		],
+		createdAt: T('2026-10-24'),
+		updatedAt: T('2026-10-24')
+	},
+	{
+		id: 'ig-methan',
+		kind: 'bars',
+		title: { de: 'Woher die Emissionen einer Milchkuh stammen', en: 'Where a dairy cow’s emissions come from' },
+		description: {
+			de: 'Beispielhafte Aufteilung (Demo-Werte). Wähle einen Balken für die Erklärung.',
+			en: 'Example breakdown (demo values). Select a bar for the explanation.'
+		},
+		unit: { de: '% (Demo-Werte)', en: '% (demo values)' },
+		bars: [
+			{
+				id: 'b1',
+				label: { de: 'Verdauung (Pansen)', en: 'Digestion (rumen)' },
+				value: 55,
+				note: {
+					de: 'Der größte Teil entsteht beim Abbau von Pflanzenfasern durch Mikroorganismen im Pansen.',
+					en: 'Most of it is produced when microorganisms in the rumen break down plant fibre.'
+				}
+			},
+			{
+				id: 'b2',
+				label: { de: 'Wirtschaftsdünger', en: 'Manure' },
+				value: 20,
+				note: {
+					de: 'Auch bei Lagerung von Gülle und Mist entstehen Methan und Lachgas.',
+					en: 'Storing slurry and manure also releases methane and nitrous oxide.'
+				}
+			},
+			{
+				id: 'b3',
+				label: { de: 'Futtererzeugung', en: 'Feed production' },
+				value: 18,
+				note: {
+					de: 'Anbau, Düngung und Transport des Futters tragen ebenfalls bei.',
+					en: 'Growing, fertilising and transporting feed also contribute.'
+				}
+			},
+			{
+				id: 'b4',
+				label: { de: 'Energie & Sonstiges', en: 'Energy & other' },
+				value: 7,
+				note: {
+					de: 'Strom für Melktechnik und Kühlung sowie weitere Posten.',
+					en: 'Electricity for milking and cooling, plus other items.'
+				}
+			}
+		],
+		source: 'Demo-Werte zur Veranschaulichung, keine Messdaten.',
+		createdAt: T('2026-10-25'),
+		updatedAt: T('2026-10-25')
+	}
+];
+
+/* ------------------------------------------------------------------ */
+/* Ausstellungen                                                       */
+/* ------------------------------------------------------------------ */
+
+type ExhibitionSeed = Omit<Exhibition, 'versions' | 'createdAt' | 'updatedAt'> & {
+	createdAt?: string;
+	updatedAt?: string;
+};
+
+const ex = (e: ExhibitionSeed): Exhibition => {
+	const createdAt = e.createdAt ?? T('2026-10-15');
+	const updatedAt = e.updatedAt ?? T('2026-11-05');
+	const base = { ...e, createdAt, updatedAt };
+	return {
+		...base,
+		versions: [
+			{
+				id: `${e.id}-v1`,
+				at: createdAt,
+				by: e.authorId,
+				note: 'Erstfassung angelegt',
+				snapshot: structuredClone({ ...base, status: 'draft' as const })
+			},
+			...(e.status === 'published'
+				? [
+						{
+							id: `${e.id}-v2`,
+							at: e.publishedAt ?? updatedAt,
+							by: 'u-review',
+							note: 'Fachlich geprüft und veröffentlicht',
+							snapshot: structuredClone(base)
+						}
+					]
+				: [])
+		]
+	};
+};
+
+export const seedExhibitions: Exhibition[] = [
+	ex({
+		id: 'e-hitzestress',
+		slug: 'wenn-es-der-kuh-zu-heiss-wird',
+		topicId: 't-hitze',
+		title: { de: 'Wenn es der Kuh zu heiß wird', en: 'When it gets too hot for the cow' },
+		teaser: {
+			de: 'Schon ab rund 20 °C kann eine Milchkuh unter Hitzestress leiden. Warum das so ist, woran man es erkennt und was im Stall hilft.',
+			en: 'A dairy cow can suffer from heat stress at temperatures as low as around 20 °C. Why that is, how to recognise it and what helps in the barn.'
+		},
+		heroMediaId: 'md-hitze',
+		readingMinutes: 6,
+		audiences: ['allgemein', 'schule', 'presse'],
+		publicationIds: ['pub-hitze-1', 'pub-hitze-2'],
+		keywordIds: ['k-hitzestress', 'k-thi', 'k-milchkuh', 'k-tierwohl', 'k-wasser', 'k-lueftung'],
+		status: 'published',
+		authorId: 'u-editor',
+		publishedAt: T('2026-11-03'),
+		createdAt: T('2026-10-20'),
+		updatedAt: T('2026-11-03'),
+		blocks: [
+			{
+				id: 'b-h-facts',
+				type: 'facts',
+				heading: { de: 'Das Wichtigste in Kürze', en: 'Key points' },
+				items: [
+					{
+						de: 'Milchkühe fühlen sich bei kühlen Temperaturen am wohlsten – Hitze belastet sie viel früher als uns Menschen.',
+						en: 'Dairy cows are most comfortable at cool temperatures – heat affects them much sooner than it affects humans.'
+					},
+					{
+						de: 'Neben der Temperatur zählt die Luftfeuchte. Der Temperatur-Feuchte-Index (THI) fasst beides zusammen.',
+						en: 'Humidity matters as well as temperature. The temperature-humidity index (THI) combines both.'
+					},
+					{
+						de: 'Schatten, Luftbewegung, Sprühkühlung und viel frisches Wasser verringern den Stress deutlich.',
+						en: 'Shade, air movement, sprinklers and plenty of fresh water reduce stress considerably.'
+					}
+				]
+			},
+			{
+				id: 'b-h-intro',
+				type: 'text',
+				heading: { de: 'Warum Kühe Hitze schlecht vertragen', en: 'Why cows cope poorly with heat' },
+				body: {
+					de: 'Eine Milchkuh ist ein kleines Kraftwerk: Bei der Verdauung im Pansen und bei der Milchbildung entsteht viel Wärme. Diese Wärme muss der Körper wieder abgeben – über die Haut, die Atmung und durch Schwitzen, das bei Rindern aber nur schwach ausgeprägt ist.\n\nIst die Umgebung warm und feucht, gelingt das immer schlechter. Die Körpertemperatur steigt, die Tiere atmen schneller und fressen weniger. Das kostet Kraft und kann auf Dauer die Gesundheit beeinträchtigen.',
+					en: 'A dairy cow is a small power plant: digestion in the rumen and milk production generate a lot of heat. The body has to release this heat again – through the skin, breathing and sweating, which is only weakly developed in cattle.\n\nIf the environment is warm and humid, this becomes increasingly difficult. Body temperature rises, the animals breathe faster and eat less. This saps their strength and can harm their health in the long run.'
+				}
+			},
+			{ id: 'b-h-thi', type: 'infographic', infographicId: 'ig-thi' },
+			{ id: 'b-h-video', type: 'media', mediaId: 'md-video-hitze' },
+			{
+				id: 'b-h-signs',
+				type: 'text',
+				heading: { de: 'Woran man Hitzestress erkennt', en: 'How to recognise heat stress' },
+				body: {
+					de: 'Die Atemfrequenz ist ein guter Frühindikator: Eine entspannte Kuh atmet etwa 20- bis 40-mal pro Minute, unter Hitzestress deutlich häufiger. Weitere Anzeichen sind vermehrtes Stehen statt Liegen, Speicheln, Hecheln mit geöffnetem Maul und eine geringere Futteraufnahme. Häufig sinkt auch die Milchleistung.',
+					en: 'Respiration rate is a good early indicator: a relaxed cow breathes about 20 to 40 times a minute, considerably more under heat stress. Other signs are standing rather than lying, drooling, panting with the mouth open and reduced feed intake. Milk yield often drops as well.'
+				}
+			},
+			{ id: 'b-h-hotspots', type: 'infographic', infographicId: 'ig-massnahmen' },
+			{
+				id: 'b-h-gallery',
+				type: 'gallery',
+				heading: { de: 'Bildergalerie', en: 'Image gallery' },
+				mediaIds: ['md-hitze', 'md-stall-schema', 'md-sensoren']
+			},
+			{ id: 'b-h-audio', type: 'media', mediaId: 'md-audio-stall' },
+			{ id: 'b-h-pdf', type: 'media', mediaId: 'md-pdf-hitze' },
+			{ id: 'b-h-quiz', type: 'quiz', quizId: 'q-hitze' }
+		]
+	}),
+	ex({
+		id: 'e-methan',
+		slug: 'methan-aus-dem-pansen',
+		topicId: 't-methan',
+		title: { de: 'Methan aus dem Pansen', en: 'Methane from the rumen' },
+		teaser: {
+			de: 'Kühe stoßen Methan aus – aber warum eigentlich? Und kann das richtige Futter helfen, die Emissionen zu senken?',
+			en: 'Cows emit methane – but why? And can the right feed help reduce emissions?'
+		},
+		heroMediaId: 'md-methan',
+		readingMinutes: 5,
+		audiences: ['allgemein', 'schule', 'studium'],
+		publicationIds: ['pub-methan-1'],
+		keywordIds: ['k-methan', 'k-fuetterung', 'k-pansen', 'k-klima', 'k-milchkuh'],
+		status: 'published',
+		authorId: 'u-editor',
+		publishedAt: T('2026-10-28'),
+		createdAt: T('2026-10-18'),
+		updatedAt: T('2026-10-28'),
+		blocks: [
+			{
+				id: 'b-m-text',
+				type: 'text',
+				heading: { de: 'Ein Magen voller Mikroben', en: 'A stomach full of microbes' },
+				body: {
+					de: 'Rinder sind Wiederkäuer. In ihrem Pansen leben Milliarden Mikroorganismen, die Gras und Heu zerlegen – Pflanzenfasern, die wir Menschen nicht verdauen können. Dabei entsteht Wasserstoff, den bestimmte Mikroben, die Archaeen, zu Methan umbauen. Die Kuh gibt das Gas vor allem über das Maul ab.',
+					en: 'Cattle are ruminants. Billions of microorganisms live in their rumen and break down grass and hay – plant fibre that humans cannot digest. This produces hydrogen, which certain microbes, the archaea, convert into methane. The cow releases the gas mainly through its mouth.'
+				}
+			},
+			{ id: 'b-m-bars', type: 'infographic', infographicId: 'ig-methan' },
+			{
+				id: 'b-m-feed',
+				type: 'text',
+				heading: { de: 'Welche Rolle das Futter spielt' },
+				body: {
+					de: 'Die Zusammensetzung der Ration beeinflusst, wie viel Methan entsteht. Fettreiche Ölsaaten wie Raps oder Lein können die Methanbildner hemmen. Auch Futterzusätze werden erforscht. Wichtig ist dabei immer, dass die Kuh gesund bleibt und ihr Futter gut verwerten kann.'
+				}
+			},
+			{ id: 'b-m-quiz', type: 'quiz', quizId: 'q-methan' },
+			{ id: 'b-m-game', type: 'game', gameId: 'g-pansen' }
+		]
+	}),
+	ex({
+		id: 'e-sensoren',
+		slug: 'was-sensoren-ueber-kuehe-verraten',
+		topicId: 't-sensorik',
+		title: { de: 'Was Sensoren über Kühe verraten' },
+		teaser: {
+			de: 'Halsbänder und Pedometer messen Bewegung und Wiederkauen rund um die Uhr. So lassen sich Erkrankungen früher erkennen.'
+		},
+		heroMediaId: 'md-sensoren',
+		readingMinutes: 4,
+		audiences: ['allgemein', 'studium'],
+		publicationIds: ['pub-sensor-1'],
+		keywordIds: ['k-sensorik', 'k-praezision', 'k-milchkuh'],
+		status: 'published',
+		authorId: 'u-editor',
+		publishedAt: T('2026-09-30'),
+		createdAt: T('2026-09-20'),
+		updatedAt: T('2026-09-30'),
+		blocks: [
+			{
+				id: 'b-s-text',
+				type: 'text',
+				body: {
+					de: 'Moderne Ställe sind voller Messtechnik. Ein Sensor am Halsband erkennt, wie lange eine Kuh wiederkaut. Wiederkaut sie plötzlich weniger, kann das ein frühes Zeichen für eine Erkrankung sein – oft schon, bevor man es dem Tier ansieht. Die Daten ersetzen aber nicht den Blick der Tierhalterin oder des Tierhalters, sondern ergänzen ihn.'
+				}
+			},
+			{
+				id: 'b-s-facts',
+				type: 'facts',
+				heading: { de: 'Was gemessen wird' },
+				items: [{ de: 'Aktivität und Schrittzahl' }, { de: 'Wiederkauzeit' }, { de: 'Liege- und Fresszeiten' }]
+			},
+			{ id: 'b-s-quiz', type: 'quiz', quizId: 'q-sensorik' }
+		]
+	}),
+	ex({
+		id: 'e-stallklima',
+		slug: 'wohlfuehlklima-im-schweinestall',
+		topicId: 't-stallklima',
+		title: { de: 'Wohlfühlklima im Schweinestall', en: 'A comfortable climate in the pig barn' },
+		teaser: {
+			de: 'Schweine können kaum schwitzen. Wie warm, feucht und frisch die Luft im Stall ist, entscheidet daher stark über ihr Wohlbefinden.',
+			en: 'Pigs can hardly sweat. How warm, humid and fresh the air in the barn is therefore has a strong effect on their well-being.'
+		},
+		heroMediaId: 'md-stallklima',
+		readingMinutes: 4,
+		audiences: ['allgemein', 'schule'],
+		publicationIds: ['pub-stall-1'],
+		keywordIds: ['k-stallklima', 'k-tierwohl', 'k-lueftung', 'k-verhalten'],
+		status: 'published',
+		authorId: 'u-editor',
+		publishedAt: T('2026-10-12'),
+		createdAt: T('2026-10-05'),
+		updatedAt: T('2026-10-12'),
+		blocks: [
+			{
+				id: 'b-st-text',
+				type: 'text',
+				heading: { de: 'Schweine zeigen, wie es ihnen geht', en: 'Pigs show how they feel' },
+				body: {
+					de: 'Wie Schweine liegen, verrät viel über das Stallklima: Ist es ihnen zu kalt, liegen sie eng aneinander. Ist es zu warm, liegen sie ausgestreckt und mit Abstand – und suchen kühle, feuchte Stellen. Eine gute Lüftung sorgt für frische Luft, ohne dass es zieht.',
+					en: 'The way pigs lie tells you a lot about the barn climate: if they are too cold, they huddle together. If it is too warm, they lie stretched out and apart – and look for cool, damp spots. Good ventilation provides fresh air without draughts.'
+				}
+			},
+			{ id: 'b-st-quiz', type: 'quiz', quizId: 'q-stallklima' },
+			{ id: 'b-st-game', type: 'game', gameId: 'g-stallklima' }
+		]
+	}),
+	ex({
+		id: 'e-beschaeftigung',
+		slug: 'warum-schweine-wuehlen-muessen',
+		topicId: 't-beschaeftigung',
+		title: { de: 'Warum Schweine wühlen müssen' },
+		teaser: {
+			de: 'Schweine sind neugierig und wollen erkunden. Fehlt passendes Material, kann es zu Schwanzbeißen kommen.'
+		},
+		heroMediaId: 'md-beschaeftigung',
+		readingMinutes: 4,
+		audiences: ['allgemein'],
+		publicationIds: ['pub-besch-1'],
+		keywordIds: ['k-schwanzbeissen', 'k-beschaeftigung', 'k-tierwohl'],
+		status: 'review',
+		authorId: 'u-editor',
+		createdAt: T('2026-11-04'),
+		updatedAt: T('2026-11-08'),
+		blocks: [
+			{
+				id: 'b-b-text',
+				type: 'text',
+				body: {
+					de: 'Wühlen, Kauen und Erkunden gehören zum natürlichen Verhalten von Schweinen. Stroh, Heu oder Holz bieten dafür Gelegenheit. Entwurf – wartet auf fachliche Prüfung.'
+				}
+			},
+			{ id: 'b-b-quiz', type: 'quiz', quizId: 'q-schwein-verhalten' }
+		]
+	}),
+	ex({
+		id: 'e-huehner',
+		slug: 'warum-huehner-hoch-hinaus-wollen',
+		topicId: 't-huehner-verhalten',
+		title: { de: 'Warum Hühner hoch hinaus wollen', en: 'Why hens like to perch up high' },
+		teaser: {
+			de: 'Zum Schlafen fliegen Hennen gern auf erhöhte Sitzstangen. Das hat mit ihren wilden Vorfahren zu tun.',
+			en: 'Hens like to fly up onto raised perches to sleep. It has to do with their wild ancestors.'
+		},
+		heroMediaId: 'md-gefluegel',
+		readingMinutes: 3,
+		audiences: ['allgemein', 'schule'],
+		publicationIds: ['pub-huhn-1'],
+		keywordIds: ['k-legehenne', 'k-verhalten', 'k-tierwohl'],
+		status: 'published',
+		authorId: 'u-editor',
+		publishedAt: T('2026-08-21'),
+		createdAt: T('2026-08-10'),
+		updatedAt: T('2026-08-21'),
+		blocks: [
+			{
+				id: 'b-hu-text',
+				type: 'text',
+				body: {
+					de: 'Das Bankivahuhn, die Wildform unseres Haushuhns, schläft in Bäumen – sicher vor Fressfeinden. Diesen Drang haben auch unsere Legehennen behalten. Erhöhte Sitzstangen geben ihnen Sicherheit und Ruhe. Für die Haltung heißt das: genug Sitzplätze in verschiedenen Höhen und gut erreichbare Ebenen.',
+					en: 'The red junglefowl, the wild ancestor of our domestic chicken, sleeps in trees – safe from predators. Our laying hens have kept this urge. Raised perches give them security and rest. For husbandry, this means enough perches at different heights and easily accessible tiers.'
+				}
+			}
+		]
+	}),
+	ex({
+		id: 'e-huhn-futter',
+		slug: 'kalk-fuer-starke-schalen',
+		topicId: 't-huehner-futter',
+		title: { de: 'Kalk für starke Schalen' },
+		teaser: { de: 'Entwurf: Wie Calcium im Futter Knochen und Eischale stärkt.' },
+		heroMediaId: 'md-gefluegel',
+		readingMinutes: 3,
+		audiences: ['allgemein'],
+		publicationIds: [],
+		keywordIds: ['k-legehenne', 'k-fuetterung'],
+		status: 'draft',
+		authorId: 'u-editor',
+		createdAt: T('2026-11-07'),
+		updatedAt: T('2026-11-09'),
+		blocks: [{ id: 'b-hf-text', type: 'text', body: { de: 'Hier entsteht eine neue Ausstellung.' } }]
+	})
+];
+
+/* ------------------------------------------------------------------ */
+/* Quiz und Spiele                                                     */
+/* ------------------------------------------------------------------ */
+
+const baseQuizzes: Quiz[] = [
 	{
 		id: 'q-methan',
-		moduleId: 'm-milch',
+		topicId: 't-methan',
 		title: 'Was weißt du über Methan?',
 		description: 'Sechs Fragen zu Pansen, Futter und Emissionen.',
 		published: true,
@@ -170,7 +1040,7 @@ export const seedQuizzes: Quiz[] = [
 	},
 	{
 		id: 'q-stallklima',
-		moduleId: 'm-schwein',
+		topicId: 't-stallklima',
 		title: 'Stallklima-Check',
 		description: 'Vier Fragen zu Temperatur, Luft und Verhalten.',
 		published: true,
@@ -223,8 +1093,137 @@ export const seedQuizzes: Quiz[] = [
 		]
 	},
 	{
+		id: 'q-schwein-verhalten',
+		topicId: 't-beschaeftigung',
+		title: 'Was sagt mir das Schwein?',
+		description:
+			'Fünf Situationen aus dem Schweinealltag: Welche Deutung ist plausibel – und was müsste man noch wissen?',
+		published: true,
+		timerSeconds: null,
+		createdAt: T('2026-11-10'),
+		updatedAt: T('2026-11-10'),
+		questions: [
+			{
+				id: 'v1',
+				type: 'image',
+				prompt: 'Das Schwein hält den Rüssel dicht an einen Ast im Laub. Welche Deutung ist am plausibelsten?',
+				explanation:
+					'Rüssel am Boden, Ohren nach vorn, ruhige Körperhaltung: Das Schwein erkundet neugierig. Wühlen und Erkunden sind Grundbedürfnisse – fehlt passendes Material, steigt das Risiko für Stress und Schwanzbeißen.',
+				points: 10,
+				mode: 'choice',
+				mediaKind: 'image',
+				media: [
+					{
+						id: 'v1-img',
+						name: 'Ein geflecktes Schwein schnuppert auf einer Weide an einem moosigen Ast im Herbstlaub.',
+						mime: 'image/jpeg',
+						src: '/demo/schwein-neugierig.jpg'
+					}
+				],
+				options: [
+					{ id: 'v1b', text: 'Es ist krank und frisst deshalb Laub.', correct: false },
+					{ id: 'v1a', text: 'Es erkundet neugierig seine Umgebung.', correct: true },
+					{ id: 'v1c', text: 'Es hat Angst vor dem Ast.', correct: false }
+				]
+			},
+			{
+				id: 'v2',
+				type: 'image',
+				prompt: 'Das Schwein drückt den Rüssel an einen Zaunpfosten. Was ist eine plausible Deutung?',
+				explanation:
+					'Schweine sind soziale Tiere und nehmen viel über den Rüssel wahr. Hier sucht es wahrscheinlich Kontakt. Um sicher zu sein, braucht man mehr Informationen: Ist auf der anderen Seite ein Artgenosse oder ein Mensch? Wird das Schwein allein gehalten?',
+				points: 10,
+				mode: 'choice',
+				mediaKind: 'image',
+				media: [
+					{
+						id: 'v2-img',
+						name: 'Ein geflecktes Schwein steht an einem Holzzaun und drückt den Rüssel an einen Pfosten.',
+						mime: 'image/jpeg',
+						src: '/demo/schwein-sucht-kontakt.jpg'
+					}
+				],
+				options: [
+					{ id: 'v2b', text: 'Es ist aggressiv und will den Zaun zerstören.', correct: false },
+					{ id: 'v2c', text: 'Es hat Durst.', correct: false },
+					{ id: 'v2a', text: 'Es sucht Kontakt zu Artgenossen oder Menschen.', correct: true }
+				]
+			},
+			{
+				id: 'v3',
+				type: 'image',
+				prompt: 'Das Schwein lehnt sich an den Zaun, die Augen sind halb geschlossen. Was zeigt es am ehesten?',
+				explanation:
+					'Halb geschlossene Augen und eine angelehnte, entspannte Haltung sprechen für Müdigkeit. Ein einzelner Moment sagt aber wenig: Wirkt das Schwein über längere Zeit matt, frisst es schlecht oder liegt es oft abseits, sollte man an Hitze oder Krankheit denken.',
+				points: 10,
+				mode: 'choice',
+				mediaKind: 'image',
+				media: [
+					{
+						id: 'v3-img',
+						name: 'Ein geflecktes Schwein lehnt mit dem Hinterteil am Holzzaun, die Augen halb geschlossen.',
+						mime: 'image/jpeg',
+						src: '/demo/schwein-muede.jpg'
+					}
+				],
+				options: [
+					{ id: 'v3a', text: 'Es ist müde und ruht sich aus.', correct: true },
+					{ id: 'v3c', text: 'Es sucht nach Futter.', correct: false },
+					{ id: 'v3b', text: 'Es ist besonders verspielt.', correct: false }
+				]
+			},
+			{
+				id: 'v4',
+				type: 'image',
+				prompt: 'Das Schwein drückt sich mit gesenktem Kopf und hängendem Schwanz an den Zaun. Wie lässt sich das deuten?',
+				explanation:
+					'Gesenkter Kopf, hängender Schwanz und ein Körper, der sich an den Zaun drückt: Das Schwein zieht sich zurück – ein mögliches Zeichen für Angst oder Stress. Ein Schwein kann äußerlich gesund aussehen und sich trotzdem nicht wohlfühlen. Wichtig ist: Was hat es erschreckt? Gibt es Rangkämpfe? Hat es genug Platz und Rückzugsorte?',
+				points: 10,
+				mode: 'choice',
+				mediaKind: 'image',
+				media: [
+					{
+						id: 'v4-img',
+						name: 'Ein geflecktes Schwein drückt sich mit gesenktem Kopf und hängendem Schwanz an einen Holzzaun.',
+						mime: 'image/jpeg',
+						src: '/demo/schwein-angst.jpg'
+					}
+				],
+				options: [
+					{ id: 'v4b', text: 'Es ist entspannt und zufrieden.', correct: false },
+					{ id: 'v4a', text: 'Es hat Angst oder ist gestresst und zieht sich zurück.', correct: true },
+					{ id: 'v4c', text: 'Es fordert die anderen zum Spielen auf.', correct: false }
+				]
+			},
+			{
+				id: 'v5',
+				type: 'image',
+				prompt:
+					'Warum ist Schwein Emma unruhig? Auf dem Bild läuft Emma an den Gitterstäben ihrer Bucht entlang – das macht sie immer wieder. Welche Maßnahme wäre ein sinnvoller erster Schritt?',
+				explanation:
+					'Wiederholtes Hin- und Herlaufen kann viele Ursachen haben: Langeweile, Hunger, Hitze, zu wenig Platz oder Stress in der Gruppe. Deshalb zuerst beobachten: Wann tritt es auf? Stimmen Futter, Wasser, Temperatur und Beschäftigung? Sofort trennen wäre zusätzlicher Stress, Ignorieren übersieht ein mögliches Tierwohlproblem.',
+				points: 10,
+				mode: 'choice',
+				mediaKind: 'image',
+				media: [
+					{
+						id: 'v5-img',
+						name: 'Ferkel Emma läuft im Stroh an den Gitterstäben der Bucht entlang. Im Hintergrund liegen andere Ferkel, daneben ein Spielball und ein Holzstück.',
+						mime: 'image/jpeg',
+						src: '/demo/schwein-emma-gitter.jpg'
+					}
+				],
+				options: [
+					{ id: 'v5a', text: 'Verhalten beobachten und mögliche Umweltfaktoren untersuchen.', correct: true },
+					{ id: 'v5b', text: 'Emma sofort von den anderen Tieren trennen.', correct: false },
+					{ id: 'v5c', text: 'Das Verhalten grundsätzlich ignorieren.', correct: false }
+				]
+			}
+		]
+	},
+	{
 		id: 'q-futter',
-		moduleId: 'm-milch',
+		topicId: 't-methan',
 		title: 'Futter oder Falle?',
 		description: 'Vier Bilder, vier Entscheidungen.',
 		published: false,
@@ -292,7 +1291,7 @@ export const seedQuizzes: Quiz[] = [
 	},
 	{
 		id: 'q-sensorik',
-		moduleId: 'm-praezision',
+		topicId: 't-sensorik',
 		title: 'Sensoren im Stall',
 		description: 'Drei Fragen zu Präzisionslandwirtschaft und Tierwohl.',
 		published: true,
@@ -348,7 +1347,7 @@ export const seedQuizzes: Quiz[] = [
 export const seedGames: Game[] = [
 	{
 		id: 'g-pansen',
-		moduleId: 'm-milch',
+		topicId: 't-methan',
 		title: 'Pansen-Puzzle',
 		description: 'Finde die drei Futterbausteine, die Methan reduzieren.',
 		kind: 'html',
@@ -362,7 +1361,7 @@ export const seedGames: Game[] = [
 	},
 	{
 		id: 'g-stallklima',
-		moduleId: 'm-schwein',
+		topicId: 't-stallklima',
 		title: 'Stallklima-Simulator',
 		description: 'Stelle Temperatur und Luftfeuchte optimal ein.',
 		kind: 'html',
@@ -376,57 +1375,290 @@ export const seedGames: Game[] = [
 	}
 ];
 
-export const seedPlayers: Player[] = [
-	{ id: 'p-lena', name: 'Lena', avatar: '🦊', createdAt: T('2026-10-20'), lastActiveAt: T('2026-11-06') },
-	{ id: 'p-jonas', name: 'Jonas', avatar: '🐻', createdAt: T('2026-10-21'), lastActiveAt: T('2026-11-05') },
-	{ id: 'p-mia', name: 'Mia', avatar: '🦉', createdAt: T('2026-10-22'), lastActiveAt: T('2026-11-04') },
-	{ id: 'p-emre', name: 'Emre', avatar: '🐺', createdAt: T('2026-10-24'), lastActiveAt: T('2026-11-02') },
-	{ id: 'p-weber', name: 'Frau Weber', avatar: '👩‍🏫', createdAt: T('2026-10-19'), lastActiveAt: T('2026-10-30') }
+
+/* ------------------------------------------------------------------ */
+/* Beispiel-Quiz zum Hitzestress (DE + EN)                             */
+/* ------------------------------------------------------------------ */
+
+const stallImage = [{ id: 'qa-stall', name: 'Stall-Schema', mime: 'image/svg+xml', src: '/demo/stall-schema.svg' }];
+
+export const hitzeQuizzes: Quiz[] = [
+	{
+		id: 'q-hitze',
+		topicId: 't-hitze',
+		lang: 'de',
+		title: 'Hitzestress-Check',
+		description: 'Fünf Fragen zur Ausstellung „Wenn es der Kuh zu heiß wird“.',
+		published: true,
+		timerSeconds: null,
+		createdAt: T('2026-10-25'),
+		updatedAt: T('2026-11-03'),
+		questions: [
+			{
+				id: 'h1',
+				type: 'mc',
+				prompt: 'Welche zwei Werte fasst der Temperatur-Feuchte-Index (THI) zusammen?',
+				explanation: 'Der THI kombiniert Lufttemperatur und relative Luftfeuchte. Feuchte Luft erschwert die Abgabe von Wärme.',
+				points: 10,
+				multiple: false,
+				options: [
+					{ id: 'h1a', text: 'Lufttemperatur und Luftfeuchte', correct: true },
+					{ id: 'h1b', text: 'Körpergewicht und Milchmenge', correct: false },
+					{ id: 'h1c', text: 'Windstärke und Sonnenstunden', correct: false }
+				]
+			},
+			{
+				id: 'h2',
+				type: 'tf',
+				prompt: 'Milchkühe geraten erst ab etwa 35 °C in Hitzestress.',
+				explanation: 'Falsch. Schon ab rund 20 °C – je nach Luftfeuchte – kann Hitzestress beginnen.',
+				points: 10,
+				correct: false
+			},
+			{
+				id: 'h3',
+				type: 'image',
+				prompt: 'Tippe im Bild auf den Ventilator.',
+				explanation: 'Der Ventilator links sorgt für Luftbewegung im Tierbereich und führt Wärme ab.',
+				points: 10,
+				mode: 'click',
+				mediaKind: 'image',
+				media: stallImage,
+				clickImageUrl: '/demo/stall-schema.svg',
+				clickInstruction: 'Tippe oder klicke auf den Ventilator.',
+				clickPolygon: [
+					{ x: 0.09, y: 0.18 },
+					{ x: 0.25, y: 0.18 },
+					{ x: 0.25, y: 0.46 },
+					{ x: 0.09, y: 0.46 }
+				]
+			},
+			{
+				id: 'h4',
+				type: 'match',
+				prompt: 'Ordne jede Maßnahme ihrer Wirkung zu.',
+				explanation: 'Jede Maßnahme setzt an einer anderen Stelle an – am besten wirken sie zusammen.',
+				points: 10,
+				left: [
+					{ id: 'h4l1', text: 'Ventilator' },
+					{ id: 'h4l2', text: 'Sprühkühlung' },
+					{ id: 'h4l3', text: 'Tränke' },
+					{ id: 'h4l4', text: 'Schatten' }
+				],
+				right: [
+					{ id: 'h4r1', text: 'Luftbewegung führt Wärme ab' },
+					{ id: 'h4r2', text: 'Verdunstung kühlt das Fell' },
+					{ id: 'h4r3', text: 'Ersetzt verlorene Flüssigkeit' },
+					{ id: 'h4r4', text: 'Schützt vor direkter Sonne' }
+				],
+				solution: [
+					{ leftId: 'h4l1', rightId: 'h4r1' },
+					{ leftId: 'h4l2', rightId: 'h4r2' },
+					{ leftId: 'h4l3', rightId: 'h4r3' },
+					{ leftId: 'h4l4', rightId: 'h4r4' }
+				]
+			},
+			{
+				id: 'h5',
+				type: 'mc',
+				prompt: 'Woran erkennt man Hitzestress? (2 Antworten)',
+				explanation: 'Schnelle Atmung und vermehrtes Stehen sind typische Anzeichen.',
+				points: 10,
+				multiple: true,
+				options: [
+					{ id: 'h5a', text: 'Schnellere Atmung', correct: true },
+					{ id: 'h5b', text: 'Die Kuh steht mehr und liegt weniger', correct: true },
+					{ id: 'h5c', text: 'Die Kuh frisst deutlich mehr', correct: false },
+					{ id: 'h5d', text: 'Das Fell wird dunkler', correct: false }
+				]
+			}
+		]
+	},
+	{
+		id: 'q-hitze-en',
+		topicId: 't-hitze',
+		lang: 'en',
+		translationOf: 'q-hitze',
+		title: 'Heat stress check',
+		description: 'Five questions on the exhibition “When it gets too hot for the cow”.',
+		published: true,
+		timerSeconds: null,
+		createdAt: T('2026-10-26'),
+		updatedAt: T('2026-11-03'),
+		questions: [
+			{
+				id: 'he1',
+				type: 'mc',
+				prompt: 'Which two values does the temperature-humidity index (THI) combine?',
+				explanation: 'The THI combines air temperature and relative humidity. Humid air makes it harder to release heat.',
+				points: 10,
+				multiple: false,
+				options: [
+					{ id: 'he1a', text: 'Air temperature and humidity', correct: true },
+					{ id: 'he1b', text: 'Body weight and milk yield', correct: false },
+					{ id: 'he1c', text: 'Wind speed and hours of sunshine', correct: false }
+				]
+			},
+			{
+				id: 'he2',
+				type: 'tf',
+				prompt: 'Dairy cows only experience heat stress from about 35 °C.',
+				explanation: 'False. Heat stress can begin at around 20 °C, depending on humidity.',
+				points: 10,
+				correct: false
+			},
+			{
+				id: 'he3',
+				type: 'image',
+				prompt: 'Tap the fan in the picture.',
+				explanation: 'The fan on the left creates air movement in the animal area and carries heat away.',
+				points: 10,
+				mode: 'click',
+				mediaKind: 'image',
+				media: stallImage,
+				clickImageUrl: '/demo/stall-schema.svg',
+				clickInstruction: 'Tap or click the fan.',
+				clickPolygon: [
+					{ x: 0.09, y: 0.18 },
+					{ x: 0.25, y: 0.18 },
+					{ x: 0.25, y: 0.46 },
+					{ x: 0.09, y: 0.46 }
+				]
+			},
+			{
+				id: 'he4',
+				type: 'match',
+				prompt: 'Match each measure to its effect.',
+				explanation: 'Each measure works in a different way – they are most effective together.',
+				points: 10,
+				left: [
+					{ id: 'he4l1', text: 'Fan' },
+					{ id: 'he4l2', text: 'Sprinklers' },
+					{ id: 'he4l3', text: 'Water trough' },
+					{ id: 'he4l4', text: 'Shade' }
+				],
+				right: [
+					{ id: 'he4r1', text: 'Air movement carries heat away' },
+					{ id: 'he4r2', text: 'Evaporation cools the coat' },
+					{ id: 'he4r3', text: 'Replaces lost fluid' },
+					{ id: 'he4r4', text: 'Protects from direct sun' }
+				],
+				solution: [
+					{ leftId: 'he4l1', rightId: 'he4r1' },
+					{ leftId: 'he4l2', rightId: 'he4r2' },
+					{ leftId: 'he4l3', rightId: 'he4r3' },
+					{ leftId: 'he4l4', rightId: 'he4r4' }
+				]
+			},
+			{
+				id: 'he5',
+				type: 'mc',
+				prompt: 'How can you recognise heat stress? (2 answers)',
+				explanation: 'Faster breathing and standing more are typical signs.',
+				points: 10,
+				multiple: true,
+				options: [
+					{ id: 'he5a', text: 'Faster breathing', correct: true },
+					{ id: 'he5b', text: 'The cow stands more and lies down less', correct: true },
+					{ id: 'he5c', text: 'The cow eats much more', correct: false },
+					{ id: 'he5d', text: 'The coat turns darker', correct: false }
+				]
+			}
+		]
+	}
 ];
 
-const score = (
-	id: string,
-	playerId: string,
-	refType: 'quiz' | 'game',
-	refId: string,
-	points: number,
-	maxPoints: number,
-	day: string
-): Score => ({
-	id,
-	playerId,
-	refType,
-	refId,
-	points,
-	maxPoints,
-	durationMs: 240000,
-	at: T(day)
-});
+/* ------------------------------------------------------------------ */
+/* Redaktion: Benutzer, Protokoll                                      */
+/* ------------------------------------------------------------------ */
 
-export const seedScores: Score[] = [
-	score('sc1', 'p-lena', 'game', 'g-pansen', 200, 200, '2026-11-01'),
-	score('sc2', 'p-lena', 'quiz', 'q-methan', 60, 60, '2026-10-31'),
-	score('sc3', 'p-lena', 'game', 'g-stallklima', 150, 150, '2026-11-03'),
-	score('sc4', 'p-lena', 'quiz', 'q-futter', 15, 20, '2026-11-04'),
-	score('sc5', 'p-jonas', 'game', 'g-pansen', 200, 200, '2026-11-02'),
-	score('sc6', 'p-jonas', 'quiz', 'q-methan', 60, 60, '2026-11-02'),
-	score('sc7', 'p-jonas', 'game', 'g-stallklima', 140, 150, '2026-11-03'),
-	score('sc8', 'p-mia', 'game', 'g-pansen', 200, 200, '2026-11-03'),
-	score('sc9', 'p-mia', 'quiz', 'q-methan', 60, 60, '2026-11-03'),
-	score('sc10', 'p-mia', 'game', 'g-stallklima', 130, 150, '2026-11-04'),
-	score('sc11', 'p-emre', 'game', 'g-pansen', 150, 200, '2026-11-01'),
-	score('sc12', 'p-emre', 'quiz', 'q-methan', 60, 60, '2026-11-02'),
-	score('sc13', 'p-weber', 'quiz', 'q-methan', 60, 60, '2026-10-30')
+export const seedUsers: EditorUser[] = [
+	{ id: 'u-admin', name: 'Jana Krüger', email: 'j.krueger@example.org', role: 'admin', active: true, lastLoginAt: T('2026-11-09', 8) },
+	{ id: 'u-editor', name: 'Tom Albers', email: 't.albers@example.org', role: 'editor', active: true, lastLoginAt: T('2026-11-09', 10) },
+	{ id: 'u-review', name: 'Dr. Lea Hoffmann', email: 'l.hoffmann@example.org', role: 'reviewer', active: true, lastLoginAt: T('2026-11-08', 14) },
+	{ id: 'u-analyst', name: 'Sven Ruhl', email: 's.ruhl@example.org', role: 'analyst', active: true, lastLoginAt: T('2026-11-06', 9) },
+	{ id: 'u-old', name: 'Praktikant (deaktiviert)', email: 'praktikum@example.org', role: 'editor', active: false }
 ];
+
+const audit = (id: string, at: string, userId: string, action: string, target: string, level: 'info' | 'security' = 'info'): AuditEntry => ({ id, at, userId, action, target, level });
+
+export const seedAudit: AuditEntry[] = [
+	audit('a1', T('2026-11-09', 10), 'u-editor', 'Anmeldung erfolgreich', 'Redaktion', 'security'),
+	audit('a2', T('2026-11-08', 15), 'u-editor', 'Zur Prüfung eingereicht', 'Warum Schweine wühlen müssen'),
+	audit('a3', T('2026-11-08', 14), 'u-review', 'Anmeldung erfolgreich', 'Redaktion', 'security'),
+	audit('a4', T('2026-11-07', 11), 'u-admin', 'Rolle geändert: Redaktion → deaktiviert', 'Praktikant (deaktiviert)', 'security'),
+	audit('a5', T('2026-11-03', 16), 'u-review', 'Veröffentlicht', 'Wenn es der Kuh zu heiß wird'),
+	audit('a6', T('2026-11-03', 9), 'u-editor', 'Medium hochgeladen', 'Faktenblatt Hitzestress (PDF)'),
+	audit('a7', T('2026-11-02', 8), 'u-admin', 'Fehlgeschlagener Anmeldeversuch', 'unbekannt@example.org', 'security'),
+	audit('a8', T('2026-10-28', 12), 'u-review', 'Veröffentlicht', 'Methan aus dem Pansen')
+];
+
+/* ------------------------------------------------------------------ */
+/* Statistik – aggregierte Demo-Zahlen                                 */
+/* ------------------------------------------------------------------ */
+
+function demoDaily(): Record<string, number> {
+	const out: Record<string, number> = {};
+	const end = new Date('2026-11-09T00:00:00Z');
+	for (let i = 29; i >= 0; i--) {
+		const d = new Date(end);
+		d.setUTCDate(end.getUTCDate() - i);
+		const weekday = d.getUTCDay();
+		const base = 180 + Math.round(60 * Math.sin(i / 4)) + (29 - i) * 4;
+		out[d.toISOString().slice(0, 10)] = weekday === 0 || weekday === 6 ? Math.round(base * 0.6) : base;
+	}
+	return out;
+}
+
+export const seedStats: StatsData = {
+	daily: demoDaily(),
+	exhibitions: {
+		'e-hitzestress': 1840,
+		'e-methan': 1210,
+		'e-stallklima': 760,
+		'e-sensoren': 540,
+		'e-huehner': 410
+	},
+	categories: { 'c-rind': 3590, 'c-schwein': 760, 'c-gefluegel': 410 },
+	quizStarts: { 'q-hitze': 620, 'q-hitze-en': 48, 'q-methan': 455, 'q-stallklima': 210, 'q-sensorik': 130 },
+	quizCompletions: { 'q-hitze': 512, 'q-hitze-en': 39, 'q-methan': 371, 'q-stallklima': 168, 'q-sensorik': 97 },
+	quizScore: {
+		'q-hitze': { sum: 512 * 0.74, n: 512 },
+		'q-hitze-en': { sum: 39 * 0.69, n: 39 },
+		'q-methan': { sum: 371 * 0.63, n: 371 },
+		'q-stallklima': { sum: 168 * 0.81, n: 168 },
+		'q-sensorik': { sum: 97 * 0.7, n: 97 }
+	},
+	searches: { hitze: 96, methan: 71, kuh: 64, schwein: 40, stall: 33, tierwohl: 28, sensor: 12 },
+	dwell: {}
+};
+
+export const seedStatsConfig: StatsConfig = {
+	pageviews: true,
+	topics: true,
+	interactions: true,
+	successRates: true,
+	searchTerms: true,
+	dwellTime: false,
+	retentionDays: 180
+};
 
 export const seedSettings: Settings = {
 	platformName: 'Nutztierkosmos',
-	subtitle: 'Das Forschungsinstitut FBN erklärt, wie Nutztierhaltung wirklich funktioniert.',
+	subtitle: {
+		de: 'Forschung zu Nutztieren – verständlich erklärt vom Forschungsinstitut für Nutztierbiologie.',
+		en: 'Research on farm animals – clearly explained by the Research Institute for Farm Animal Biology.'
+	},
 	pointsPerAnswer: 10,
-	levelThresholds: { forscher: 150, forscherin: 300 },
-	leaderboardPublic: true
+	gamification: true,
+	englishEnabled: true,
+	downloads: 'released',
+	presentationMode: true,
+	contactEmail: 'kommunikation@example.org'
 };
 
 export const seedPrefs: Preferences = {
-	hideTriggerWarnings: false,
+	hideTriggerWarnings: false
 };
+
+export const seedQuizzes: Quiz[] = [...hitzeQuizzes, ...baseQuizzes];

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import TopicSelect from '$lib/components/admin/TopicSelect.svelte';
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
@@ -183,10 +184,25 @@
 				</div>
 
 				<div>
-					<label class="lbl" for="quiz-module">Modul</label>
-					<select id="quiz-module" class="inp" bind:value={draft.moduleId}>
-						{#each content.modules as module (module.id)}
-							<option value={module.id}>{module.title}</option>
+					<label class="lbl" for="quiz-module">Themenschwerpunkt</label>
+					<TopicSelect id="quiz-module" bind:value={draft.topicId} />
+				</div>
+
+				<div>
+					<label class="lbl" for="quiz-lang">Sprache</label>
+					<select id="quiz-lang" class="inp" bind:value={draft.lang}>
+						<option value="de">Deutsch</option>
+						<option value="en">Englisch</option>
+					</select>
+					<p class="mt-1 text-[13px] text-ink-500">Für eine englische Fassung ein eigenes Quiz anlegen und unten das Original wählen.</p>
+				</div>
+
+				<div>
+					<label class="lbl" for="quiz-orig">Übersetzung von</label>
+					<select id="quiz-orig" class="inp" bind:value={draft.translationOf}>
+						<option value={undefined}>– keine (Original) –</option>
+						{#each content.quizzes.filter((q) => q.id !== draft?.id && !q.translationOf) as q (q.id)}
+							<option value={q.id}>{q.title}</option>
 						{/each}
 					</select>
 				</div>

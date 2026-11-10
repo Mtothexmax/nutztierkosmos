@@ -1,4 +1,5 @@
 <script lang="ts">
+	import TopicSelect from '$lib/components/admin/TopicSelect.svelte';
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
@@ -274,12 +275,8 @@
 				</div>
 
 				<div>
-					<label class="lbl" for="game-module">Modul</label>
-					<select id="game-module" class="inp" bind:value={draft.moduleId}>
-						{#each content.modules as module (module.id)}
-							<option value={module.id}>{module.title}</option>
-						{/each}
-					</select>
+					<label class="lbl" for="game-module">Themenschwerpunkt</label>
+					<TopicSelect id="game-module" bind:value={draft.topicId} />
 				</div>
 
 				<div>
