@@ -1,0 +1,9 @@
+# Binärdateien nie umwandeln (Zeilenenden)
+*.pdf binary
+*.jpg binary
+*.png binary
+*.mp3 binary
+*.mp4 binary
+*.woff binary
+*.woff2 binary
+*.zip binary
