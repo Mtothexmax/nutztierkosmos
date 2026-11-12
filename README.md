@@ -84,6 +84,8 @@ Kategorie (Tierart)          z. B. Rind, Schwein, Geflügel
 - **Ausstellungen** bestehen aus frei anordenbaren Bausteinen. Quizze und Spiele sind gleichrangige
   „Mitmach-Angebote“ – maßgeblich für ihre Einordnung ist das Thema, nicht die Art.
 - **Zweisprachig:** Alle pflegbaren Texte haben eine deutsche (Pflicht) und eine englische Fassung.
+  Auch Quizze und Spiele werden nur einmal angelegt; im Editor schaltet die Redaktion zwischen Deutsch
+  und Englisch um. HTML-Spiele erhalten die Sprache per `postMessage` (`INIT.payload.locale`).
   Fehlt die Übersetzung, erscheint der deutsche Text mit Hinweis.
 
 Das vollständige Datenmodell steht in [`src/lib/types.ts`](src/lib/types.ts).

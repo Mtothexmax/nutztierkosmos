@@ -1,3 +1,6 @@
+/** Sprache, die die Plattform dem Spiel mitteilt. */
+export type GameLocale = 'de' | 'en';
+
 export type HostMessage =
 	| {
 			source: 'ntk-platform';
@@ -7,9 +10,12 @@ export type HostMessage =
 				player: { id: string; name: string; avatar: string };
 				game: { id: string; title: string; maxPoints: number };
 				theme: { mode: 'light'; primary: string };
-				locale: 'de-DE';
+				/** Sprache, in der das Spiel laufen soll: "de" oder "en". */
+				locale: GameLocale;
 			};
 	  }
+	/** Sprache während des Spiels gewechselt. */
+	| { source: 'ntk-platform'; type: 'LOCALE'; payload: { locale: GameLocale } }
 	| { source: 'ntk-platform'; type: 'PAUSE' }
 	| { source: 'ntk-platform'; type: 'RESUME' }
 	| { source: 'ntk-platform'; type: 'RESET' };

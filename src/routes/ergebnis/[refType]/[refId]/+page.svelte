@@ -8,6 +8,7 @@
 	import { pass } from '$lib/stores/pass.svelte';
 	import type { LastResult } from '$lib/types';
 	import { formatDuration } from '$lib/utils';
+	import { quizLocale } from '$lib/activities';
 
 	showReqs(['feedback', 'gamification', 'privacy']);
 
@@ -17,7 +18,8 @@
 	let result = $derived(stored && stored.refId === refId && stored.refType === refType ? stored : null);
 
 	let quiz = $derived(refType === 'quiz' ? content.getQuiz(refId) : undefined);
-	let en = $derived(quiz ? quiz.lang === 'en' : i18n.active === 'en');
+	/** Sprache wie im Quiz (unvollständig übersetzte Quizze laufen auf Deutsch). */
+	let en = $derived(quiz ? quizLocale(quiz, i18n.active) === 'en' : i18n.active === 'en');
 	const L = (de: string, english: string) => (en ? english : de);
 
 	let quote = $derived(result ? Math.round((result.points / Math.max(1, result.maxPoints)) * 100) : 0);

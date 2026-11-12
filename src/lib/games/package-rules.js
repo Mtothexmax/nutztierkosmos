@@ -23,10 +23,10 @@ export const ALLOWED_EXTENSIONS = [
 /**
  * @typedef {object} GameManifest
  * @property {string} id            Stabile Kennung, z. B. "g-heisser-tag" (Kleinbuchstaben, Ziffern, Bindestrich).
- * @property {string} title
- * @property {string} [description]
- * @property {'de'|'en'} [lang]     Sprache des Spiels (Standard: de).
- * @property {string} [translationOf] ID des Original-Spiels, wenn dies eine Übersetzung ist.
+ * @property {{ de: string, en?: string }} title   Titel auf Deutsch (Pflicht) und Englisch.
+ * @property {{ de: string, en?: string }} description Kurzbeschreibung auf Deutsch und Englisch.
+ * @property {('de'|'en')[]} languages Sprachen, die das Spiel selbst kann (Standard: ["de"]).
+ *                                  Die Plattform schickt die passende im INIT (payload.locale).
  * @property {string} [topic]       Themenschwerpunkt als "kategorie/thema", z. B. "rind/hitzestress".
  * @property {string} [topicId]     Alternativ die interne ID des Themas.
  * @property {number} maxPoints     Höchstpunktzahl (> 0), muss zu SCORE/COMPLETE passen.
@@ -37,9 +37,27 @@ export const ALLOWED_EXTENSIONS = [
 
 const ID_PATTERN = /^[a-z0-9][a-z0-9-]{1,62}$/;
 const KNOWN_KEYS = new Set([
-	'$schema', 'id', 'title', 'description', 'lang', 'translationOf', 'topic', 'topicId',
-	'maxPoints', 'triggerWarning', 'published', 'version', 'apiVersion'
+	'$schema', 'id', 'title', 'description', 'languages', 'topic', 'topicId',
+	'maxPoints', 'triggerWarning', 'published', 'version', 'apiVersion',
+	// veraltet, wird noch gelesen:
+	'lang'
 ]);
+
+const LOCALES = ['de', 'en'];
+
+/**
+ * Text auf Deutsch und Englisch: { "de": "…", "en": "…" }. Ein einfacher String gilt als Deutsch.
+ * @param {unknown} value
+ * @returns {{ de: string, en: string } | null} null, wenn die Form nicht stimmt
+ */
+function readL10n(value) {
+	if (value === undefined) return { de: '', en: '' };
+	if (typeof value === 'string') return { de: value.trim(), en: '' };
+	if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+	const v = /** @type {Record<string, unknown>} */ (value);
+	if ((v.de !== undefined && typeof v.de !== 'string') || (v.en !== undefined && typeof v.en !== 'string')) return null;
+	return { de: typeof v.de === 'string' ? v.de.trim() : '', en: typeof v.en === 'string' ? v.en.trim() : '' };
+}
 
 /**
  * Prüft und normalisiert eine game.json (ggf. zusammengeführt mit der Datei neben dem ZIP).
@@ -61,14 +79,28 @@ export function validateManifest(raw) {
 	if (!id) errors.push('„id“ fehlt.');
 	else if (!ID_PATTERN.test(id)) errors.push(`„id“ „${id}“ ist ungültig (nur a–z, 0–9 und Bindestrich, 2–63 Zeichen).`);
 
-	const title = str('title');
-	if (!title) errors.push('„title“ fehlt.');
+	const title = readL10n(m.title);
+	if (!title) errors.push('„title“ muss { "de": "…", "en": "…" } oder ein Text sein.');
+	else if (!title.de) errors.push('„title“ braucht mindestens einen deutschen Titel ("de").');
+	const description = readL10n(m.description);
+	if (!description) errors.push('„description“ muss { "de": "…", "en": "…" } oder ein Text sein.');
+	if (title && !title.en) warnings.push('„title.en“ fehlt – auf der englischen Seite erscheint der deutsche Titel.');
 
 	const maxPoints = Number(m.maxPoints);
 	if (!Number.isFinite(maxPoints) || maxPoints <= 0) errors.push('„maxPoints“ muss eine Zahl größer 0 sein.');
 
-	const lang = str('lang') ?? 'de';
-	if (lang !== 'de' && lang !== 'en') errors.push('„lang“ muss "de" oder "en" sein.');
+	/** @type {('de'|'en')[]} */ let languages = ['de'];
+	if (m.languages !== undefined) {
+		if (!Array.isArray(m.languages) || !m.languages.length || m.languages.some((l) => !LOCALES.includes(l))) {
+			errors.push('„languages“ muss eine Liste aus "de" und/oder "en" sein, z. B. ["de", "en"].');
+		} else languages = /** @type {('de'|'en')[]} */ ([...new Set(m.languages)]);
+	} else if (m.lang !== undefined) {
+		// Altes Format: eine Sprache pro Paket.
+		const lang = str('lang');
+		if (lang !== 'de' && lang !== 'en') errors.push('„lang“ muss "de" oder "en" sein.');
+		else languages = [lang];
+		warnings.push('„lang“ ist veraltet – bitte „languages“ verwenden, z. B. ["de", "en"].');
+	}
 
 	const topic = str('topic');
 	const topicId = str('topicId');
@@ -84,10 +116,9 @@ export function validateManifest(raw) {
 	return {
 		manifest: {
 			id: /** @type {string} */ (id),
-			title: /** @type {string} */ (title),
-			description: str('description') ?? '',
-			lang: /** @type {'de'|'en'} */ (lang),
-			translationOf: str('translationOf'),
+			title: /** @type {{ de: string, en: string }} */ (title),
+			description: /** @type {{ de: string, en: string }} */ (description),
+			languages,
 			topic,
 			topicId,
 			maxPoints: Math.round(maxPoints),

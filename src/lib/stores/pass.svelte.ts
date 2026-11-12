@@ -81,6 +81,7 @@ class PassStore {
 		);
 		const allCats = content.activeCategories().filter((c) => content.exhibitionsOfCategory(c.id).length);
 		const goodQuizzes = Object.values(this.data.quizzes).filter((r) => r >= 0.8).length;
+		// 'q-hitze-en' war früher die englische Fassung (eigener Datensatz) – alte Pässe zählen weiter.
 		const heat = Math.max(this.data.quizzes['q-hitze'] ?? 0, this.data.quizzes['q-hitze-en'] ?? 0);
 		return [
 			{ id: 'first', icon: 'auto_stories', title: 'badge.first', text: 'badge.first.text', earned: this.data.read.length > 0 },

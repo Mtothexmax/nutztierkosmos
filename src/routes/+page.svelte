@@ -15,7 +15,7 @@
 	let exhibitions = $derived(content.publicExhibitions());
 	let featured = $derived(exhibitions[0]);
 	let latest = $derived(exhibitions.slice(1, 4));
-	let quizCount = $derived(content.quizzes.filter((x) => x.published && (x.lang ?? 'de') === 'de').length);
+	let quizCount = $derived(content.quizzes.filter((x) => x.published).length);
 	let publicationCount = $derived(
 		new Set(exhibitions.flatMap((e) => e.publicationIds)).size
 	);

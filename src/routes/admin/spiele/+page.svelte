@@ -31,7 +31,7 @@
 		const quizzes: Row[] = content.quizzes.map((quiz) => ({
 			id: quiz.id,
 			kind: 'quiz',
-			title: quiz.title,
+			title: quiz.title.de,
 			topicId: quiz.topicId,
 			typeLabel: quiz.questions.length
 				? `Quiz · ${questionTypeLabel[quiz.questions[0].type]}`
@@ -46,7 +46,7 @@
 		const games: Row[] = content.games.map((game) => ({
 			id: game.id,
 			kind: 'html',
-			title: game.title,
+			title: game.title.de,
 			topicId: game.topicId,
 			typeLabel: 'HTML-Spiel · ZIP',
 			points: game.maxPoints,
@@ -114,7 +114,7 @@
 
 	function createQuizOfType(type: Question['type']) {
 		const quiz = content.createQuiz(content.topics[0]?.id ?? '');
-		quiz.title = quizTitles[type];
+		quiz.title = { de: quizTitles[type], en: '' };
 		quiz.questions.push(emptyQuestion(type));
 		content.updateQuiz(structuredClone($state.snapshot(quiz)));
 		newOpen = false;

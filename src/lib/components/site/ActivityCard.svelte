@@ -23,7 +23,7 @@
 	let { activity, variant = 'card', headingLevel = 3, context = 'none', showExhibition = false }: Props = $props();
 
 	let item = $derived(activity.item);
-	let lang = $derived(item.lang ?? 'de');
+	let lang = $derived(activity.lang);
 	let topic = $derived(content.getTopic(item.topicId));
 	let category = $derived(content.getCategory(topic?.categoryId));
 	let best = $derived(pass.best(item.id));
@@ -50,8 +50,8 @@
 				<p class="flex items-center gap-2 text-[12px] font-semibold tracking-[0.12em] text-lime-500 uppercase">
 					<Icon name={kindIcon} size={18} />{kindLabel} · {t('exh.testKnowledge')}
 				</p>
-				<svelte:element this={`h${headingLevel}`} class="font-serif text-[24px] font-semibold" {lang}>{item.title}</svelte:element>
-				<p class="text-white/85" {lang}>{item.description}</p>
+				<svelte:element this={`h${headingLevel}`} class="font-serif text-[24px] font-semibold" {lang}>{activity.title}</svelte:element>
+				<p class="text-white/85" {lang}>{activity.description}</p>
 				<p class="text-[13px] text-white/70">
 					{meta} · {t('exh.optional')}
 					{#if lang !== i18n.active} · {t('lang.missingShort')}{/if}
@@ -71,8 +71,8 @@
 				<span class="eyebrow">{tr(topic?.title)}</span>
 			{/if}
 		</div>
-		<svelte:element this={`h${headingLevel}`} class="h3" {lang}>{item.title}</svelte:element>
-		<p class="text-[15px] text-ink-700" {lang}>{item.description}</p>
+		<svelte:element this={`h${headingLevel}`} class="h3" {lang}>{activity.title}</svelte:element>
+		<p class="text-[15px] text-ink-700" {lang}>{activity.description}</p>
 		<p class="text-[13px] text-ink-500">
 			{meta}
 			{#if lang !== i18n.active} · {t('lang.missingShort')}{/if}

@@ -6,6 +6,7 @@
 	import { session } from '$lib/stores/session.svelte';
 	import { toasts } from '$lib/stores/toast.svelte';
 	import type { L10n } from '$lib/types';
+	import { quizHasLocale } from '$lib/activities';
 
 	showReqs(['i18n', 'translation-flow', 'i18n-context', 'cms-nocode']);
 
@@ -16,7 +17,8 @@
 		{ label: 'Kategorien und Themenschwerpunkte', icon: 'account_tree', href: '/admin/struktur', items: [...content.categories, ...content.topics].map((x) => ({ name: x.title.de, ok: has(x.title) && has(x.description), href: '/admin/struktur' })) },
 		{ label: 'Medien (Titel, Alternativtext)', icon: 'perm_media', href: '/admin/medien', items: content.media.map((m) => ({ name: m.title.de, ok: has(m.title) && has(m.alt), href: `/admin/medien?id=${m.id}` })) },
 		{ label: 'Schlagwörter', icon: 'sell', href: '/admin/schlagwoerter', items: content.keywords.map((k) => ({ name: k.label.de, ok: has(k.label), href: '/admin/schlagwoerter' })) },
-		{ label: 'Quizze (eigene englische Fassung)', icon: 'quiz', href: '/admin/spiele', items: content.quizzes.filter((q) => !q.translationOf).map((q) => ({ name: q.title, ok: content.quizzes.some((x) => x.translationOf === q.id), href: `/admin/quiz/${q.id}` })) }
+		{ label: 'Quizze (alle Texte; im Editor auf Englisch umschalten)', icon: 'quiz', href: '/admin/spiele', items: content.quizzes.map((q) => ({ name: q.title.de, ok: quizHasLocale(q, 'en'), href: `/admin/quiz/${q.id}?lang=en` })) },
+		{ label: 'Spiele (Titel, Beschreibung)', icon: 'sports_esports', href: '/admin/spiele', items: content.games.map((g) => ({ name: g.title.de, ok: has(g.title) && has(g.description), href: `/admin/spiele/${g.id}?lang=en` })) }
 	]);
 
 	let q = $state('');

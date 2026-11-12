@@ -3,6 +3,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import ImageHotspotEditor from '$lib/components/admin/ImageHotspotEditor.svelte';
 	import MatchConnectionsEditor from '$lib/components/admin/MatchConnectionsEditor.svelte';
+	import LText from '$lib/components/admin/LText.svelte';
 	import {
 		mediaAccept,
 		mediaAssetsOf,
@@ -157,7 +158,7 @@
 		if (question.type !== 'mc' && question.type !== 'image') return;
 		question.options = [
 			...(question.options ?? []),
-			{ id: uid(), text: '', correct: false }
+			{ id: uid(), text: { de: '', en: '' }, correct: false }
 		];
 	}
 
@@ -180,15 +181,9 @@
 </script>
 
 <div class="space-y-3">
-	<div>
-		<label class="lbl" for="q-prompt">Frage</label>
-		<textarea id="q-prompt" class="inp" rows="2" bind:value={question.prompt}></textarea>
-	</div>
+	<LText id="q-prompt" label="Frage" multiline bind:value={question.prompt} />
 
-	<div>
-		<label class="lbl" for="q-exp">Erklärung (optional)</label>
-		<textarea id="q-exp" class="inp" rows="2" bind:value={question.explanation}></textarea>
-	</div>
+	<LText id="q-exp" label="Erklärung (optional)" multiline bind:value={question.explanation} />
 
 	{#if question.type === 'mc'}
 		<div class="space-y-2">
@@ -211,7 +206,7 @@
 							onchange={() => setSingleCorrect(option.id)}
 						/>
 					{/if}
-					<input class="inp flex-1" bind:value={option.text} placeholder="Antworttext" />
+					<LText class="flex-1" compact ariaLabel="Antworttext" placeholder="Antworttext" bind:value={option.text} />
 					<button
 						class="rounded-lg p-1 text-ink-500 hover:bg-err-bg hover:text-danger-500"
 						aria-label="Option entfernen"
@@ -368,7 +363,7 @@
 					onclick={() => {
 						question.mode = 'click';
 						if (!question.clickPolygon) question.clickPolygon = [];
-						if (!question.clickInstruction) question.clickInstruction = '';
+						if (!question.clickInstruction) question.clickInstruction = { de: '', en: '' };
 					}}
 				>
 					Klick-Bereich
@@ -392,7 +387,7 @@
 							aria-label="Richtig"
 							onchange={() => setSingleCorrect(option.id)}
 						/>
-						<input class="inp flex-1" bind:value={option.text} placeholder="Antworttext" />
+						<LText class="flex-1" compact ariaLabel="Antworttext" placeholder="Antworttext" bind:value={option.text} />
 						<button
 							class="rounded-lg p-1 text-ink-500 hover:bg-err-bg hover:text-danger-500"
 							aria-label="Option entfernen"
@@ -408,10 +403,7 @@
 			</div>
 		{:else if question.mode === 'input'}
 			<div class="grid gap-2 sm:grid-cols-[1fr_auto]">
-				<div>
-					<label class="lbl" for="q-answer">Korrekte Antwort</label>
-					<input id="q-answer" class="inp" bind:value={question.answer} />
-				</div>
+				<LText id="q-answer" label="Korrekte Antwort" bind:value={question.answer} />
 				<div>
 					<label class="lbl" for="q-tol">Toleranz</label>
 					<select id="q-tol" class="inp" bind:value={question.tolerance}>

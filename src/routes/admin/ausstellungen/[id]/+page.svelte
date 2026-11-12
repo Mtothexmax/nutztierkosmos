@@ -12,6 +12,7 @@
 	import { toasts } from '$lib/stores/toast.svelte';
 	import type { Audience, Block, BlockType, Exhibition, L10n, MediaType, Status } from '$lib/types';
 	import { formatDateTime, uid } from '$lib/utils';
+	import { quizHasLocale } from '$lib/activities';
 
 	showReqs(['cms-nocode', 'exhibitions', 'publication-fields', 'media', 'media-alt', 'preview', 'versions', 'roles', 'i18n', 'translation-flow', 'interactive']);
 
@@ -136,7 +137,7 @@
 			media: () => ({ id: uid(), type: 'media', mediaId: firstOf(['image', 'video', 'audio', 'pdf']) }),
 			gallery: () => ({ id: uid(), type: 'gallery', heading: emptyL(), mediaIds: [] }),
 			infographic: () => ({ id: uid(), type: 'infographic', infographicId: content.infographics[0]?.id ?? '' }),
-			quiz: () => ({ id: uid(), type: 'quiz', quizId: content.quizzes.find((q) => !q.translationOf)?.id ?? '' }),
+			quiz: () => ({ id: uid(), type: 'quiz', quizId: content.quizzes[0]?.id ?? '' }),
 			game: () => ({ id: uid(), type: 'game', gameId: content.games[0]?.id ?? '' })
 		};
 		draft.blocks.push(blocks[type]());
@@ -287,16 +288,15 @@
 							{:else if block.type === 'quiz'}
 								<label class="lbl" for="b-{block.id}-q">Quiz</label>
 								<select id="b-{block.id}-q" class="inp" bind:value={block.quizId}>
-									{#each content.quizzes.filter((q) => !q.translationOf) as q (q.id)}
-										{@const en = content.quizzes.find((x) => x.translationOf === q.id)}
-										<option value={q.id}>{q.title}{q.published ? '' : ' (Entwurf)'}{en ? ' · EN vorhanden' : ''}</option>
+									{#each content.quizzes as q (q.id)}
+										<option value={q.id}>{q.title.de}{q.published ? '' : ' (Entwurf)'}{quizHasLocale(q, 'en') ? ' · EN vollständig' : ''}</option>
 									{/each}
 								</select>
 								<a class="link text-[14px]" href="/admin/quiz/{block.quizId}">Quiz bearbeiten</a>
 							{:else if block.type === 'game'}
 								<label class="lbl" for="b-{block.id}-g">Spiel</label>
 								<select id="b-{block.id}-g" class="inp" bind:value={block.gameId}>
-									{#each content.games as g (g.id)}<option value={g.id}>{g.title}</option>{/each}
+									{#each content.games as g (g.id)}<option value={g.id}>{g.title.de}</option>{/each}
 								</select>
 							{/if}
 						</section>

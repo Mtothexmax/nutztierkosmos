@@ -1,11 +1,17 @@
 <script lang="ts">
 	import Icon from '$lib/components/Icon.svelte';
-	import type { MatchQuestion } from '$lib/types';
+	import type { L10n, MatchQuestion } from '$lib/types';
+	import LText from '$lib/components/admin/LText.svelte';
+	import { useEditLang } from '$lib/components/admin/edit-lang.svelte';
+	import { pick } from '$lib/activities';
 	import { uid } from '$lib/utils';
 	import { onMount } from 'svelte';
 
 	type Props = { question: MatchQuestion };
 	let { question }: Props = $props();
+	const lang = useEditLang();
+	/** Anzeige in der Bearbeitungssprache (fehlt Englisch, steht Deutsch da). */
+	const label = (text: L10n | undefined) => pick(text, lang.locale);
 
 	type Side = 'left' | 'right';
 	type Box = { x: number; y: number; w: number; h: number };
@@ -44,8 +50,8 @@
 	let pairCount = $derived(solution.length);
 	let layoutKey = $derived(
 		JSON.stringify({
-			l: (question.left ?? []).map((i) => [i.id, i.text]),
-			r: (question.right ?? []).map((i) => [i.id, i.text]),
+			l: (question.left ?? []).map((i) => [i.id, label(i.text)]),
+			r: (question.right ?? []).map((i) => [i.id, label(i.text)]),
 			s: pairCount,
 			e: editing?.id ?? ''
 		})
@@ -61,11 +67,11 @@
 
 	function labelFor(side: Side, id: string): string {
 		const list = side === 'left' ? question.left : question.right;
-		return list?.find((i) => i.id === id)?.text || '–';
+		return label(list?.find((i) => i.id === id)?.text) || '–';
 	}
 
 	function addSide(side: Side) {
-		const entry = { id: uid(), text: '' };
+		const entry = { id: uid(), text: { de: '', en: '' } };
 		if (side === 'left') question.left = [...(question.left ?? []), entry];
 		else question.right = [...(question.right ?? []), entry];
 		// Neuer Eintrag startet direkt im Bearbeitungsmodus.
@@ -292,11 +298,6 @@
 		connectRightCard(id);
 	}
 
-	function focusInput(node: HTMLInputElement) {
-		node.focus();
-		node.select();
-	}
-
 	onMount(() => {
 		const onDown = () => {
 			pointerSequence += 1;
@@ -383,12 +384,13 @@
 						data-match-side="left"
 					>
 						{#if editing?.side === 'left' && editing.id === item.id}
-							<input
-								class="inp match-editor-input"
+							<LText
+								class="match-editor-input"
+								compact
+								autofocus
 								bind:value={item.text}
 								placeholder="Begriff"
-								aria-label="Begriff bearbeiten"
-								use:focusInput
+								ariaLabel="Begriff bearbeiten"
 								onkeydown={(e) => e.key === 'Enter' && (editing = null)}
 							/>
 							<button
@@ -401,22 +403,22 @@
 						{:else}
 							<button
 								class="match-editor-main match-drag"
-								aria-label={`${item.text || 'Begriff'} verbinden`}
+								aria-label={`${label(item.text) || 'Begriff'} verbinden`}
 								onpointerdown={(e) => startDrag(item.id, e)}
 								onclick={(e) => clickLeft(item.id, e)}
 							>
-								<span class="match-editor-text" data-match-label>{item.text || '–'}</span>
+								<span class="match-editor-text" data-match-label>{label(item.text) || '–'}</span>
 							</button>
 							<button
 								class="match-editor-icon"
-								aria-label={`${item.text || 'Begriff'} bearbeiten`}
+								aria-label={`${label(item.text) || 'Begriff'} bearbeiten`}
 								onclick={() => (editing = { side: 'left', id: item.id })}
 							>
 								<Icon name="edit" size={16} />
 							</button>
 							<button
 								class="match-editor-icon match-editor-remove"
-								aria-label={`${item.text || 'Begriff'} entfernen`}
+								aria-label={`${label(item.text) || 'Begriff'} entfernen`}
 								onclick={() => removeSide('left', item.id)}
 							>
 								<Icon name="close" size={16} />
@@ -440,12 +442,13 @@
 						data-match-side="right"
 					>
 						{#if editing?.side === 'right' && editing.id === item.id}
-							<input
-								class="inp match-editor-input"
+							<LText
+								class="match-editor-input"
+								compact
+								autofocus
 								bind:value={item.text}
 								placeholder="Kategorie"
-								aria-label="Kategorie bearbeiten"
-								use:focusInput
+								ariaLabel="Kategorie bearbeiten"
 								onkeydown={(e) => e.key === 'Enter' && (editing = null)}
 							/>
 							<button
@@ -458,21 +461,21 @@
 						{:else}
 							<button
 								class="match-editor-main"
-								aria-label={`${item.text || 'Kategorie'} als Ziel wählen`}
+								aria-label={`${label(item.text) || 'Kategorie'} als Ziel wählen`}
 								onclick={(e) => clickRight(item.id, e)}
 							>
-								<span class="match-editor-text" data-match-label>{item.text || '–'}</span>
+								<span class="match-editor-text" data-match-label>{label(item.text) || '–'}</span>
 							</button>
 							<button
 								class="match-editor-icon"
-								aria-label={`${item.text || 'Kategorie'} bearbeiten`}
+								aria-label={`${label(item.text) || 'Kategorie'} bearbeiten`}
 								onclick={() => (editing = { side: 'right', id: item.id })}
 							>
 								<Icon name="edit" size={16} />
 							</button>
 							<button
 								class="match-editor-icon match-editor-remove"
-								aria-label={`${item.text || 'Kategorie'} entfernen`}
+								aria-label={`${label(item.text) || 'Kategorie'} entfernen`}
 								onclick={() => removeSide('right', item.id)}
 							>
 								<Icon name="close" size={16} />
@@ -564,9 +567,12 @@
 		min-width: 0;
 		overflow-wrap: anywhere;
 	}
-	.match-editor-input {
+	/* Das Eingabefeld kommt aus LText – daher :global. */
+	.match-editor-item :global(.match-editor-input) {
 		flex: 1;
 		min-width: 0;
+	}
+	.match-editor-item :global(.match-editor-input .inp) {
 		font-size: 13px;
 	}
 	.match-editor-icon {

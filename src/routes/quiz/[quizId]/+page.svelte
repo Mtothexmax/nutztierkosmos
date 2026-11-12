@@ -18,7 +18,7 @@
 		type Question
 	} from '$lib/types';
 	import { formatDuration, normalize } from '$lib/utils';
-	import { i18n } from '$lib/i18n.svelte';
+	import { i18n, t } from '$lib/i18n.svelte';
 
 	onMount(() => {
 		// Quizze sind ohne Anmeldung spielbar (LB 5.5).
@@ -44,7 +44,10 @@
 	});
 
 	let quizId = $derived(page.params.quizId ?? '');
-	let quiz = $derived(content.getQuiz(quizId));
+	/** Quiz in der gewählten Sprache – oder auf Deutsch, solange die Übersetzung unvollständig ist. */
+	let view = $derived(content.quizView(quizId, i18n.active));
+	let quiz = $derived(view?.quiz);
+	let quizLang = $derived(view?.lang ?? 'de');
 	let adminPreview = $derived(page.url.searchParams.get('from') === 'admin');
 	let homeExhibition = $derived(quiz ? content.exhibitionWith({ quizId: quiz.id }) : undefined);
 	let backHref = $derived(
@@ -55,7 +58,7 @@
 				: '/mitmachen'
 	);
 	/** Oberflächentexte in der Sprache des Quiz. */
-	let en = $derived((quiz?.lang ?? 'de') === 'en');
+	let en = $derived(quizLang === 'en');
 	const L = (de: string, english: string) => (en ? english : de);
 
 	let index = $state(0);
@@ -111,7 +114,7 @@
 		right: {}
 	});
 
-	let question = $derived<Question | undefined>(quiz?.questions[index]);
+	let question = $derived<Question<string> | undefined>(quiz?.questions[index]);
 	/** Zweispaltig (Desktop): alle Typen außer Zuordnung, die die volle Breite braucht. */
 	let split = $derived(!!question && question.type !== 'match');
 	/** Auswahlfragen markieren die richtige Antwort direkt an der Option. */
@@ -243,7 +246,7 @@
 		};
 	});
 
-	function optionCorrect(question: Question, optionId: string): boolean {
+	function optionCorrect(question: Question<string>, optionId: string): boolean {
 		if (question.type === 'mc' || question.type === 'image') {
 			return Boolean(question.options?.find((o) => o.id === optionId)?.correct);
 		}
@@ -796,7 +799,7 @@
 {:else}
 	<div
 		class="mx-auto space-y-4 p-4 {split ? 'max-w-6xl' : question?.type === 'match' ? 'max-w-[960px]' : 'max-w-[760px]'}"
-		lang={quiz.lang ?? 'de'}
+		lang={quizLang}
 		id="quiz-main"
 	>
 		<div class="flex flex-wrap items-center gap-3">
@@ -812,6 +815,13 @@
 			</span>
 			<button class="b3" onclick={finish}>{L('Beenden', 'Finish')}</button>
 		</div>
+
+		{#if quizLang !== i18n.active}
+			<p class="flex items-start gap-2 rounded-xl border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-[14px]" role="note" lang={i18n.active}>
+				<Icon name="translate" class="text-sky-500" size={20} />
+				<span>{t('lang.missing')}</span>
+			</p>
+		{/if}
 
 		<div class="h-2 rounded-full bg-sand-200" role="progressbar" aria-valuemin={1} aria-valuemax={total} aria-valuenow={index + 1} aria-label={L('Fortschritt', 'Progress')}>
 			<div class="h-2 rounded-full bg-lime-500" style:width="{((index + 1) / total) * 100}%"></div>

@@ -1,5 +1,5 @@
 import { browser } from '$app/env';
-import { parseGameMessage, type GameMessage, type HostMessage } from './protocol';
+import { parseGameMessage, type GameLocale, type GameMessage, type HostMessage } from './protocol';
 
 export type BridgeDirection = 'host → game' | 'game → host' | 'system';
 
@@ -15,6 +15,8 @@ export type BridgeLogEntry = {
 export type BridgeInit = {
 	player: { id: string; name: string; avatar: string };
 	game: { id: string; title: string; maxPoints: number };
+	/** Sprache für das Spiel – nur eine, die das Spiel laut game.json kann. */
+	locale: GameLocale;
 };
 
 export class GameBridge {
@@ -73,7 +75,7 @@ export class GameBridge {
 				player: this.initData.player,
 				game: this.initData.game,
 				theme: { mode: 'light', primary: '#1C6B4C' },
-				locale: 'de-DE'
+				locale: this.initData.locale
 			}
 		};
 		this.iframe.contentWindow.postMessage(message, '*');
@@ -81,9 +83,19 @@ export class GameBridge {
 		this.pushLog(
 			'host → game',
 			'INIT',
-			`{ player: "${this.initData.player.name}", game: "${this.initData.game.title}" }`,
+			`{ player: "${this.initData.player.name}", game: "${this.initData.game.title}", locale: "${this.initData.locale}" }`,
 			'neutral'
 		);
+	}
+
+	/** Sprache während des Spiels wechseln (nur, wenn sie sich ändert). */
+	setLocale(locale: GameLocale): void {
+		if (!this.initData || this.initData.locale === locale) return;
+		this.initData = { ...this.initData, locale };
+		if (!this.iframe?.contentWindow || !this.initSent) return;
+		const message: HostMessage = { source: 'ntk-platform', type: 'LOCALE', payload: { locale } };
+		this.iframe.contentWindow.postMessage(message, '*');
+		this.pushLog('host → game', 'LOCALE', locale, 'neutral');
 	}
 
 	sendControl(type: 'PAUSE' | 'RESUME' | 'RESET'): void {

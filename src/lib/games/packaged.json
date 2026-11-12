@@ -1,23 +1,64 @@
 [
 	{
+		"id": "g-wohlfuehlstall",
+		"version": "58a9d489e072",
+		"url": "/games/g-wohlfuehlstall.zip",
+		"source": "Nutztierkosmos-Spiel-2.zip",
+		"settingsFrom": [
+			"game.json im ZIP"
+		],
+		"fileCount": 49,
+		"unpackedBytes": 2957303,
+		"manifest": {
+			"id": "g-wohlfuehlstall",
+			"title": {
+				"de": "Der Wohlfühlstall",
+				"en": "The Happy Pig Pen"
+			},
+			"description": {
+				"de": "Beobachte vier Schweine mit eigenem Charakter, finde heraus, was ihnen fehlt, und richte ihre Bucht Schritt für Schritt ein. Ein ruhiges Forschungsspiel, etwa 8 bis 10 Minuten.",
+				"en": "Observe four pigs with characters of their own, work out what they are missing and furnish their pen step by step. A calm research game, about 8 to 10 minutes."
+			},
+			"languages": [
+				"de",
+				"en"
+			],
+			"topic": "schwein/beschaeftigung",
+			"maxPoints": 1000,
+			"triggerWarning": false,
+			"published": true,
+			"version": "1.1.0"
+		}
+	},
+	{
 		"id": "g-heisser-tag",
-		"version": "618c1144699d",
+		"version": "59529c0f83f4",
 		"url": "/games/g-heisser-tag.zip",
 		"source": "Nutztierkosmos-Spiel.zip",
 		"settingsFrom": [
-			"games/Nutztierkosmos-Spiel.json"
+			"game.json im ZIP"
 		],
-		"fileCount": 11,
-		"unpackedBytes": 2266536,
+		"fileCount": 26,
+		"unpackedBytes": 2522485,
 		"manifest": {
 			"id": "g-heisser-tag",
-			"title": "Ein heißer Tag auf der Weide",
-			"description": "Interaktives 3D-Lernspiel zu Hitzestress bei Milchkühen: Kühe beobachten, das Mikroklima messen, passende Maßnahmen umsetzen. Dauer etwa 8–12 Minuten.",
-			"lang": "de",
+			"title": {
+				"de": "Ein heißer Tag auf der Weide",
+				"en": "A hot day in the pasture"
+			},
+			"description": {
+				"de": "Erkunde als Forscher:in einen Hof in 3D, beobachte die Kühe, miss das Stallklima und hilf der Herde gegen Hitzestress. Dauer: etwa 8 bis 12 Minuten.",
+				"en": "Explore a farm in 3D as a researcher, observe the cows, measure the climate and help the herd cope with heat stress. Takes about 8 to 12 minutes."
+			},
+			"languages": [
+				"de",
+				"en"
+			],
 			"topic": "rind/hitzestress",
 			"maxPoints": 1000,
 			"triggerWarning": true,
-			"published": true
+			"published": true,
+			"version": "1.1.0"
 		}
 	}
 ]

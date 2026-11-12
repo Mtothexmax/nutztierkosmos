@@ -1,1 +1,0 @@
-import{K as e,N as t,at as n,c as r,it as i,j as a,t as o}from"./Dr1ijKyP.js";import{i as s}from"./CYYsRy7G.js";var c=t(`<img alt="" class="shrink-0" draggable="false"/>`);function l(t,l){n(l,!0);let u=o(l,`size`,3,36);var d=c();e(e=>{r(d,`src`,e),r(d,`width`,u()),r(d,`height`,u())},[()=>s(`/logo.svg`)]),a(t,d),i()}export{l as t};

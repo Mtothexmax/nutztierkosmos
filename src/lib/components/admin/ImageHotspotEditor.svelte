@@ -1,4 +1,5 @@
 <script lang="ts">
+	import LText from '$lib/components/admin/LText.svelte';
 	import { untrack } from 'svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { withBase } from '$lib/paths';
@@ -188,14 +189,13 @@
 <div class="space-y-3">
 	{#if question.mode === 'click'}
 		<div>
-			<label class="lbl" for="hs-instr">Aufgabe / Anweisung</label>
-			<textarea
+			<LText
 				id="hs-instr"
-				class="inp"
-				rows="2"
+				label="Aufgabe / Anweisung"
+				multiline
 				bind:value={question.clickInstruction}
 				placeholder="z. B. Klicke auf die Milchkuh"
-			></textarea>
+			/>
 			<p class="mt-1 text-[12px] text-ink-500">
 				Die Spielenden müssen in den markierten Bereich klicken.
 			</p>

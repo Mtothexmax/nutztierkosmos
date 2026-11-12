@@ -160,7 +160,9 @@ async function inspect(zipPath) {
 		name,
 		buffer,
 		manifest,
-		version: sha256(Buffer.concat([buffer, Buffer.from(sidecarRaw)])).slice(0, 12),
+		// ZIP plus wirksame Einstellungen: Ändert sich nur die game.json daneben oder ein Standardwert,
+		// übernehmen Browser mit gespeichertem Stand die neuen Einstellungen trotzdem.
+		version: sha256(Buffer.concat([buffer, Buffer.from(JSON.stringify(manifest ?? null))])).slice(0, 12),
 		fileCount: files.length - (manifestPath ? 1 : 0),
 		unpackedBytes: files.reduce((sum, f) => sum + f.bytes.length, 0),
 		settingsFrom: [manifestPath ? `${MANIFEST_FILE} im ZIP` : '', sidecarRaw ? `games/${name}.json` : ''].filter(Boolean),

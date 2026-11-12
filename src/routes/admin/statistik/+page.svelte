@@ -24,7 +24,7 @@
 			const starts = content.stats.quizStarts[id] ?? 0;
 			const done = content.stats.quizCompletions[id] ?? 0;
 			const score = content.stats.quizScore[id];
-			return { id, title: content.getQuiz(id)?.title ?? id, starts, done, rate: starts ? done / starts : 0, avg: score?.n ? score.sum / score.n : null };
+			return { id, title: content.getQuiz(id)?.title.de ?? id, starts, done, rate: starts ? done / starts : 0, avg: score?.n ? score.sum / score.n : null };
 		})
 	);
 	let searches = $derived(Object.entries(content.stats.searches).sort((a, b) => b[1] - a[1]).slice(0, 10));

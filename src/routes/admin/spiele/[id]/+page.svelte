@@ -17,7 +17,11 @@
 	import { content } from '$lib/stores/content.svelte';
 	import { session } from '$lib/stores/session.svelte';
 	import { toasts } from '$lib/stores/toast.svelte';
-	import type { Game, GameFile } from '$lib/types';
+	import type { Game, GameFile, Locale } from '$lib/types';
+	import LText from '$lib/components/admin/LText.svelte';
+	import EditLangSwitch from '$lib/components/admin/EditLangSwitch.svelte';
+	import { provideEditLang } from '$lib/components/admin/edit-lang.svelte';
+	import { gameLocale, pick } from '$lib/activities';
 
 	let gameId = page.params.id ?? '';
 	// Die Dateien kommen asynchron aus IndexedDB. Der Entwurf entsteht erst danach,
@@ -53,7 +57,7 @@
 			return;
 		}
 		const copy = structuredClone($state.snapshot(existing)) as Game;
-		copy.lang ??= 'de';
+		if (!copy.languages?.length) copy.languages = ['de'];
 		initialJson = JSON.stringify(copy);
 		selectedPath = entryFile(copy.files)?.path ?? copy.files[0]?.path ?? '';
 		totalBytes = copy.files.reduce((sum, file) => sum + file.size, 0);
@@ -62,6 +66,29 @@
 	});
 	let allowLeave = false;
 	let bridge = new GameBridge();
+	/** Ein Spiel, zwei Sprachen: Titel und Beschreibung werden je Sprache gepflegt. */
+	const editLang = provideEditLang(page.url.searchParams.get('lang') === 'en' ? 'en' : 'de');
+	let enProgress = $derived(
+		draft
+			? {
+					done: [draft.title, draft.description].filter((t) => t.de.trim() && t.en?.trim()).length,
+					total: [draft.title, draft.description].filter((t) => t.de.trim()).length
+				}
+			: undefined
+	);
+	/** Sprache der Vorschau: die Bearbeitungssprache, wenn das Spiel sie kann. */
+	let previewLocale = $derived<Locale>(draft ? gameLocale(draft, editLang.locale) : 'de');
+	const localeLabel: Record<Locale, string> = { de: 'Deutsch', en: 'Englisch' };
+
+	function toggleLanguage(locale: Locale, on: boolean) {
+		if (!draft) return;
+		const next = new Set(draft.languages);
+		if (on) next.add(locale);
+		else next.delete(locale);
+		// Mindestens eine Sprache; Deutsch zuerst.
+		draft.languages = (['de', 'en'] as Locale[]).filter((l) => next.has(l));
+		if (!draft.languages.length) draft.languages = [locale === 'de' ? 'en' : 'de'];
+	}
 
 	let dirty = $derived(draft ? JSON.stringify($state.snapshot(draft)) !== initialJson : false);
 	let selectedFile = $derived(draft?.files.find((file) => file.path === selectedPath));
@@ -102,6 +129,11 @@
 		return () => bridge.destroy();
 	});
 
+	// Umschalten der Sprache schickt dem laufenden Spiel ein LOCALE.
+	$effect(() => {
+		bridge.setLocale(previewLocale);
+	});
+
 	function fileName(path: string): string {
 		return path.split('/').at(-1) ?? path;
 	}
@@ -122,7 +154,8 @@
 		const player = session.player ?? { id: 'demo', name: 'Redaktion', avatar: '🧑‍💻' };
 		bridge.attach(iframe, {
 			player: { id: player.id, name: player.name, avatar: player.avatar },
-			game: { id: draft.id, title: draft.title, maxPoints: draft.maxPoints }
+			game: { id: draft.id, title: pick(draft.title, previewLocale), maxPoints: draft.maxPoints },
+			locale: previewLocale
 		});
 	}
 
@@ -151,12 +184,14 @@
 			// Einstellungen aus game.json übernehmen (ID bleibt die des Spiels im CMS).
 			if (result.manifest) {
 				const m = result.manifest;
-				draft.title = m.title;
-				draft.description = m.description ?? draft.description;
+				draft.title = { de: m.title.de, en: m.title.en || draft.title.en };
+				draft.description = {
+					de: m.description.de || draft.description.de,
+					en: m.description.en || draft.description.en
+				};
+				draft.languages = [...m.languages];
 				draft.maxPoints = m.maxPoints;
 				draft.triggerWarning = m.triggerWarning ?? draft.triggerWarning;
-				draft.lang = m.lang ?? draft.lang;
-				if (m.translationOf) draft.translationOf = m.translationOf;
 				const topicId = content.resolveTopic(m);
 				if (topicId) draft.topicId = topicId;
 			}
@@ -269,7 +304,7 @@
 			<Icon name="arrow_back" />
 		</a>
 		<div class="flex-1">
-			<h1 class="font-serif text-xl font-bold text-brand-700">{draft.title || 'Ohne Titel'}</h1>
+			<h1 class="font-serif text-xl font-bold text-brand-700">{draft.title.de || 'Ohne Titel'}</h1>
 			<p class="text-[13px] text-ink-500">
 				{draft.files.length} Dateien · {formatBytes(totalBytes)} · max. {draft.maxPoints} Punkte
 			</p>
@@ -310,6 +345,14 @@
 		</span>
 	</div>
 
+	<div class="mb-4">
+		<EditLangSwitch
+			lang={editLang}
+			progress={enProgress}
+			note="Ein Paket für beide Sprachen: Das Spiel bekommt die Sprache im INIT (locale „de“ oder „en“)."
+		/>
+	</div>
+
 	{#if step === 'basics'}
 		<div class="grid gap-4 lg:grid-cols-[1fr_320px]">
 			<div class="card space-y-3">
@@ -324,40 +367,35 @@
 					</p>
 				{/if}
 
-				<div>
-					<label class="lbl" for="game-title">Titel</label>
-					<input id="game-title" class="inp" bind:value={draft.title} />
-				</div>
+				<LText id="game-title" label="Titel" bind:value={draft.title} />
 
 				<div>
 					<label class="lbl" for="game-module">Themenschwerpunkt</label>
 					<TopicSelect id="game-module" bind:value={draft.topicId} />
 				</div>
 
-				<!-- Wie beim Quiz: eigene Fassung je Sprache, verknüpft mit dem Original. -->
-				<div>
-					<label class="lbl" for="game-lang">Sprache</label>
-					<select id="game-lang" class="inp" bind:value={draft.lang}>
-						<option value="de">Deutsch</option>
-						<option value="en">Englisch</option>
-					</select>
-					<p class="mt-1 text-[13px] text-ink-500">Für eine englische Fassung ein eigenes Spiel anlegen und unten das Original wählen.</p>
-				</div>
+				<LText id="game-desc" label="Beschreibung" multiline rows={3} bind:value={draft.description} />
 
-				<div>
-					<label class="lbl" for="game-orig">Übersetzung von</label>
-					<select id="game-orig" class="inp" bind:value={draft.translationOf}>
-						<option value={undefined}>– keine (Original) –</option>
-						{#each content.games.filter((g) => g.id !== draft?.id && !g.translationOf) as g (g.id)}
-							<option value={g.id}>{g.title}</option>
+				<fieldset>
+					<legend class="lbl">Sprachen im Spiel</legend>
+					<div class="flex flex-wrap gap-4">
+						{#each ['de', 'en'] as const as locale (locale)}
+							<label class="flex items-center gap-2">
+								<input
+									type="checkbox"
+									checked={draft.languages.includes(locale)}
+									onchange={(e) => toggleLanguage(locale, e.currentTarget.checked)}
+								/>
+								{localeLabel[locale]}
+							</label>
 						{/each}
-					</select>
-				</div>
-
-				<div>
-					<label class="lbl" for="game-desc">Beschreibung</label>
-					<textarea id="game-desc" class="inp" rows="3" bind:value={draft.description}></textarea>
-				</div>
+					</div>
+					<p class="mt-1 text-[13px] text-ink-500">
+						Welche Sprachen das Spiel selbst kann (in <code>game.json</code>: <code>"languages"</code>). Die Plattform
+						schickt im INIT <code>locale: "de"</code> oder <code>"en"</code>; kann das Spiel die gewählte Sprache nicht,
+						startet es in {localeLabel[draft.languages[0]]} mit Hinweis.
+					</p>
+				</fieldset>
 
 				<p class="rounded-xl bg-brand-50 p-3 text-[13px] text-ink-700">
 					Im zweiten Schritt lädst du das komplette ZIP-Paket hoch und siehst die Dateien im
@@ -573,6 +611,7 @@
 					<div class="rounded-2xl bg-brand-900 p-3 text-white/90">
 						<div class="flex flex-wrap items-center justify-between gap-2 text-sm">
 							<b>Bridge-Konsole</b>
+							<span class="font-mono text-[12px] text-white/70">locale: "{previewLocale}"</span>
 							<span class="text-[12px] {bridge.connected ? 'text-lime-500' : 'text-amber-500'}">
 								● {bridge.connected ? 'verbunden' : 'warte auf READY'}
 							</span>
@@ -661,7 +700,7 @@
 					<Icon name="delete" />
 				</span>
 				<h2 id="delete-game-title" class="font-serif text-xl font-semibold">Spiel löschen?</h2>
-				<p>„{draft.title}" wird dauerhaft entfernt.</p>
+				<p>„{draft.title.de}" wird dauerhaft entfernt.</p>
 				<div class="flex justify-end gap-2">
 					<button class="b3" onclick={() => (deleteOpen = false)}>Abbrechen</button>
 					<button class="b4" onclick={removeGame}>Endgültig löschen</button>

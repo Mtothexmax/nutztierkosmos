@@ -1,0 +1,1 @@
+import{$ as e,B as t,et as n,tt as r}from"./DCsceofh.js";var i=new class{#e=r(e([]));get items(){return t(this.#e)}set items(e){n(this.#e,e,!0)}counter=0;push(e,t=`success`){let n=++this.counter;this.items=[...this.items,{id:n,variant:t,message:e}],setTimeout(()=>this.dismiss(n),4e3)}dismiss(e){this.items=this.items.filter(t=>t.id!==e)}};export{i as t};

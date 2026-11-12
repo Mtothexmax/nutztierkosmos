@@ -1,0 +1,1 @@
+import{K as e,N as t,at as n,c as r,j as i,ot as a,t as o}from"./DCsceofh.js";import{i as s}from"./DTD9fgJV.js";var c=t(`<img alt="" class="shrink-0" draggable="false"/>`);function l(t,l){a(l,!0);let u=o(l,`size`,3,36);var d=c();e(e=>{r(d,`src`,e),r(d,`width`,u()),r(d,`height`,u())},[()=>s(`/logo.svg`)]),i(t,d),n()}export{l as t};

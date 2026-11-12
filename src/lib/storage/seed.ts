@@ -1025,8 +1025,8 @@ const baseQuizzes: Quiz[] = [
 	{
 		id: 'q-methan',
 		topicId: 't-methan',
-		title: 'Was weißt du über Methan?',
-		description: 'Sechs Fragen zu Pansen, Futter und Emissionen.',
+		title: { de: 'Was weißt du über Methan?' },
+		description: { de: 'Sechs Fragen zu Pansen, Futter und Emissionen.' },
 		published: true,
 		timerSeconds: null,
 		createdAt: T('2026-10-26'),
@@ -1035,59 +1035,63 @@ const baseQuizzes: Quiz[] = [
 			{
 				id: 'q1',
 				type: 'mc',
-				prompt: 'Wodurch entsteht im Pansen der Kühe vor allem Methan?',
-				explanation:
-					'Methan entsteht, wenn Archaeen im Pansen Kohlenstoff und Wasserstoff zusammenbauen – vor allem bei faserreichem Futter.',
+				prompt: { de: 'Wodurch entsteht im Pansen der Kühe vor allem Methan?' },
+				explanation: {
+					de: 'Methan entsteht, wenn Archaeen im Pansen Kohlenstoff und Wasserstoff zusammenbauen – vor allem bei faserreichem Futter.'
+				},
 				points: 10,
 				multiple: false,
 				options: [
-					{ id: 'q1a', text: 'Durch Mikroorganismen beim Abbau von Fasern', correct: true },
-					{ id: 'q1b', text: 'Durch die Atmung der Kuh', correct: false },
-					{ id: 'q1c', text: 'Durch das Wasser im Tränkebecken', correct: false }
+					{ id: 'q1a', text: { de: 'Durch Mikroorganismen beim Abbau von Fasern' }, correct: true },
+					{ id: 'q1b', text: { de: 'Durch die Atmung der Kuh' }, correct: false },
+					{ id: 'q1c', text: { de: 'Durch das Wasser im Tränkebecken' }, correct: false }
 				]
 			},
 			{
 				id: 'q2',
 				type: 'tf',
-				prompt:
-					'Eine Milchkuh produziert pro Tag mehr Treibhausgas als ein Kleinwagen auf 100 km.',
-				explanation:
-					'Die Aussage ist stark vereinfacht: Pro Kilogramm Milch ist die Bilanz heute deutlich besser als ihr Ruf – Vergleiche hängen von Bezugsgröße und Futter ab.',
+				prompt: {
+					de: 'Eine Milchkuh produziert pro Tag mehr Treibhausgas als ein Kleinwagen auf 100 km.'
+				},
+				explanation: {
+					de: 'Die Aussage ist stark vereinfacht: Pro Kilogramm Milch ist die Bilanz heute deutlich besser als ihr Ruf – Vergleiche hängen von Bezugsgröße und Futter ab.'
+				},
 				points: 10,
 				correct: false
 			},
 			{
 				id: 'q3',
 				type: 'image',
-				prompt: 'Welches Futter kann die Methanbildung im Pansen reduzieren?',
-				explanation:
-					'Ungesättigte Fettsäuren aus Ölsaaten hemmen die Methanbildner im Pansen.',
+				prompt: { de: 'Welches Futter kann die Methanbildung im Pansen reduzieren?' },
+				explanation: {
+					de: 'Ungesättigte Fettsäuren aus Ölsaaten hemmen die Methanbildner im Pansen.'
+				},
 				points: 10,
 				mode: 'choice',
 				image: '',
 				options: [
-					{ id: 'q3a', text: 'Mais', correct: false },
-					{ id: 'q3b', text: 'Heu', correct: false },
-					{ id: 'q3c', text: 'Raps- und Leinsaat', correct: true }
+					{ id: 'q3a', text: { de: 'Mais' }, correct: false },
+					{ id: 'q3b', text: { de: 'Heu' }, correct: false },
+					{ id: 'q3c', text: { de: 'Raps- und Leinsaat' }, correct: true }
 				]
 			},
 			{
 				id: 'q4',
 				type: 'match',
-				prompt: 'Ordne die Begriffe zu.',
-				explanation: 'Pansen, Archaeen, Futterzusätze und Messkammern greifen ineinander.',
+				prompt: { de: 'Ordne die Begriffe zu.' },
+				explanation: { de: 'Pansen, Archaeen, Futterzusätze und Messkammern greifen ineinander.' },
 				points: 10,
 				left: [
-					{ id: 'q4l1', text: 'Pansen' },
-					{ id: 'q4l2', text: 'Archaeen' },
-					{ id: 'q4l3', text: 'Futterzusatz' },
-					{ id: 'q4l4', text: 'Messkammer' }
+					{ id: 'q4l1', text: { de: 'Pansen' } },
+					{ id: 'q4l2', text: { de: 'Archaeen' } },
+					{ id: 'q4l3', text: { de: 'Futterzusatz' } },
+					{ id: 'q4l4', text: { de: 'Messkammer' } }
 				],
 				right: [
-					{ id: 'q4r1', text: 'Verdauungsorgan' },
-					{ id: 'q4r2', text: 'Methanbildner' },
-					{ id: 'q4r3', text: 'Senkt Emissionen' },
-					{ id: 'q4r4', text: 'Erfasst Ausatemluft' }
+					{ id: 'q4r1', text: { de: 'Verdauungsorgan' } },
+					{ id: 'q4r2', text: { de: 'Methanbildner' } },
+					{ id: 'q4r3', text: { de: 'Senkt Emissionen' } },
+					{ id: 'q4r4', text: { de: 'Erfasst Ausatemluft' } }
 				],
 				solution: [
 					{ leftId: 'q4l1', rightId: 'q4r1' },
@@ -1099,23 +1103,28 @@ const baseQuizzes: Quiz[] = [
 			{
 				id: 'q5',
 				type: 'mc',
-				prompt: 'Welche Faktoren beeinflussen die Methanemission? (2 Antworten)',
-				explanation: 'Fütterung und Leistung der Kuh wirken direkt auf die Emission pro Kilogramm Milch.',
+				prompt: { de: 'Welche Faktoren beeinflussen die Methanemission? (2 Antworten)' },
+				explanation: {
+					de: 'Fütterung und Leistung der Kuh wirken direkt auf die Emission pro Kilogramm Milch.'
+				},
 				points: 10,
 				multiple: true,
 				options: [
-					{ id: 'q5a', text: 'Fütterung', correct: true },
-					{ id: 'q5b', text: 'Leistung der Kuh', correct: true },
-					{ id: 'q5c', text: 'Farbe des Stalls', correct: false },
-					{ id: 'q5d', text: 'Mondphase', correct: false }
+					{ id: 'q5a', text: { de: 'Fütterung' }, correct: true },
+					{ id: 'q5b', text: { de: 'Leistung der Kuh' }, correct: true },
+					{ id: 'q5c', text: { de: 'Farbe des Stalls' }, correct: false },
+					{ id: 'q5d', text: { de: 'Mondphase' }, correct: false }
 				]
 			},
 			{
 				id: 'q6',
 				type: 'tf',
-				prompt:
-					'Wiederkäuer können Pflanzenfasern verwerten, die Menschen nicht verdauen können.',
-				explanation: 'Dafür sorgen die Mikroorganismen im Pansen – der Grund, warum Wiederkäuer Gras nutzen können.',
+				prompt: {
+					de: 'Wiederkäuer können Pflanzenfasern verwerten, die Menschen nicht verdauen können.'
+				},
+				explanation: {
+					de: 'Dafür sorgen die Mikroorganismen im Pansen – der Grund, warum Wiederkäuer Gras nutzen können.'
+				},
 				points: 10,
 				correct: true
 			}
@@ -1124,8 +1133,8 @@ const baseQuizzes: Quiz[] = [
 	{
 		id: 'q-stallklima',
 		topicId: 't-stallklima',
-		title: 'Stallklima-Check',
-		description: 'Vier Fragen zu Temperatur, Luft und Verhalten.',
+		title: { de: 'Stallklima-Check' },
+		description: { de: 'Vier Fragen zu Temperatur, Luft und Verhalten.' },
 		published: true,
 		timerSeconds: null,
 		createdAt: T('2026-10-28'),
@@ -1134,42 +1143,44 @@ const baseQuizzes: Quiz[] = [
 			{
 				id: 's1',
 				type: 'mc',
-				prompt: 'Welche Temperatur ist für Mastschweine am angenehmsten?',
-				explanation: 'Mastschweine fühlen sich bei etwa 20–24 °C wohl.',
+				prompt: { de: 'Welche Temperatur ist für Mastschweine am angenehmsten?' },
+				explanation: { de: 'Mastschweine fühlen sich bei etwa 20–24 °C wohl.' },
 				points: 10,
 				multiple: false,
 				options: [
-					{ id: 's1a', text: '10–14 °C', correct: false },
-					{ id: 's1b', text: '20–24 °C', correct: true },
-					{ id: 's1c', text: '28–32 °C', correct: false }
+					{ id: 's1a', text: { de: '10–14 °C' }, correct: false },
+					{ id: 's1b', text: { de: '20–24 °C' }, correct: true },
+					{ id: 's1c', text: { de: '28–32 °C' }, correct: false }
 				]
 			},
 			{
 				id: 's2',
 				type: 'tf',
-				prompt: 'Zu hohe Luftfeuchte im Stall begünstigt Atemwegserkrankungen.',
-				explanation: 'Feuchte Luft und Ammoniak belasten die Atemwege.',
+				prompt: { de: 'Zu hohe Luftfeuchte im Stall begünstigt Atemwegserkrankungen.' },
+				explanation: { de: 'Feuchte Luft und Ammoniak belasten die Atemwege.' },
 				points: 10,
 				correct: true
 			},
 			{
 				id: 's3',
 				type: 'mc',
-				prompt: 'Was zeigt ein Schwein, dem zu warm ist?',
-				explanation: 'Hecheln und flaches Liegen auf kühlen Flächen sind typische Zeichen.',
+				prompt: { de: 'Was zeigt ein Schwein, dem zu warm ist?' },
+				explanation: { de: 'Hecheln und flaches Liegen auf kühlen Flächen sind typische Zeichen.' },
 				points: 10,
 				multiple: false,
 				options: [
-					{ id: 's3a', text: 'Hecheln und flaches Liegen', correct: true },
-					{ id: 's3b', text: 'Aktives Wühlen', correct: false },
-					{ id: 's3c', text: 'Lautes Quieken beim Fressen', correct: false }
+					{ id: 's3a', text: { de: 'Hecheln und flaches Liegen' }, correct: true },
+					{ id: 's3b', text: { de: 'Aktives Wühlen' }, correct: false },
+					{ id: 's3c', text: { de: 'Lautes Quieken beim Fressen' }, correct: false }
 				]
 			},
 			{
 				id: 's4',
 				type: 'tf',
-				prompt: 'Frischluftzufuhr ist im Winter nicht nötig.',
-				explanation: 'Auch im Winter muss gelüftet werden – sonst steigen Feuchte und Schadgase.',
+				prompt: { de: 'Frischluftzufuhr ist im Winter nicht nötig.' },
+				explanation: {
+					de: 'Auch im Winter muss gelüftet werden – sonst steigen Feuchte und Schadgase.'
+				},
 				points: 10,
 				correct: false
 			}
@@ -1178,9 +1189,11 @@ const baseQuizzes: Quiz[] = [
 	{
 		id: 'q-schwein-verhalten',
 		topicId: 't-beschaeftigung',
-		title: 'Was sagt mir das Schwein?',
-		description:
-			'Fünf Situationen aus dem Schweinealltag: Welche Deutung ist plausibel – und was müsste man noch wissen?',
+		title: { de: 'Was sagt mir das Schwein?', en: 'What is the pig telling me?' },
+		description: {
+			de: 'Fünf Situationen aus dem Schweinealltag: Welche Deutung ist plausibel – und was müsste man noch wissen?',
+			en: 'Five situations from a pig’s everyday life: which interpretation is plausible – and what else would you need to know?'
+		},
 		published: true,
 		timerSeconds: null,
 		createdAt: T('2026-11-10'),
@@ -1189,9 +1202,14 @@ const baseQuizzes: Quiz[] = [
 			{
 				id: 'v1',
 				type: 'image',
-				prompt: 'Das Schwein hält den Rüssel dicht an einen Ast im Laub. Welche Deutung ist am plausibelsten?',
-				explanation:
-					'Rüssel am Boden, Ohren nach vorn, ruhige Körperhaltung: Das Schwein erkundet neugierig. Wühlen und Erkunden sind Grundbedürfnisse – fehlt passendes Material, steigt das Risiko für Stress und Schwanzbeißen.',
+				prompt: {
+					de: 'Das Schwein hält den Rüssel dicht an einen Ast im Laub. Welche Deutung ist am plausibelsten?',
+					en: 'The pig holds its snout close to a branch in the leaves. Which interpretation is most plausible?'
+				},
+				explanation: {
+					de: 'Rüssel am Boden, Ohren nach vorn, ruhige Körperhaltung: Das Schwein erkundet neugierig. Wühlen und Erkunden sind Grundbedürfnisse – fehlt passendes Material, steigt das Risiko für Stress und Schwanzbeißen.',
+					en: 'Snout to the ground, ears forward, calm posture: the pig is curiously exploring. Rooting and exploring are basic needs – without suitable material, the risk of stress and tail biting rises.'
+				},
 				points: 10,
 				mode: 'choice',
 				mediaKind: 'image',
@@ -1204,17 +1222,40 @@ const baseQuizzes: Quiz[] = [
 					}
 				],
 				options: [
-					{ id: 'v1b', text: 'Es ist krank und frisst deshalb Laub.', correct: false },
-					{ id: 'v1a', text: 'Es erkundet neugierig seine Umgebung.', correct: true },
-					{ id: 'v1c', text: 'Es hat Angst vor dem Ast.', correct: false }
+					{
+						id: 'v1b',
+						text: {
+							de: 'Es ist krank und frisst deshalb Laub.',
+							en: 'It is ill and is eating leaves because of that.'
+						},
+						correct: false
+					},
+					{
+						id: 'v1a',
+						text: {
+							de: 'Es erkundet neugierig seine Umgebung.',
+							en: 'It is curiously exploring its surroundings.'
+						},
+						correct: true
+					},
+					{
+						id: 'v1c',
+						text: { de: 'Es hat Angst vor dem Ast.', en: 'It is afraid of the branch.' },
+						correct: false
+					}
 				]
 			},
 			{
 				id: 'v2',
 				type: 'image',
-				prompt: 'Das Schwein drückt den Rüssel an einen Zaunpfosten. Was ist eine plausible Deutung?',
-				explanation:
-					'Schweine sind soziale Tiere und nehmen viel über den Rüssel wahr. Hier sucht es wahrscheinlich Kontakt. Um sicher zu sein, braucht man mehr Informationen: Ist auf der anderen Seite ein Artgenosse oder ein Mensch? Wird das Schwein allein gehalten?',
+				prompt: {
+					de: 'Das Schwein drückt den Rüssel an einen Zaunpfosten. Was ist eine plausible Deutung?',
+					en: 'The pig presses its snout against a fence post. What is a plausible interpretation?'
+				},
+				explanation: {
+					de: 'Schweine sind soziale Tiere und nehmen viel über den Rüssel wahr. Hier sucht es wahrscheinlich Kontakt. Um sicher zu sein, braucht man mehr Informationen: Ist auf der anderen Seite ein Artgenosse oder ein Mensch? Wird das Schwein allein gehalten?',
+					en: 'Pigs are social animals and perceive a lot through their snout. This one is probably seeking contact. To be sure, you need more information: is there another pig or a person on the other side? Is the pig kept on its own?'
+				},
 				points: 10,
 				mode: 'choice',
 				mediaKind: 'image',
@@ -1227,17 +1268,36 @@ const baseQuizzes: Quiz[] = [
 					}
 				],
 				options: [
-					{ id: 'v2b', text: 'Es ist aggressiv und will den Zaun zerstören.', correct: false },
-					{ id: 'v2c', text: 'Es hat Durst.', correct: false },
-					{ id: 'v2a', text: 'Es sucht Kontakt zu Artgenossen oder Menschen.', correct: true }
+					{
+						id: 'v2b',
+						text: {
+							de: 'Es ist aggressiv und will den Zaun zerstören.',
+							en: 'It is aggressive and wants to break the fence.'
+						},
+						correct: false
+					},
+					{ id: 'v2c', text: { de: 'Es hat Durst.', en: 'It is thirsty.' }, correct: false },
+					{
+						id: 'v2a',
+						text: {
+							de: 'Es sucht Kontakt zu Artgenossen oder Menschen.',
+							en: 'It is seeking contact with other pigs or people.'
+						},
+						correct: true
+					}
 				]
 			},
 			{
 				id: 'v3',
 				type: 'image',
-				prompt: 'Das Schwein lehnt sich an den Zaun, die Augen sind halb geschlossen. Was zeigt es am ehesten?',
-				explanation:
-					'Halb geschlossene Augen und eine angelehnte, entspannte Haltung sprechen für Müdigkeit. Ein einzelner Moment sagt aber wenig: Wirkt das Schwein über längere Zeit matt, frisst es schlecht oder liegt es oft abseits, sollte man an Hitze oder Krankheit denken.',
+				prompt: {
+					de: 'Das Schwein lehnt sich an den Zaun, die Augen sind halb geschlossen. Was zeigt es am ehesten?',
+					en: 'The pig leans against the fence with its eyes half closed. What is it most likely showing?'
+				},
+				explanation: {
+					de: 'Halb geschlossene Augen und eine angelehnte, entspannte Haltung sprechen für Müdigkeit. Ein einzelner Moment sagt aber wenig: Wirkt das Schwein über längere Zeit matt, frisst es schlecht oder liegt es oft abseits, sollte man an Hitze oder Krankheit denken.',
+					en: 'Half-closed eyes and a relaxed, leaning posture suggest tiredness. But a single moment says little: if the pig seems listless for a longer time, eats poorly or often lies apart from the others, think of heat or illness.'
+				},
 				points: 10,
 				mode: 'choice',
 				mediaKind: 'image',
@@ -1250,17 +1310,37 @@ const baseQuizzes: Quiz[] = [
 					}
 				],
 				options: [
-					{ id: 'v3a', text: 'Es ist müde und ruht sich aus.', correct: true },
-					{ id: 'v3c', text: 'Es sucht nach Futter.', correct: false },
-					{ id: 'v3b', text: 'Es ist besonders verspielt.', correct: false }
+					{
+						id: 'v3a',
+						text: { de: 'Es ist müde und ruht sich aus.', en: 'It is tired and resting.' },
+						correct: true
+					},
+					{
+						id: 'v3c',
+						text: { de: 'Es sucht nach Futter.', en: 'It is looking for food.' },
+						correct: false
+					},
+					{
+						id: 'v3b',
+						text: {
+							de: 'Es ist besonders verspielt.',
+							en: 'It is in a particularly playful mood.'
+						},
+						correct: false
+					}
 				]
 			},
 			{
 				id: 'v4',
 				type: 'image',
-				prompt: 'Das Schwein drückt sich mit gesenktem Kopf und hängendem Schwanz an den Zaun. Wie lässt sich das deuten?',
-				explanation:
-					'Gesenkter Kopf, hängender Schwanz und ein Körper, der sich an den Zaun drückt: Das Schwein zieht sich zurück – ein mögliches Zeichen für Angst oder Stress. Ein Schwein kann äußerlich gesund aussehen und sich trotzdem nicht wohlfühlen. Wichtig ist: Was hat es erschreckt? Gibt es Rangkämpfe? Hat es genug Platz und Rückzugsorte?',
+				prompt: {
+					de: 'Das Schwein drückt sich mit gesenktem Kopf und hängendem Schwanz an den Zaun. Wie lässt sich das deuten?',
+					en: 'The pig presses itself against the fence with its head lowered and its tail hanging. How can this be interpreted?'
+				},
+				explanation: {
+					de: 'Gesenkter Kopf, hängender Schwanz und ein Körper, der sich an den Zaun drückt: Das Schwein zieht sich zurück – ein mögliches Zeichen für Angst oder Stress. Ein Schwein kann äußerlich gesund aussehen und sich trotzdem nicht wohlfühlen. Wichtig ist: Was hat es erschreckt? Gibt es Rangkämpfe? Hat es genug Platz und Rückzugsorte?',
+					en: 'Lowered head, hanging tail and a body pressed against the fence: the pig is withdrawing – a possible sign of fear or stress. A pig can look healthy on the outside and still not feel well. Important questions: what frightened it? Are there fights over rank? Does it have enough space and places to retreat?'
+				},
 				points: 10,
 				mode: 'choice',
 				mediaKind: 'image',
@@ -1273,18 +1353,40 @@ const baseQuizzes: Quiz[] = [
 					}
 				],
 				options: [
-					{ id: 'v4b', text: 'Es ist entspannt und zufrieden.', correct: false },
-					{ id: 'v4a', text: 'Es hat Angst oder ist gestresst und zieht sich zurück.', correct: true },
-					{ id: 'v4c', text: 'Es fordert die anderen zum Spielen auf.', correct: false }
+					{
+						id: 'v4b',
+						text: { de: 'Es ist entspannt und zufrieden.', en: 'It is relaxed and content.' },
+						correct: false
+					},
+					{
+						id: 'v4a',
+						text: {
+							de: 'Es hat Angst oder ist gestresst und zieht sich zurück.',
+							en: 'It is afraid or stressed and is withdrawing.'
+						},
+						correct: true
+					},
+					{
+						id: 'v4c',
+						text: {
+							de: 'Es fordert die anderen zum Spielen auf.',
+							en: 'It is inviting the others to play.'
+						},
+						correct: false
+					}
 				]
 			},
 			{
 				id: 'v5',
 				type: 'image',
-				prompt:
-					'Warum ist Schwein Emma unruhig? Auf dem Bild läuft Emma an den Gitterstäben ihrer Bucht entlang – das macht sie immer wieder. Welche Maßnahme wäre ein sinnvoller erster Schritt?',
-				explanation:
-					'Wiederholtes Hin- und Herlaufen kann viele Ursachen haben: Langeweile, Hunger, Hitze, zu wenig Platz oder Stress in der Gruppe. Deshalb zuerst beobachten: Wann tritt es auf? Stimmen Futter, Wasser, Temperatur und Beschäftigung? Sofort trennen wäre zusätzlicher Stress, Ignorieren übersieht ein mögliches Tierwohlproblem.',
+				prompt: {
+					de: 'Warum ist Schwein Emma unruhig? Auf dem Bild läuft Emma an den Gitterstäben ihrer Bucht entlang – das macht sie immer wieder. Welche Maßnahme wäre ein sinnvoller erster Schritt?',
+					en: 'Why is Emma the pig restless? In the picture, Emma is walking along the bars of her pen – and she does this again and again. What would be a sensible first step?'
+				},
+				explanation: {
+					de: 'Wiederholtes Hin- und Herlaufen kann viele Ursachen haben: Langeweile, Hunger, Hitze, zu wenig Platz oder Stress in der Gruppe. Deshalb zuerst beobachten: Wann tritt es auf? Stimmen Futter, Wasser, Temperatur und Beschäftigung? Sofort trennen wäre zusätzlicher Stress, Ignorieren übersieht ein mögliches Tierwohlproblem.',
+					en: 'Repeatedly pacing back and forth can have many causes: boredom, hunger, heat, too little space or stress within the group. So observe first: when does it happen? Are feed, water, temperature and enrichment right? Separating her straight away would add stress; ignoring it overlooks a possible animal welfare problem.'
+				},
 				points: 10,
 				mode: 'choice',
 				mediaKind: 'image',
@@ -1297,140 +1399,30 @@ const baseQuizzes: Quiz[] = [
 					}
 				],
 				options: [
-					{ id: 'v5a', text: 'Verhalten beobachten und mögliche Umweltfaktoren untersuchen.', correct: true },
-					{ id: 'v5b', text: 'Emma sofort von den anderen Tieren trennen.', correct: false },
-					{ id: 'v5c', text: 'Das Verhalten grundsätzlich ignorieren.', correct: false }
-				]
-			}
-		]
-	},
-	{
-		id: 'q-schwein-verhalten-en',
-		topicId: 't-beschaeftigung',
-		lang: 'en',
-		translationOf: 'q-schwein-verhalten',
-		title: 'What is the pig telling me?',
-		description:
-			'Five situations from a pig’s everyday life: which interpretation is plausible – and what else would you need to know?',
-		published: true,
-		timerSeconds: null,
-		createdAt: T('2026-11-10'),
-		updatedAt: T('2026-11-10'),
-		questions: [
-			{
-				id: 've1',
-				type: 'image',
-				prompt: 'The pig holds its snout close to a branch in the leaves. Which interpretation is most plausible?',
-				explanation:
-					'Snout to the ground, ears forward, calm posture: the pig is curiously exploring. Rooting and exploring are basic needs – without suitable material, the risk of stress and tail biting rises.',
-				points: 10,
-				mode: 'choice',
-				mediaKind: 'image',
-				media: [
 					{
-						id: 've1-img',
-						name: 'A spotted pig sniffs at a mossy branch among autumn leaves in a pasture.',
-						mime: 'image/jpeg',
-						src: '/demo/schwein-neugierig.jpg'
-					}
-				],
-				options: [
-					{ id: 've1b', text: 'It is ill and is eating leaves because of that.', correct: false },
-					{ id: 've1a', text: 'It is curiously exploring its surroundings.', correct: true },
-					{ id: 've1c', text: 'It is afraid of the branch.', correct: false }
-				]
-			},
-			{
-				id: 've2',
-				type: 'image',
-				prompt: 'The pig presses its snout against a fence post. What is a plausible interpretation?',
-				explanation:
-					'Pigs are social animals and perceive a lot through their snout. This one is probably seeking contact. To be sure, you need more information: is there another pig or a person on the other side? Is the pig kept on its own?',
-				points: 10,
-				mode: 'choice',
-				mediaKind: 'image',
-				media: [
+						id: 'v5a',
+						text: {
+							de: 'Verhalten beobachten und mögliche Umweltfaktoren untersuchen.',
+							en: 'Observe the behaviour and look into possible environmental factors.'
+						},
+						correct: true
+					},
 					{
-						id: 've2-img',
-						name: 'A spotted pig stands at a wooden fence and presses its snout against a post.',
-						mime: 'image/jpeg',
-						src: '/demo/schwein-sucht-kontakt.jpg'
-					}
-				],
-				options: [
-					{ id: 've2b', text: 'It is aggressive and wants to break the fence.', correct: false },
-					{ id: 've2c', text: 'It is thirsty.', correct: false },
-					{ id: 've2a', text: 'It is seeking contact with other pigs or people.', correct: true }
-				]
-			},
-			{
-				id: 've3',
-				type: 'image',
-				prompt: 'The pig leans against the fence with its eyes half closed. What is it most likely showing?',
-				explanation:
-					'Half-closed eyes and a relaxed, leaning posture suggest tiredness. But a single moment says little: if the pig seems listless for a longer time, eats poorly or often lies apart from the others, think of heat or illness.',
-				points: 10,
-				mode: 'choice',
-				mediaKind: 'image',
-				media: [
+						id: 'v5b',
+						text: {
+							de: 'Emma sofort von den anderen Tieren trennen.',
+							en: 'Separate Emma from the other animals immediately.'
+						},
+						correct: false
+					},
 					{
-						id: 've3-img',
-						name: 'A spotted pig leans its hindquarters against a wooden fence, eyes half closed.',
-						mime: 'image/jpeg',
-						src: '/demo/schwein-muede.jpg'
+						id: 'v5c',
+						text: {
+							de: 'Das Verhalten grundsätzlich ignorieren.',
+							en: 'Simply ignore the behaviour.'
+						},
+						correct: false
 					}
-				],
-				options: [
-					{ id: 've3a', text: 'It is tired and resting.', correct: true },
-					{ id: 've3c', text: 'It is looking for food.', correct: false },
-					{ id: 've3b', text: 'It is in a particularly playful mood.', correct: false }
-				]
-			},
-			{
-				id: 've4',
-				type: 'image',
-				prompt: 'The pig presses itself against the fence with its head lowered and its tail hanging. How can this be interpreted?',
-				explanation:
-					'Lowered head, hanging tail and a body pressed against the fence: the pig is withdrawing – a possible sign of fear or stress. A pig can look healthy on the outside and still not feel well. Important questions: what frightened it? Are there fights over rank? Does it have enough space and places to retreat?',
-				points: 10,
-				mode: 'choice',
-				mediaKind: 'image',
-				media: [
-					{
-						id: 've4-img',
-						name: 'A spotted pig presses itself against a wooden fence with its head lowered and its tail hanging.',
-						mime: 'image/jpeg',
-						src: '/demo/schwein-angst.jpg'
-					}
-				],
-				options: [
-					{ id: 've4b', text: 'It is relaxed and content.', correct: false },
-					{ id: 've4a', text: 'It is afraid or stressed and is withdrawing.', correct: true },
-					{ id: 've4c', text: 'It is inviting the others to play.', correct: false }
-				]
-			},
-			{
-				id: 've5',
-				type: 'image',
-				prompt:
-					'Why is Emma the pig restless? In the picture, Emma is walking along the bars of her pen – and she does this again and again. What would be a sensible first step?',
-				explanation:
-					'Repeatedly pacing back and forth can have many causes: boredom, hunger, heat, too little space or stress within the group. So observe first: when does it happen? Are feed, water, temperature and enrichment right? Separating her straight away would add stress; ignoring it overlooks a possible animal welfare problem.',
-				points: 10,
-				mode: 'choice',
-				mediaKind: 'image',
-				media: [
-					{
-						id: 've5-img',
-						name: 'Emma the piglet walks through straw along the bars of the pen. Other piglets lie in the background, next to a play ball and a piece of wood.',
-						mime: 'image/jpeg',
-						src: '/demo/schwein-emma-gitter.jpg'
-					}
-				],
-				options: [
-					{ id: 've5a', text: 'Observe the behaviour and look into possible environmental factors.', correct: true },
-					{ id: 've5b', text: 'Separate Emma from the other animals immediately.', correct: false },
-					{ id: 've5c', text: 'Simply ignore the behaviour.', correct: false }
 				]
 			}
 		]
@@ -1438,8 +1430,11 @@ const baseQuizzes: Quiz[] = [
 	{
 		id: 'q-huhn-zuordnen',
 		topicId: 't-huehner-verhalten',
-		title: 'Was brauchen Hühner?',
-		description: 'Drei Zuordnungen zu Verhalten, Futter und Haltung von Legehennen.',
+		title: { de: 'Was brauchen Hühner?', en: 'What do hens need?' },
+		description: {
+			de: 'Drei Zuordnungen zu Verhalten, Futter und Haltung von Legehennen.',
+			en: 'Three matching tasks on the behaviour, feed and housing of laying hens.'
+		},
 		published: true,
 		timerSeconds: null,
 		createdAt: T('2026-11-10'),
@@ -1448,21 +1443,35 @@ const baseQuizzes: Quiz[] = [
 			{
 				id: 'hz1',
 				type: 'match',
-				prompt: 'Was bedeutet das Verhalten? Ordne zu.',
-				explanation:
-					'Hennen zeigen diese Verhaltensweisen von sich aus. Fehlt die Gelegenheit dazu – etwa ein Staubbad oder ein Nest –, entsteht Stress.',
+				prompt: {
+					de: 'Was bedeutet das Verhalten? Ordne zu.',
+					en: 'What does the behaviour mean? Match them up.'
+				},
+				explanation: {
+					de: 'Hennen zeigen diese Verhaltensweisen von sich aus. Fehlt die Gelegenheit dazu – etwa ein Staubbad oder ein Nest –, entsteht Stress.',
+					en: 'Hens show these behaviours on their own. If they lack the opportunity – a dust bath or a nest, for example – they become stressed.'
+				},
 				points: 10,
 				left: [
-					{ id: 'hz1l1', text: 'Staubbaden' },
-					{ id: 'hz1l2', text: 'Auf Sitzstangen ruhen' },
-					{ id: 'hz1l3', text: 'Scharren und Picken' },
-					{ id: 'hz1l4', text: 'Ein Nest aufsuchen' }
+					{ id: 'hz1l1', text: { de: 'Staubbaden', en: 'Dust bathing' } },
+					{ id: 'hz1l2', text: { de: 'Auf Sitzstangen ruhen', en: 'Resting on perches' } },
+					{ id: 'hz1l3', text: { de: 'Scharren und Picken', en: 'Scratching and pecking' } },
+					{ id: 'hz1l4', text: { de: 'Ein Nest aufsuchen', en: 'Looking for a nest' } }
 				],
 				right: [
-					{ id: 'hz1r3', text: 'Sucht nach Futter' },
-					{ id: 'hz1r1', text: 'Pflegt das Gefieder, hält Parasiten fern' },
-					{ id: 'hz1r4', text: 'Bereitet die Eiablage vor' },
-					{ id: 'hz1r2', text: 'Fühlt sich erhöht nachts sicher' }
+					{ id: 'hz1r3', text: { de: 'Sucht nach Futter', en: 'Searches for food' } },
+					{
+						id: 'hz1r1',
+						text: {
+							de: 'Pflegt das Gefieder, hält Parasiten fern',
+							en: 'Cares for its feathers, keeps parasites away'
+						}
+					},
+					{ id: 'hz1r4', text: { de: 'Bereitet die Eiablage vor', en: 'Prepares to lay an egg' } },
+					{
+						id: 'hz1r2',
+						text: { de: 'Fühlt sich erhöht nachts sicher', en: 'Feels safe up high at night' }
+					}
 				],
 				solution: [
 					{ leftId: 'hz1l1', rightId: 'hz1r1' },
@@ -1474,21 +1483,35 @@ const baseQuizzes: Quiz[] = [
 			{
 				id: 'hz2',
 				type: 'match',
-				prompt: 'Wofür braucht die Henne das? Ordne zu.',
-				explanation:
-					'Für jedes Ei braucht die Henne viel Calcium. Grit – kleine Steinchen – zerreibt im Muskelmagen das Futter, denn Hühner haben keine Zähne.',
+				prompt: {
+					de: 'Wofür braucht die Henne das? Ordne zu.',
+					en: 'What does the hen need it for? Match them up.'
+				},
+				explanation: {
+					de: 'Für jedes Ei braucht die Henne viel Calcium. Grit – kleine Steinchen – zerreibt im Muskelmagen das Futter, denn Hühner haben keine Zähne.',
+					en: 'A hen needs a lot of calcium for every egg. Grit – small stones – grinds the feed in the gizzard, because chickens have no teeth.'
+				},
 				points: 10,
 				left: [
-					{ id: 'hz2l1', text: 'Futterkalk (Calcium)' },
-					{ id: 'hz2l2', text: 'Grit' },
-					{ id: 'hz2l3', text: 'Eiweiß im Futter' },
-					{ id: 'hz2l4', text: 'Frisches Wasser' }
+					{ id: 'hz2l1', text: { de: 'Futterkalk (Calcium)', en: 'Feed limestone (calcium)' } },
+					{ id: 'hz2l2', text: { de: 'Grit', en: 'Grit' } },
+					{ id: 'hz2l3', text: { de: 'Eiweiß im Futter', en: 'Protein in the feed' } },
+					{ id: 'hz2l4', text: { de: 'Frisches Wasser', en: 'Fresh water' } }
 				],
 				right: [
-					{ id: 'hz2r3', text: 'Muskeln und neue Federn' },
-					{ id: 'hz2r4', text: 'Muss immer zugänglich sein' },
-					{ id: 'hz2r1', text: 'Feste Eischale und Knochen' },
-					{ id: 'hz2r2', text: 'Zerkleinert Futter im Muskelmagen' }
+					{ id: 'hz2r3', text: { de: 'Muskeln und neue Federn', en: 'Muscles and new feathers' } },
+					{
+						id: 'hz2r4',
+						text: { de: 'Muss immer zugänglich sein', en: 'Must always be available' }
+					},
+					{
+						id: 'hz2r1',
+						text: { de: 'Feste Eischale und Knochen', en: 'Firm eggshells and bones' }
+					},
+					{
+						id: 'hz2r2',
+						text: { de: 'Zerkleinert Futter im Muskelmagen', en: 'Grinds feed in the gizzard' }
+					}
 				],
 				solution: [
 					{ leftId: 'hz2l1', rightId: 'hz2r1' },
@@ -1500,21 +1523,26 @@ const baseQuizzes: Quiz[] = [
 			{
 				id: 'hz3',
 				type: 'match',
-				prompt: 'Welches Bedürfnis erfüllt das im Stall? Ein Begriff kann mehrere Verbindungen haben.',
-				explanation:
-					'Der Auslauf erfüllt gleich zwei Bedürfnisse: Futtersuche und Bewegung. Eine gute Haltung bietet für jedes Bedürfnis passende Möglichkeiten.',
+				prompt: {
+					de: 'Welches Bedürfnis erfüllt das im Stall? Ein Begriff kann mehrere Verbindungen haben.',
+					en: 'Which need does it meet in the barn? One item can have several connections.'
+				},
+				explanation: {
+					de: 'Der Auslauf erfüllt gleich zwei Bedürfnisse: Futtersuche und Bewegung. Eine gute Haltung bietet für jedes Bedürfnis passende Möglichkeiten.',
+					en: 'The outdoor run meets two needs at once: searching for food and exercise. Good housing offers suitable options for every need.'
+				},
 				points: 10,
 				allowMultiple: true,
 				left: [
-					{ id: 'hz3l1', text: 'Erhöhte Sitzstange' },
-					{ id: 'hz3l2', text: 'Staubbad mit Sand' },
-					{ id: 'hz3l3', text: 'Auslauf mit Grünfläche' }
+					{ id: 'hz3l1', text: { de: 'Erhöhte Sitzstange', en: 'Raised perch' } },
+					{ id: 'hz3l2', text: { de: 'Staubbad mit Sand', en: 'Sand dust bath' } },
+					{ id: 'hz3l3', text: { de: 'Auslauf mit Grünfläche', en: 'Outdoor run with grass' } }
 				],
 				right: [
-					{ id: 'hz3r3', text: 'Futtersuche' },
-					{ id: 'hz3r1', text: 'Ruhen' },
-					{ id: 'hz3r4', text: 'Bewegung' },
-					{ id: 'hz3r2', text: 'Gefiederpflege' }
+					{ id: 'hz3r3', text: { de: 'Futtersuche', en: 'Searching for food' } },
+					{ id: 'hz3r1', text: { de: 'Ruhen', en: 'Resting' } },
+					{ id: 'hz3r4', text: { de: 'Bewegung', en: 'Exercise' } },
+					{ id: 'hz3r2', text: { de: 'Gefiederpflege', en: 'Feather care' } }
 				],
 				solution: [
 					{ leftId: 'hz3l1', rightId: 'hz3r1' },
@@ -1526,102 +1554,10 @@ const baseQuizzes: Quiz[] = [
 		]
 	},
 	{
-		id: 'q-huhn-zuordnen-en',
-		topicId: 't-huehner-verhalten',
-		lang: 'en',
-		translationOf: 'q-huhn-zuordnen',
-		title: 'What do hens need?',
-		description: 'Three matching tasks on the behaviour, feed and housing of laying hens.',
-		published: true,
-		timerSeconds: null,
-		createdAt: T('2026-11-10'),
-		updatedAt: T('2026-11-10'),
-		questions: [
-			{
-				id: 'hze1',
-				type: 'match',
-				prompt: 'What does the behaviour mean? Match them up.',
-				explanation:
-					'Hens show these behaviours on their own. If they lack the opportunity – a dust bath or a nest, for example – they become stressed.',
-				points: 10,
-				left: [
-					{ id: 'hze1l1', text: 'Dust bathing' },
-					{ id: 'hze1l2', text: 'Resting on perches' },
-					{ id: 'hze1l3', text: 'Scratching and pecking' },
-					{ id: 'hze1l4', text: 'Looking for a nest' }
-				],
-				right: [
-					{ id: 'hze1r3', text: 'Searches for food' },
-					{ id: 'hze1r1', text: 'Cares for its feathers, keeps parasites away' },
-					{ id: 'hze1r4', text: 'Prepares to lay an egg' },
-					{ id: 'hze1r2', text: 'Feels safe up high at night' }
-				],
-				solution: [
-					{ leftId: 'hze1l1', rightId: 'hze1r1' },
-					{ leftId: 'hze1l2', rightId: 'hze1r2' },
-					{ leftId: 'hze1l3', rightId: 'hze1r3' },
-					{ leftId: 'hze1l4', rightId: 'hze1r4' }
-				]
-			},
-			{
-				id: 'hze2',
-				type: 'match',
-				prompt: 'What does the hen need it for? Match them up.',
-				explanation:
-					'A hen needs a lot of calcium for every egg. Grit – small stones – grinds the feed in the gizzard, because chickens have no teeth.',
-				points: 10,
-				left: [
-					{ id: 'hze2l1', text: 'Feed limestone (calcium)' },
-					{ id: 'hze2l2', text: 'Grit' },
-					{ id: 'hze2l3', text: 'Protein in the feed' },
-					{ id: 'hze2l4', text: 'Fresh water' }
-				],
-				right: [
-					{ id: 'hze2r3', text: 'Muscles and new feathers' },
-					{ id: 'hze2r4', text: 'Must always be available' },
-					{ id: 'hze2r1', text: 'Firm eggshells and bones' },
-					{ id: 'hze2r2', text: 'Grinds feed in the gizzard' }
-				],
-				solution: [
-					{ leftId: 'hze2l1', rightId: 'hze2r1' },
-					{ leftId: 'hze2l2', rightId: 'hze2r2' },
-					{ leftId: 'hze2l3', rightId: 'hze2r3' },
-					{ leftId: 'hze2l4', rightId: 'hze2r4' }
-				]
-			},
-			{
-				id: 'hze3',
-				type: 'match',
-				prompt: 'Which need does it meet in the barn? One item can have several connections.',
-				explanation:
-					'The outdoor run meets two needs at once: searching for food and exercise. Good housing offers suitable options for every need.',
-				points: 10,
-				allowMultiple: true,
-				left: [
-					{ id: 'hze3l1', text: 'Raised perch' },
-					{ id: 'hze3l2', text: 'Sand dust bath' },
-					{ id: 'hze3l3', text: 'Outdoor run with grass' }
-				],
-				right: [
-					{ id: 'hze3r3', text: 'Searching for food' },
-					{ id: 'hze3r1', text: 'Resting' },
-					{ id: 'hze3r4', text: 'Exercise' },
-					{ id: 'hze3r2', text: 'Feather care' }
-				],
-				solution: [
-					{ leftId: 'hze3l1', rightId: 'hze3r1' },
-					{ leftId: 'hze3l2', rightId: 'hze3r2' },
-					{ leftId: 'hze3l3', rightId: 'hze3r3' },
-					{ leftId: 'hze3l3', rightId: 'hze3r4' }
-				]
-			}
-		]
-	},
-	{
 		id: 'q-futter',
 		topicId: 't-methan',
-		title: 'Futter oder Falle?',
-		description: 'Vier Bilder, vier Entscheidungen.',
+		title: { de: 'Futter oder Falle?' },
+		description: { de: 'Vier Bilder, vier Entscheidungen.' },
 		published: false,
 		timerSeconds: null,
 		createdAt: T('2026-10-30'),
@@ -1630,57 +1566,57 @@ const baseQuizzes: Quiz[] = [
 			{
 				id: 'f1',
 				type: 'image',
-				prompt: 'Welches Futter ist besonders faserreich?',
-				explanation: 'Heu und Gras liefern Strukturfasern, die Wiederkäuer brauchen.',
+				prompt: { de: 'Welches Futter ist besonders faserreich?' },
+				explanation: { de: 'Heu und Gras liefern Strukturfasern, die Wiederkäuer brauchen.' },
 				points: 5,
 				mode: 'choice',
 				image: '🌾',
 				options: [
-					{ id: 'f1a', text: 'Heu', correct: true },
-					{ id: 'f1b', text: 'Kraftfutter', correct: false },
-					{ id: 'f1c', text: 'Melasse', correct: false }
+					{ id: 'f1a', text: { de: 'Heu' }, correct: true },
+					{ id: 'f1b', text: { de: 'Kraftfutter' }, correct: false },
+					{ id: 'f1c', text: { de: 'Melasse' }, correct: false }
 				]
 			},
 			{
 				id: 'f2',
 				type: 'image',
-				prompt: 'Welches Signal zeigt Schmerz beim Rind?',
-				explanation: 'Ohrenstellung und Rückenhaltung sind wichtige Signale.',
+				prompt: { de: 'Welches Signal zeigt Schmerz beim Rind?' },
+				explanation: { de: 'Ohrenstellung und Rückenhaltung sind wichtige Signale.' },
 				points: 5,
 				mode: 'choice',
 				image: '🐄',
 				options: [
-					{ id: 'f2a', text: 'Entspannt hängende Ohren', correct: false },
-					{ id: 'f2b', text: 'Aufgestellte Ohren und gekrümmter Rücken', correct: true },
-					{ id: 'f2c', text: 'Wiederkauen', correct: false }
+					{ id: 'f2a', text: { de: 'Entspannt hängende Ohren' }, correct: false },
+					{ id: 'f2b', text: { de: 'Aufgestellte Ohren und gekrümmter Rücken' }, correct: true },
+					{ id: 'f2c', text: { de: 'Wiederkauen' }, correct: false }
 				]
 			},
 			{
 				id: 'f3',
 				type: 'image',
-				prompt: 'Was ist ein Zeichen für gutes Stallklima?',
-				explanation: 'Trockene Liegeflächen und ruhige Tiere sprechen für gutes Klima.',
+				prompt: { de: 'Was ist ein Zeichen für gutes Stallklima?' },
+				explanation: { de: 'Trockene Liegeflächen und ruhige Tiere sprechen für gutes Klima.' },
 				points: 5,
 				mode: 'choice',
 				image: '🏠',
 				options: [
-					{ id: 'f3a', text: 'Beschlagene Fenster', correct: false },
-					{ id: 'f3b', text: 'Trockene Liegeflächen', correct: true },
-					{ id: 'f3c', text: 'Stechender Ammoniakgeruch', correct: false }
+					{ id: 'f3a', text: { de: 'Beschlagene Fenster' }, correct: false },
+					{ id: 'f3b', text: { de: 'Trockene Liegeflächen' }, correct: true },
+					{ id: 'f3c', text: { de: 'Stechender Ammoniakgeruch' }, correct: false }
 				]
 			},
 			{
 				id: 'f4',
 				type: 'image',
-				prompt: 'Welches Futter liefert besonders viel Energie?',
-				explanation: 'Mais ist energiereich – deshalb wird er gezielt eingesetzt.',
+				prompt: { de: 'Welches Futter liefert besonders viel Energie?' },
+				explanation: { de: 'Mais ist energiereich – deshalb wird er gezielt eingesetzt.' },
 				points: 5,
 				mode: 'choice',
 				image: '🌽',
 				options: [
-					{ id: 'f4a', text: 'Mais', correct: true },
-					{ id: 'f4b', text: 'Stroh', correct: false },
-					{ id: 'f4c', text: 'Wasser', correct: false }
+					{ id: 'f4a', text: { de: 'Mais' }, correct: true },
+					{ id: 'f4b', text: { de: 'Stroh' }, correct: false },
+					{ id: 'f4c', text: { de: 'Wasser' }, correct: false }
 				]
 			}
 		]
@@ -1688,8 +1624,8 @@ const baseQuizzes: Quiz[] = [
 	{
 		id: 'q-sensorik',
 		topicId: 't-sensorik',
-		title: 'Sensoren im Stall',
-		description: 'Drei Fragen zu Präzisionslandwirtschaft und Tierwohl.',
+		title: { de: 'Sensoren im Stall' },
+		description: { de: 'Drei Fragen zu Präzisionslandwirtschaft und Tierwohl.' },
 		published: true,
 		timerSeconds: null,
 		createdAt: T('2026-11-01'),
@@ -1698,42 +1634,57 @@ const baseQuizzes: Quiz[] = [
 			{
 				id: 'p1',
 				type: 'mc',
-				prompt: 'Wozu erfassen Sensoren am Halsband einer Kuh Bewegungsdaten?',
-				explanation:
-					'Aktivitätssensoren erkennen Fresszeiten, Brunst und Lahmheit – das Tier bleibt im Mittelpunkt.',
+				prompt: { de: 'Wozu erfassen Sensoren am Halsband einer Kuh Bewegungsdaten?' },
+				explanation: {
+					de: 'Aktivitätssensoren erkennen Fresszeiten, Brunst und Lahmheit – das Tier bleibt im Mittelpunkt.'
+				},
 				points: 10,
 				multiple: false,
 				options: [
-					{ id: 'p1a', text: 'Um Aktivität und Gesundheitszustand zu erkennen', correct: true },
-					{ id: 'p1b', text: 'Um die Farbe der Milch zu messen', correct: false },
-					{ id: 'p1c', text: 'Um das Wetter vorherzusagen', correct: false }
+					{
+						id: 'p1a',
+						text: { de: 'Um Aktivität und Gesundheitszustand zu erkennen' },
+						correct: true
+					},
+					{ id: 'p1b', text: { de: 'Um die Farbe der Milch zu messen' }, correct: false },
+					{ id: 'p1c', text: { de: 'Um das Wetter vorherzusagen' }, correct: false }
 				]
 			},
 			{
 				id: 'p2',
 				type: 'tf',
-				prompt: 'Ein Beschleunigungssensor kann erkennen, ob eine Kuh liegt oder steht.',
-				explanation:
-					'Das Bewegungsmuster verrät viel über Liegezeiten und mögliche Erkrankungen.',
+				prompt: { de: 'Ein Beschleunigungssensor kann erkennen, ob eine Kuh liegt oder steht.' },
+				explanation: {
+					de: 'Das Bewegungsmuster verrät viel über Liegezeiten und mögliche Erkrankungen.'
+				},
 				points: 10,
 				correct: true
 			},
 			{
 				id: 'p3',
 				type: 'mc',
-				prompt: 'Was bedeutet Präzisionslandwirtschaft im Stall?',
-				explanation:
-					'Technik unterstützt das Management, ersetzt aber nicht die Beobachtung durch Menschen.',
+				prompt: { de: 'Was bedeutet Präzisionslandwirtschaft im Stall?' },
+				explanation: {
+					de: 'Technik unterstützt das Management, ersetzt aber nicht die Beobachtung durch Menschen.'
+				},
 				points: 10,
 				multiple: false,
 				options: [
 					{
 						id: 'p3a',
-						text: 'Technik unterstützt das Management, das Tier bleibt im Mittelpunkt',
+						text: { de: 'Technik unterstützt das Management, das Tier bleibt im Mittelpunkt' },
 						correct: true
 					},
-					{ id: 'p3b', text: 'Alle Tiere werden gleich behandelt, egal was Sensoren zeigen', correct: false },
-					{ id: 'p3c', text: 'Sensoren ersetzen die Beobachtung durch Menschen vollständig', correct: false }
+					{
+						id: 'p3b',
+						text: { de: 'Alle Tiere werden gleich behandelt, egal was Sensoren zeigen' },
+						correct: false
+					},
+					{
+						id: 'p3c',
+						text: { de: 'Sensoren ersetzen die Beobachtung durch Menschen vollständig' },
+						correct: false
+					}
 				]
 			}
 		]
@@ -1744,9 +1695,13 @@ export const seedGames: Game[] = [
 	{
 		id: 'g-pansen',
 		topicId: 't-methan',
-		title: 'Pansen-Puzzle',
-		description: 'Finde die drei Futterbausteine, die Methan reduzieren.',
+		title: { de: 'Pansen-Puzzle', en: 'Rumen puzzle' },
+		description: {
+			de: 'Finde die drei Futterbausteine, die Methan reduzieren.',
+			en: 'Find the three feed components that reduce methane.'
+		},
 		kind: 'html',
+		languages: ['de'],
 		files: htmlFiles(pansenPuzzleHtml),
 		maxPoints: 200,
 		apiVersion: 1,
@@ -1758,9 +1713,13 @@ export const seedGames: Game[] = [
 	{
 		id: 'g-stallklima',
 		topicId: 't-stallklima',
-		title: 'Stallklima-Simulator',
-		description: 'Stelle Temperatur und Luftfeuchte optimal ein.',
+		title: { de: 'Stallklima-Simulator', en: 'Barn climate simulator' },
+		description: {
+			de: 'Stelle Temperatur und Luftfeuchte optimal ein.',
+			en: 'Set temperature and humidity just right.'
+		},
 		kind: 'html',
+		languages: ['de'],
 		files: htmlFiles(stallklimaHtml),
 		maxPoints: 150,
 		apiVersion: 1,
@@ -1773,7 +1732,7 @@ export const seedGames: Game[] = [
 
 
 /* ------------------------------------------------------------------ */
-/* Beispiel-Quiz zum Hitzestress (DE + EN)                             */
+/* Beispiel-Quiz zum Hitzestress (ein Quiz, Texte auf DE und EN)      */
 /* ------------------------------------------------------------------ */
 
 const stallImage = [{ id: 'qa-stall', name: 'Stall-Schema', mime: 'image/svg+xml', src: '/demo/stall-schema.svg' }];
@@ -1782,9 +1741,11 @@ export const hitzeQuizzes: Quiz[] = [
 	{
 		id: 'q-hitze',
 		topicId: 't-hitze',
-		lang: 'de',
-		title: 'Hitzestress-Check',
-		description: 'Fünf Fragen zur Ausstellung „Wenn es der Kuh zu heiß wird“.',
+		title: { de: 'Hitzestress-Check', en: 'Heat stress check' },
+		description: {
+			de: 'Fünf Fragen zur Ausstellung „Wenn es der Kuh zu heiß wird“.',
+			en: 'Five questions on the exhibition “When it gets too hot for the cow”.'
+		},
 		published: true,
 		timerSeconds: null,
 		createdAt: T('2026-10-25'),
@@ -1793,35 +1754,62 @@ export const hitzeQuizzes: Quiz[] = [
 			{
 				id: 'h1',
 				type: 'mc',
-				prompt: 'Welche zwei Werte fasst der Temperatur-Feuchte-Index (THI) zusammen?',
-				explanation: 'Der THI kombiniert Lufttemperatur und relative Luftfeuchte. Feuchte Luft erschwert die Abgabe von Wärme.',
+				prompt: {
+					de: 'Welche zwei Werte fasst der Temperatur-Feuchte-Index (THI) zusammen?',
+					en: 'Which two values does the temperature-humidity index (THI) combine?'
+				},
+				explanation: {
+					de: 'Der THI kombiniert Lufttemperatur und relative Luftfeuchte. Feuchte Luft erschwert die Abgabe von Wärme.',
+					en: 'The THI combines air temperature and relative humidity. Humid air makes it harder to release heat.'
+				},
 				points: 10,
 				multiple: false,
 				options: [
-					{ id: 'h1a', text: 'Lufttemperatur und Luftfeuchte', correct: true },
-					{ id: 'h1b', text: 'Körpergewicht und Milchmenge', correct: false },
-					{ id: 'h1c', text: 'Windstärke und Sonnenstunden', correct: false }
+					{
+						id: 'h1a',
+						text: { de: 'Lufttemperatur und Luftfeuchte', en: 'Air temperature and humidity' },
+						correct: true
+					},
+					{
+						id: 'h1b',
+						text: { de: 'Körpergewicht und Milchmenge', en: 'Body weight and milk yield' },
+						correct: false
+					},
+					{
+						id: 'h1c',
+						text: { de: 'Windstärke und Sonnenstunden', en: 'Wind speed and hours of sunshine' },
+						correct: false
+					}
 				]
 			},
 			{
 				id: 'h2',
 				type: 'tf',
-				prompt: 'Milchkühe geraten erst ab etwa 35 °C in Hitzestress.',
-				explanation: 'Falsch. Schon ab rund 20 °C – je nach Luftfeuchte – kann Hitzestress beginnen.',
+				prompt: {
+					de: 'Milchkühe geraten erst ab etwa 35 °C in Hitzestress.',
+					en: 'Dairy cows only experience heat stress from about 35 °C.'
+				},
+				explanation: {
+					de: 'Falsch. Schon ab rund 20 °C – je nach Luftfeuchte – kann Hitzestress beginnen.',
+					en: 'False. Heat stress can begin at around 20 °C, depending on humidity.'
+				},
 				points: 10,
 				correct: false
 			},
 			{
 				id: 'h3',
 				type: 'image',
-				prompt: 'Tippe im Bild auf den Ventilator.',
-				explanation: 'Der Ventilator links sorgt für Luftbewegung im Tierbereich und führt Wärme ab.',
+				prompt: { de: 'Tippe im Bild auf den Ventilator.', en: 'Tap the fan in the picture.' },
+				explanation: {
+					de: 'Der Ventilator links sorgt für Luftbewegung im Tierbereich und führt Wärme ab.',
+					en: 'The fan on the left creates air movement in the animal area and carries heat away.'
+				},
 				points: 10,
 				mode: 'click',
 				mediaKind: 'image',
 				media: stallImage,
 				clickImageUrl: '/demo/stall-schema.svg',
-				clickInstruction: 'Tippe oder klicke auf den Ventilator.',
+				clickInstruction: { de: 'Tippe oder klicke auf den Ventilator.', en: 'Tap or click the fan.' },
 				clickPolygon: [
 					{ x: 0.09, y: 0.18 },
 					{ x: 0.25, y: 0.18 },
@@ -1832,20 +1820,32 @@ export const hitzeQuizzes: Quiz[] = [
 			{
 				id: 'h4',
 				type: 'match',
-				prompt: 'Ordne jede Maßnahme ihrer Wirkung zu.',
-				explanation: 'Jede Maßnahme setzt an einer anderen Stelle an – am besten wirken sie zusammen.',
+				prompt: {
+					de: 'Ordne jede Maßnahme ihrer Wirkung zu.',
+					en: 'Match each measure to its effect.'
+				},
+				explanation: {
+					de: 'Jede Maßnahme setzt an einer anderen Stelle an – am besten wirken sie zusammen.',
+					en: 'Each measure works in a different way – they are most effective together.'
+				},
 				points: 10,
 				left: [
-					{ id: 'h4l1', text: 'Ventilator' },
-					{ id: 'h4l2', text: 'Sprühkühlung' },
-					{ id: 'h4l3', text: 'Tränke' },
-					{ id: 'h4l4', text: 'Schatten' }
+					{ id: 'h4l1', text: { de: 'Ventilator', en: 'Fan' } },
+					{ id: 'h4l2', text: { de: 'Sprühkühlung', en: 'Sprinklers' } },
+					{ id: 'h4l3', text: { de: 'Tränke', en: 'Water trough' } },
+					{ id: 'h4l4', text: { de: 'Schatten', en: 'Shade' } }
 				],
 				right: [
-					{ id: 'h4r1', text: 'Luftbewegung führt Wärme ab' },
-					{ id: 'h4r2', text: 'Verdunstung kühlt das Fell' },
-					{ id: 'h4r3', text: 'Ersetzt verlorene Flüssigkeit' },
-					{ id: 'h4r4', text: 'Schützt vor direkter Sonne' }
+					{
+						id: 'h4r1',
+						text: { de: 'Luftbewegung führt Wärme ab', en: 'Air movement carries heat away' }
+					},
+					{
+						id: 'h4r2',
+						text: { de: 'Verdunstung kühlt das Fell', en: 'Evaporation cools the coat' }
+					},
+					{ id: 'h4r3', text: { de: 'Ersetzt verlorene Flüssigkeit', en: 'Replaces lost fluid' } },
+					{ id: 'h4r4', text: { de: 'Schützt vor direkter Sonne', en: 'Protects from direct sun' } }
 				],
 				solution: [
 					{ leftId: 'h4l1', rightId: 'h4r1' },
@@ -1857,107 +1857,36 @@ export const hitzeQuizzes: Quiz[] = [
 			{
 				id: 'h5',
 				type: 'mc',
-				prompt: 'Woran erkennt man Hitzestress? (2 Antworten)',
-				explanation: 'Schnelle Atmung und vermehrtes Stehen sind typische Anzeichen.',
+				prompt: {
+					de: 'Woran erkennt man Hitzestress? (2 Antworten)',
+					en: 'How can you recognise heat stress? (2 answers)'
+				},
+				explanation: {
+					de: 'Schnelle Atmung und vermehrtes Stehen sind typische Anzeichen.',
+					en: 'Faster breathing and standing more are typical signs.'
+				},
 				points: 10,
 				multiple: true,
 				options: [
-					{ id: 'h5a', text: 'Schnellere Atmung', correct: true },
-					{ id: 'h5b', text: 'Die Kuh steht mehr und liegt weniger', correct: true },
-					{ id: 'h5c', text: 'Die Kuh frisst deutlich mehr', correct: false },
-					{ id: 'h5d', text: 'Das Fell wird dunkler', correct: false }
-				]
-			}
-		]
-	},
-	{
-		id: 'q-hitze-en',
-		topicId: 't-hitze',
-		lang: 'en',
-		translationOf: 'q-hitze',
-		title: 'Heat stress check',
-		description: 'Five questions on the exhibition “When it gets too hot for the cow”.',
-		published: true,
-		timerSeconds: null,
-		createdAt: T('2026-10-26'),
-		updatedAt: T('2026-11-03'),
-		questions: [
-			{
-				id: 'he1',
-				type: 'mc',
-				prompt: 'Which two values does the temperature-humidity index (THI) combine?',
-				explanation: 'The THI combines air temperature and relative humidity. Humid air makes it harder to release heat.',
-				points: 10,
-				multiple: false,
-				options: [
-					{ id: 'he1a', text: 'Air temperature and humidity', correct: true },
-					{ id: 'he1b', text: 'Body weight and milk yield', correct: false },
-					{ id: 'he1c', text: 'Wind speed and hours of sunshine', correct: false }
-				]
-			},
-			{
-				id: 'he2',
-				type: 'tf',
-				prompt: 'Dairy cows only experience heat stress from about 35 °C.',
-				explanation: 'False. Heat stress can begin at around 20 °C, depending on humidity.',
-				points: 10,
-				correct: false
-			},
-			{
-				id: 'he3',
-				type: 'image',
-				prompt: 'Tap the fan in the picture.',
-				explanation: 'The fan on the left creates air movement in the animal area and carries heat away.',
-				points: 10,
-				mode: 'click',
-				mediaKind: 'image',
-				media: stallImage,
-				clickImageUrl: '/demo/stall-schema.svg',
-				clickInstruction: 'Tap or click the fan.',
-				clickPolygon: [
-					{ x: 0.09, y: 0.18 },
-					{ x: 0.25, y: 0.18 },
-					{ x: 0.25, y: 0.46 },
-					{ x: 0.09, y: 0.46 }
-				]
-			},
-			{
-				id: 'he4',
-				type: 'match',
-				prompt: 'Match each measure to its effect.',
-				explanation: 'Each measure works in a different way – they are most effective together.',
-				points: 10,
-				left: [
-					{ id: 'he4l1', text: 'Fan' },
-					{ id: 'he4l2', text: 'Sprinklers' },
-					{ id: 'he4l3', text: 'Water trough' },
-					{ id: 'he4l4', text: 'Shade' }
-				],
-				right: [
-					{ id: 'he4r1', text: 'Air movement carries heat away' },
-					{ id: 'he4r2', text: 'Evaporation cools the coat' },
-					{ id: 'he4r3', text: 'Replaces lost fluid' },
-					{ id: 'he4r4', text: 'Protects from direct sun' }
-				],
-				solution: [
-					{ leftId: 'he4l1', rightId: 'he4r1' },
-					{ leftId: 'he4l2', rightId: 'he4r2' },
-					{ leftId: 'he4l3', rightId: 'he4r3' },
-					{ leftId: 'he4l4', rightId: 'he4r4' }
-				]
-			},
-			{
-				id: 'he5',
-				type: 'mc',
-				prompt: 'How can you recognise heat stress? (2 answers)',
-				explanation: 'Faster breathing and standing more are typical signs.',
-				points: 10,
-				multiple: true,
-				options: [
-					{ id: 'he5a', text: 'Faster breathing', correct: true },
-					{ id: 'he5b', text: 'The cow stands more and lies down less', correct: true },
-					{ id: 'he5c', text: 'The cow eats much more', correct: false },
-					{ id: 'he5d', text: 'The coat turns darker', correct: false }
+					{ id: 'h5a', text: { de: 'Schnellere Atmung', en: 'Faster breathing' }, correct: true },
+					{
+						id: 'h5b',
+						text: {
+							de: 'Die Kuh steht mehr und liegt weniger',
+							en: 'The cow stands more and lies down less'
+						},
+						correct: true
+					},
+					{
+						id: 'h5c',
+						text: { de: 'Die Kuh frisst deutlich mehr', en: 'The cow eats much more' },
+						correct: false
+					},
+					{
+						id: 'h5d',
+						text: { de: 'Das Fell wird dunkler', en: 'The coat turns darker' },
+						correct: false
+					}
 				]
 			}
 		]
@@ -2016,11 +1945,10 @@ export const seedStats: StatsData = {
 		'e-huehner': 410
 	},
 	categories: { 'c-rind': 3590, 'c-schwein': 760, 'c-gefluegel': 410 },
-	quizStarts: { 'q-hitze': 620, 'q-hitze-en': 48, 'q-methan': 455, 'q-stallklima': 210, 'q-sensorik': 130 },
-	quizCompletions: { 'q-hitze': 512, 'q-hitze-en': 39, 'q-methan': 371, 'q-stallklima': 168, 'q-sensorik': 97 },
+	quizStarts: { 'q-hitze': 668, 'q-methan': 455, 'q-stallklima': 210, 'q-sensorik': 130 },
+	quizCompletions: { 'q-hitze': 551, 'q-methan': 371, 'q-stallklima': 168, 'q-sensorik': 97 },
 	quizScore: {
-		'q-hitze': { sum: 512 * 0.74, n: 512 },
-		'q-hitze-en': { sum: 39 * 0.69, n: 39 },
+		'q-hitze': { sum: 512 * 0.74 + 39 * 0.69, n: 551 },
 		'q-methan': { sum: 371 * 0.63, n: 371 },
 		'q-stallklima': { sum: 168 * 0.81, n: 168 },
 		'q-sensorik': { sum: 97 * 0.7, n: 97 }

@@ -24,9 +24,9 @@ import {
 } from '$lib/storage/seed';
 import { readZipPackage, starterIndexHtml, type GameManifest } from '$lib/games/files';
 import packagedGames from '$lib/games/packaged.json';
+import { gameLocale, localizeQuiz, migrateGames, migrateQuizzes, pick, quizLocale, quizTexts } from '$lib/activities';
 import type {
 	Activity,
-	ActivityBase,
 	Audience,
 	AuditEntry,
 	Block,
@@ -151,8 +151,7 @@ class ContentStore {
 			this.keywords = read(storageKeys.keywords, []);
 			this.media = read(storageKeys.media, []);
 			this.infographics = read(storageKeys.infographics, []);
-			this.quizzes = read(storageKeys.quizzes, []);
-			this.games = read(storageKeys.games, []);
+			this.loadActivities();
 			this.filesLoading = this.hydrateGameFiles();
 			this.users = read(storageKeys.users, []);
 			this.audit = read(storageKeys.audit, []);
@@ -192,6 +191,31 @@ class ContentStore {
 		this.loaded = true;
 	}
 
+	/**
+	 * Quizze und Spiele laden. Ältere Daten, bei denen jede Übersetzung ein eigener Datensatz
+	 * war, werden dabei zu einem zweisprachigen Datensatz zusammengeführt.
+	 */
+	private loadActivities(): void {
+		const quizzes = migrateQuizzes(read<unknown[]>(storageKeys.quizzes, []));
+		const games = migrateGames(read<unknown[]>(storageKeys.games, []));
+		this.quizzes = quizzes.quizzes;
+		this.games = games.games;
+		if (!quizzes.changed && !games.changed) return;
+		// Ausstellungen verweisen danach auf das zusammengeführte Original.
+		for (const e of this.exhibitions) {
+			for (const b of e.blocks) {
+				if (b.type === 'quiz') b.quizId = quizzes.renamed.get(b.quizId) ?? b.quizId;
+				if (b.type === 'game') b.gameId = games.renamed.get(b.gameId) ?? b.gameId;
+			}
+		}
+		this.persist(storageKeys.exhibitions, this.exhibitions);
+		this.persist(storageKeys.quizzes, this.quizzes);
+		// Spiele speichert hydrateGameFiles, sobald die Dateien geladen sind.
+		this.gamesMigrated = games.changed;
+	}
+
+	private gamesMigrated = false;
+
 	private persist(key: StorageKey, value: unknown): boolean {
 		return write(key, $state.snapshot(value));
 	}
@@ -209,7 +233,7 @@ class ContentStore {
 			const packagesChanged = this.syncPackages();
 			const loaded = await this.loadPackageFiles();
 			this.gameFilesReady = true;
-			if (migrate || packagesChanged || loaded) await this.persistGames();
+			if (migrate || packagesChanged || loaded || this.gamesMigrated) await this.persistGames();
 		} catch {
 			// Ohne IndexedDB: Dateien stehen (wie bisher) direkt im localStorage.
 			this.filesInIdb = false;
@@ -225,11 +249,10 @@ class ContentStore {
 		return {
 			id: m.id,
 			topicId: this.resolveTopic(m),
-			lang: m.lang ?? 'de',
-			translationOf: m.translationOf,
 			title: m.title,
-			description: m.description ?? '',
+			description: m.description,
 			kind: 'html',
+			languages: m.languages,
 			files: [],
 			maxPoints: m.maxPoints,
 			apiVersion: 1,
@@ -420,37 +443,20 @@ class ContentStore {
 		return this.getCategory(this.getTopic(exhibition.topicId)?.categoryId);
 	}
 
-	/** Quiz in der passenden Sprache, sonst das Original. */
-	quizForLocale(quizId: string, locale: Locale): Quiz | undefined {
-		const base = this.getQuiz(quizId);
-		if (!base) return undefined;
-		if ((base.lang ?? 'de') === locale) return base;
-		const originalId = base.translationOf ?? base.id;
-		return (
-			this.quizzes.find((q) => q.published && (q.lang ?? 'de') === locale && (q.translationOf === originalId || q.id === originalId)) ??
-			base
-		);
-	}
-
-	/** Spiel in der passenden Sprache, sonst das Original – wie bei Quizzen. */
-	gameForLocale(gameId: string, locale: Locale): Game | undefined {
-		return this.forLocale(this.games, this.getGame(gameId), locale);
-	}
-
-	private forLocale<T extends ActivityBase>(list: T[], base: T | undefined, locale: Locale): T | undefined {
-		if (!base) return undefined;
-		if ((base.lang ?? 'de') === locale) return base;
-		const originalId = base.translationOf ?? base.id;
-		return (
-			list.find(
-				(x) => x.published && (x.lang ?? 'de') === locale && (x.translationOf === originalId || x.id === originalId)
-			) ?? base
-		);
+	/**
+	 * Quiz für die Anzeige: in der gewünschten Sprache, wenn es dort vollständig gepflegt ist,
+	 * sonst auf Deutsch. `lang` ist die Sprache, in der das Quiz tatsächlich erscheint.
+	 */
+	quizView(quizId: string, wanted: Locale = i18n.active): { quiz: Quiz<string>; lang: Locale } | undefined {
+		const quiz = this.getQuiz(quizId);
+		if (!quiz) return undefined;
+		const lang = quizLocale(quiz, wanted);
+		return { quiz: localizeQuiz(quiz, lang), lang };
 	}
 
 	/**
 	 * Quizze und Spiele gemeinsam – gleichrangig, geordnet nach Kategorie und Thema.
-	 * Nur veröffentlichte Originale aktiver Themen, jeweils in der passenden Sprache.
+	 * Nur veröffentlichte Angebote aktiver Themen, Texte jeweils in der passenden Sprache.
 	 * Ist die Gamification ausgeschaltet, bleibt die Liste leer.
 	 */
 	activities(filter: { categoryId?: string; topicId?: string } = {}, locale: Locale = i18n.active): Activity[] {
@@ -462,14 +468,12 @@ class ContentStore {
 			if (filter.categoryId && topic.categoryId !== filter.categoryId) return false;
 			return true;
 		};
-		const quizzes: Activity[] = this.quizzes
-			.filter((q) => q.published && !q.translationOf && topicOk(q.topicId))
-			.map((q) => this.quizForLocale(q.id, locale) ?? q)
-			.map((item) => ({ kind: 'quiz', item, href: `/quiz/${item.id}` }));
-		const games: Activity[] = this.games
-			.filter((g) => g.published && !g.translationOf && topicOk(g.topicId))
-			.map((g) => this.gameForLocale(g.id, locale) ?? g)
-			.map((item) => ({ kind: 'game', item, href: `/spielen/${item.id}` }));
+		const quizzes = this.quizzes
+			.filter((q) => q.published && topicOk(q.topicId))
+			.map((q) => this.quizActivity(q, locale));
+		const games = this.games
+			.filter((g) => g.published && topicOk(g.topicId))
+			.map((g) => this.gameActivity(g, locale));
 		const rank = (a: Activity) => {
 			const topic = this.getTopic(a.item.topicId);
 			const category = this.getCategory(topic?.categoryId);
@@ -478,20 +482,39 @@ class ContentStore {
 		return [...quizzes, ...games].sort((a, b) => {
 			const [ca, ta] = rank(a);
 			const [cb, tb] = rank(b);
-			return ca - cb || ta - tb || a.item.title.localeCompare(b.item.title, locale);
+			return ca - cb || ta - tb || a.title.localeCompare(b.title, locale);
 		});
+	}
+
+	quizActivity(item: Quiz, locale: Locale = i18n.active): Activity {
+		const lang = quizLocale(item, locale);
+		return {
+			kind: 'quiz',
+			item,
+			href: `/quiz/${item.id}`,
+			lang,
+			title: pick(item.title, lang),
+			description: pick(item.description, lang)
+		};
+	}
+
+	/** Titel und Beschreibung pflegt die Redaktion zweisprachig – unabhängig davon, welche Sprachen das Spiel kann. */
+	gameActivity(item: Game, locale: Locale = i18n.active): Activity {
+		return {
+			kind: 'game',
+			item,
+			href: `/spielen/${item.id}`,
+			lang: gameLocale(item, locale),
+			title: pick(item.title, locale),
+			description: pick(item.description, locale)
+		};
 	}
 
 	/** Ausstellung, in der ein Quiz oder Spiel eingebunden ist. */
 	exhibitionWith(ref: { quizId?: string; gameId?: string }): Exhibition | undefined {
-		// Eingebunden ist immer das Original; Übersetzungen finden so dieselbe Ausstellung.
-		const quiz = ref.quizId ? this.getQuiz(ref.quizId) : undefined;
-		const game = ref.gameId ? this.getGame(ref.gameId) : undefined;
-		const quizIds = new Set([ref.quizId, quiz?.translationOf].filter(Boolean));
-		const gameIds = new Set([ref.gameId, game?.translationOf].filter(Boolean));
 		return this.exhibitions.find((e) =>
 			e.blocks.some(
-				(b) => (b.type === 'quiz' && quizIds.has(b.quizId)) || (b.type === 'game' && gameIds.has(b.gameId))
+				(b) => (b.type === 'quiz' && b.quizId === ref.quizId) || (b.type === 'game' && b.gameId === ref.gameId)
 			)
 		);
 	}
@@ -614,19 +637,20 @@ class ContentStore {
 		}
 
 		if ((!query.type || query.type === 'quiz') && this.settings.gamification && !query.keywordId && (!query.audience || query.audience === 'schule')) {
-			for (const q of this.quizzes.filter((q) => q.published && (q.lang ?? 'de') === locale)) {
+			for (const q of this.quizzes.filter((q) => q.published)) {
 				const topic = this.getTopic(q.topicId);
 				if (!topic?.active) continue;
 				if (query.categoryId && topic.categoryId !== query.categoryId) continue;
 				if (query.fieldId && topic.fieldId !== query.fieldId) continue;
-				const score = scoreOf(q.title.toLowerCase(), flat(topic.title), q.description.toLowerCase(), q.questions.map((x) => x.prompt).join(' ').toLowerCase());
+				const score = scoreOf(flat(q.title), flat(topic.title), flat(q.description), quizTexts(q).map(flat).join(' '));
 				if (!score) continue;
+				const lang = quizLocale(q, locale);
 				hits.push({
 					type: 'quiz',
 					id: q.id,
-					title: q.title,
-					titleLang: q.lang ?? 'de',
-					text: q.description,
+					title: pick(q.title, lang),
+					titleLang: lang,
+					text: pick(q.description, lang),
 					href: `/quiz/${q.id}`,
 					date: q.updatedAt,
 					categoryId: topic.categoryId,
@@ -895,9 +919,8 @@ class ContentStore {
 		const quiz: Quiz = {
 			id: uid(),
 			topicId,
-			lang: 'de',
-			title: 'Neues Quiz',
-			description: '',
+			title: { de: 'Neues Quiz', en: '' },
+			description: empty(),
 			questions: [],
 			published: false,
 			timerSeconds: null,
@@ -926,11 +949,10 @@ class ContentStore {
 		const game: Game = {
 			id: uid(),
 			topicId: input.topicId ?? this.topics[0]?.id ?? '',
-			lang: input.lang ?? 'de',
-			translationOf: input.translationOf,
-			title: input.title ?? 'Neues HTML-Spiel',
-			description: input.description ?? '',
+			title: input.title ? { ...input.title } : { de: 'Neues HTML-Spiel', en: '' },
+			description: input.description ? { ...input.description } : empty(),
 			kind: 'html',
+			languages: input.languages?.length ? [...input.languages] : ['de'],
 			files: input.files?.length ? structuredClone(input.files) : starterFiles(),
 			maxPoints: input.maxPoints ?? 100,
 			apiVersion: 1,
@@ -1033,7 +1055,7 @@ class ContentStore {
 		}));
 		const quizzes = this.quizzes.map((q) => ({
 			id: q.id,
-			title: q.title,
+			title: q.title.de,
 			type: 'Quiz',
 			updatedAt: q.updatedAt,
 			href: `/admin/quiz/${q.id}`

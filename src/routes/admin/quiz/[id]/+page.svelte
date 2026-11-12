@@ -6,6 +6,10 @@
 	import { onMount } from 'svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import QuestionEditor from '$lib/components/admin/QuestionEditor.svelte';
+	import LText from '$lib/components/admin/LText.svelte';
+	import EditLangSwitch from '$lib/components/admin/EditLangSwitch.svelte';
+	import { provideEditLang } from '$lib/components/admin/edit-lang.svelte';
+	import { pick, questionTexts, quizProgress, textsMissing } from '$lib/activities';
 	import { content } from '$lib/stores/content.svelte';
 	import { toasts } from '$lib/stores/toast.svelte';
 	import { emptyQuestion, questionTypeLabel, type Question, type Quiz } from '$lib/types';
@@ -19,6 +23,9 @@
 		page.url.searchParams.get('step') === 'questions' ? 'questions' : 'basics'
 	);
 	let selected = $state(0);
+	/** Ein Quiz, zwei Sprachen: Umschalter oben bestimmt, welche Texte bearbeitet werden. */
+	const editLang = provideEditLang(page.url.searchParams.get('lang') === 'en' ? 'en' : 'de');
+	let enProgress = $derived(draft ? quizProgress(draft, 'en') : undefined);
 	let savedAt = $state<string | null>(null);
 	let deleteOpen = $state(false);
 	let leaveOpen = $state(false);
@@ -135,12 +142,14 @@
 			<Icon name="arrow_back" />
 		</a>
 		<div class="flex-1">
-			<h1 class="font-serif text-xl font-bold text-brand-700">{draft.title || 'Ohne Titel'}</h1>
+			<h1 class="font-serif text-xl font-bold text-brand-700">{draft.title.de || 'Ohne Titel'}</h1>
 			<p class="text-[13px] text-ink-500">
 				{draft.questions.length} Fragen · {totalPoints} Punkte · Quiz
 			</p>
 		</div>
-		<a class="b2" href={`/quiz/${quizId}?from=admin`} target="_blank" rel="noreferrer">Vorschau</a>
+		<a class="b2" href={`/quiz/${quizId}?from=admin&lang=${editLang.locale}`} target="_blank" rel="noreferrer">
+			Vorschau ({editLang.locale.toUpperCase()})
+		</a>
 	</div>
 
 	<div class="mb-4 flex flex-wrap items-center gap-2">
@@ -174,44 +183,27 @@
 		</span>
 	</div>
 
+	<div class="mb-4">
+		<EditLangSwitch
+			lang={editLang}
+			progress={enProgress}
+			note="Fragentyp, Punkte, richtige Antworten und Medien gelten für beide Sprachen. Auf Englisch erscheint das Quiz erst, wenn alle Texte übersetzt sind."
+		/>
+	</div>
+
 	{#if step === 'basics'}
 		<div class="grid gap-4 lg:grid-cols-[1fr_320px]">
 			<div class="card space-y-3">
 				<h2 class="font-serif text-xl font-semibold text-brand-700">Grundeinstellungen</h2>
 
-				<div>
-					<label class="lbl" for="quiz-title">Titel</label>
-					<input id="quiz-title" class="inp" bind:value={draft.title} />
-				</div>
+				<LText id="quiz-title" label="Titel" bind:value={draft.title} />
 
 				<div>
 					<label class="lbl" for="quiz-module">Themenschwerpunkt</label>
 					<TopicSelect id="quiz-module" bind:value={draft.topicId} />
 				</div>
 
-				<div>
-					<label class="lbl" for="quiz-lang">Sprache</label>
-					<select id="quiz-lang" class="inp" bind:value={draft.lang}>
-						<option value="de">Deutsch</option>
-						<option value="en">Englisch</option>
-					</select>
-					<p class="mt-1 text-[13px] text-ink-500">Für eine englische Fassung ein eigenes Quiz anlegen und unten das Original wählen.</p>
-				</div>
-
-				<div>
-					<label class="lbl" for="quiz-orig">Übersetzung von</label>
-					<select id="quiz-orig" class="inp" bind:value={draft.translationOf}>
-						<option value={undefined}>– keine (Original) –</option>
-						{#each content.quizzes.filter((q) => q.id !== draft?.id && !q.translationOf) as q (q.id)}
-							<option value={q.id}>{q.title}</option>
-						{/each}
-					</select>
-				</div>
-
-				<div>
-					<label class="lbl" for="quiz-desc">Beschreibung</label>
-					<textarea id="quiz-desc" class="inp" rows="3" bind:value={draft.description}></textarea>
-				</div>
+				<LText id="quiz-desc" label="Beschreibung" multiline rows={3} bind:value={draft.description} />
 
 				<p class="rounded-xl bg-brand-50 p-3 text-[13px] text-ink-700">
 					Im zweiten Schritt legst du die Fragen an. Alle vier Formate – Multiple Choice,
@@ -282,7 +274,10 @@
 							<Icon name="drag_indicator" class="text-ink-500" />
 							<b>{index + 1}</b>
 							<span class="bdg shrink-0">{questionTypeLabel[question.type]}</span>
-							<span class="flex-1 truncate text-[14px]">{question.prompt || 'Ohne Frage'}</span>
+							<span class="min-w-0 flex-1 truncate text-[14px]">{pick(question.prompt, editLang.locale) || 'Ohne Frage'}</span>
+							{#if textsMissing(questionTexts(question), editLang.locale)}
+								<span class="bdg shrink-0 !bg-sky-500/10 !text-sky-500" title="Englische Texte fehlen">EN fehlt</span>
+							{/if}
 							<small class="shrink-0">{question.points} P.</small>
 							<button
 								class="rounded-lg p-1 text-ink-500 hover:text-brand-700"
@@ -377,7 +372,7 @@
 					<Icon name="delete" />
 				</span>
 				<h2 id="delete-quiz-title" class="font-serif text-xl font-semibold">Quiz löschen?</h2>
-				<p>„{draft.title}" wird dauerhaft entfernt. Das kann nicht rückgängig gemacht werden.</p>
+				<p>„{draft.title.de}" wird dauerhaft entfernt. Das kann nicht rückgängig gemacht werden.</p>
 				<div class="flex justify-end gap-2">
 					<button class="b3" onclick={() => (deleteOpen = false)}>Abbrechen</button>
 					<button class="b4" onclick={removeQuiz}>Endgültig löschen</button>

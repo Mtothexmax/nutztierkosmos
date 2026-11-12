@@ -166,14 +166,14 @@
 							{@const graphic = content.getInfographic(block.infographicId)}
 							{#if graphic}<InfographicView {graphic} />{/if}
 						{:else if block.type === 'quiz' && content.settings.gamification}
-							{@const quiz = content.quizForLocale(block.quizId, i18n.active)}
+							{@const quiz = content.getQuiz(block.quizId)}
 							{#if quiz?.published}
-								<ActivityCard activity={{ kind: 'quiz', item: quiz, href: `/quiz/${quiz.id}` }} variant="feature" headingLevel={2} />
+								<ActivityCard activity={content.quizActivity(quiz, i18n.active)} variant="feature" headingLevel={2} />
 							{/if}
 						{:else if block.type === 'game' && content.settings.gamification}
-							{@const game = content.gameForLocale(block.gameId, i18n.active)}
+							{@const game = content.getGame(block.gameId)}
 							{#if game?.published}
-								<ActivityCard activity={{ kind: 'game', item: game, href: `/spielen/${game.id}` }} variant="feature" headingLevel={2} />
+								<ActivityCard activity={content.gameActivity(game, i18n.active)} variant="feature" headingLevel={2} />
 							{/if}
 						{/if}
 					</div>

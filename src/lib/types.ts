@@ -242,32 +242,38 @@ export type MediaAsset = {
 	src: string;
 };
 
-type QuestionBase = {
+/**
+ * Texte in Quizzen sind zweisprachig gepflegt (`L10n`). Für die Anzeige werden sie in eine
+ * Sprache aufgelöst – dann ist `S` ein einfacher `string` (siehe `$lib/activities`).
+ */
+type QuestionBase<S = L10n> = {
 	id: ID;
-	prompt: string;
-	explanation?: string;
+	prompt: S;
+	explanation?: S;
 	points: number;
 	image?: string;
 };
 
-export type McQuestion = QuestionBase & {
+export type ChoiceOption<S = L10n> = { id: ID; text: S; correct: boolean };
+
+export type McQuestion<S = L10n> = QuestionBase<S> & {
 	type: 'mc';
-	options: { id: ID; text: string; correct: boolean }[];
+	options: ChoiceOption<S>[];
 	multiple: boolean;
 };
 
-export type TfQuestion = QuestionBase & {
+export type TfQuestion<S = L10n> = QuestionBase<S> & {
 	type: 'tf';
 	correct: boolean;
 };
 
-export type ImageQuestion = QuestionBase & {
+export type ImageQuestion<S = L10n> = QuestionBase<S> & {
 	type: 'image';
 	mode: 'choice' | 'input' | 'click';
-	options?: { id: ID; text: string; correct: boolean }[];
-	answer?: string;
+	options?: ChoiceOption<S>[];
+	answer?: S;
 	tolerance?: 'exact' | 'loose';
-	clickInstruction?: string;
+	clickInstruction?: S;
 	clickPolygon?: { x: number; y: number }[];
 	clickImageUrl?: string;
 	/** Gewählte Medienart. Fehlt bei älteren Daten -> Bild. */
@@ -276,31 +282,30 @@ export type ImageQuestion = QuestionBase & {
 	media?: MediaAsset[];
 };
 
-export type MatchQuestion = QuestionBase & {
+export type MatchQuestion<S = L10n> = QuestionBase<S> & {
 	type: 'match';
-	left: { id: ID; text: string }[];
-	right: { id: ID; text: string }[];
+	left: { id: ID; text: S }[];
+	right: { id: ID; text: S }[];
 	solution: { leftId: ID; rightId: ID }[];
 	/** Mehrere Verbindungen pro Begriff erlauben; fehlt bei alten Daten -> 1:1. */
 	allowMultiple?: boolean;
 };
 
-export type Question = McQuestion | TfQuestion | ImageQuestion | MatchQuestion;
+export type Question<S = L10n> = McQuestion<S> | TfQuestion<S> | ImageQuestion<S> | MatchQuestion<S>;
 
 /**
  * Gemeinsame Grundlage für Quiz und Spiel. Beide sind gleichrangige „Mitmach-Angebote“:
  * Entscheidend ist der Themenschwerpunkt (und damit die Kategorie), nicht die Art.
+ *
+ * Ein Quiz oder Spiel wird nur einmal angelegt. Alle Texte sind zweisprachig (`L10n`):
+ * Deutsch ist Pflicht, Englisch wird im selben Datensatz ergänzt.
  */
-export type ActivityBase = {
+export type ActivityBase<S = L10n> = {
 	id: ID;
 	/** Themenschwerpunkt (Ebene 2); darüber ergibt sich die Kategorie (Ebene 1). */
 	topicId: ID;
-	/** Sprache. Fehlt -> Deutsch. */
-	lang?: Locale;
-	/** Bei Übersetzungen: ID des Originals (gleiche Art). */
-	translationOf?: ID;
-	title: string;
-	description: string;
+	title: S;
+	description: S;
 	published: boolean;
 	createdAt: string;
 	updatedAt: string;
@@ -308,8 +313,8 @@ export type ActivityBase = {
 
 export type ActivityKind = 'quiz' | 'game';
 
-export type Quiz = ActivityBase & {
-	questions: Question[];
+export type Quiz<S = L10n> = ActivityBase<S> & {
+	questions: Question<S>[];
 	timerSeconds: number | null;
 };
 
@@ -329,6 +334,11 @@ export type GameFile = {
 export type Game = ActivityBase & {
 	/** HTML-Spiele werden immer als Dateipaket gepflegt (ZIP-Upload). */
 	kind: 'html';
+	/**
+	 * Sprachen, die das Spiel selbst beherrscht. Die Plattform schickt die passende Sprache
+	 * im INIT (`payload.locale`); fehlt die gewählte, startet das Spiel in der ersten Sprache.
+	 */
+	languages: Locale[];
 	files: GameFile[];
 	maxPoints: number;
 	apiVersion: 1;
@@ -343,9 +353,17 @@ export type Game = ActivityBase & {
 };
 
 /** Quiz oder Spiel, aufbereitet für öffentliche Listen (Mitmachen, Themenseiten). */
-export type Activity =
-	| { kind: 'quiz'; item: Quiz; href: string }
-	| { kind: 'game'; item: Game; href: string };
+export type Activity = (
+	| { kind: 'quiz'; item: Quiz }
+	| { kind: 'game'; item: Game }
+) & {
+	href: string;
+	/** Titel und Beschreibung in der Anzeigesprache. */
+	title: string;
+	description: string;
+	/** Sprache, in der das Angebot tatsächlich gespielt wird. */
+	lang: Locale;
+};
 
 export type Preferences = {
 	/** Global vom Spieler bestätigt: Warnung nie wieder anzeigen. */
@@ -387,8 +405,11 @@ export type LastResult = {
 	at: string;
 };
 
+/** Leerer zweisprachiger Text. */
+export const txt = (de = '', en = ''): L10n => ({ de, en });
+
 export const emptyQuestion = (type: Question['type']): Question => {
-	const base = { id: crypto.randomUUID(), prompt: '', explanation: '', points: 10 };
+	const base = { id: crypto.randomUUID(), prompt: txt(), explanation: txt(), points: 10 };
 	switch (type) {
 		case 'mc':
 			return {
@@ -396,9 +417,9 @@ export const emptyQuestion = (type: Question['type']): Question => {
 				type: 'mc',
 				multiple: false,
 				options: [
-					{ id: crypto.randomUUID(), text: '', correct: true },
-					{ id: crypto.randomUUID(), text: '', correct: false },
-					{ id: crypto.randomUUID(), text: '', correct: false }
+					{ id: crypto.randomUUID(), text: txt(), correct: true },
+					{ id: crypto.randomUUID(), text: txt(), correct: false },
+					{ id: crypto.randomUUID(), text: txt(), correct: false }
 				]
 			};
 		case 'tf':
@@ -411,9 +432,9 @@ export const emptyQuestion = (type: Question['type']): Question => {
 				mediaKind: 'image',
 				media: [],
 				options: [
-					{ id: crypto.randomUUID(), text: '', correct: true },
-					{ id: crypto.randomUUID(), text: '', correct: false },
-					{ id: crypto.randomUUID(), text: '', correct: false }
+					{ id: crypto.randomUUID(), text: txt(), correct: true },
+					{ id: crypto.randomUUID(), text: txt(), correct: false },
+					{ id: crypto.randomUUID(), text: txt(), correct: false }
 				]
 			};
 		case 'match':
@@ -421,12 +442,12 @@ export const emptyQuestion = (type: Question['type']): Question => {
 				...base,
 				type: 'match',
 				left: [
-					{ id: crypto.randomUUID(), text: '' },
-					{ id: crypto.randomUUID(), text: '' }
+					{ id: crypto.randomUUID(), text: txt() },
+					{ id: crypto.randomUUID(), text: txt() }
 				],
 				right: [
-					{ id: crypto.randomUUID(), text: '' },
-					{ id: crypto.randomUUID(), text: '' }
+					{ id: crypto.randomUUID(), text: txt() },
+					{ id: crypto.randomUUID(), text: txt() }
 				],
 				solution: [],
 				allowMultiple: false
@@ -482,10 +503,10 @@ export const isImageMedium = (kind: MediaKind): boolean =>
 
 export const mediaSupportsPolygon = isImageMedium;
 
-export const mediaKindOf = (question: ImageQuestion): MediaKind => question.mediaKind ?? 'image';
+export const mediaKindOf = <S>(question: ImageQuestion<S>): MediaKind => question.mediaKind ?? 'image';
 
 /** Einheitliche Sicht auf neue `media`-Daten und alte `image`-Fragen (inkl. Emoji-Platzhalter). */
-export function mediaAssetsOf(question: ImageQuestion): MediaAsset[] {
+export function mediaAssetsOf<S>(question: ImageQuestion<S>): MediaAsset[] {
 	if (question.media && question.media.length > 0) return question.media;
 	if (!question.image) return [];
 	const isData = question.image.startsWith('data:');
