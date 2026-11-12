@@ -382,6 +382,8 @@ export type Settings = {
 	downloads: DownloadPolicy;
 	/** Präsentationsmodus: Anforderungs-Hinweise einblenden. */
 	presentationMode: boolean;
+	/** Debug-Modus: Bridge-Konsole beim Spielen einblenden. */
+	debugMode: boolean;
 	contactEmail: string;
 };
 

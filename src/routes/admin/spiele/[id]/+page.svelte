@@ -608,6 +608,7 @@
 						{/key}
 					</div>
 
+					{#if content.settings.debugMode}
 					<div class="rounded-2xl bg-brand-900 p-3 text-white/90">
 						<div class="flex flex-wrap items-center justify-between gap-2 text-sm">
 							<b>Bridge-Konsole</b>
@@ -635,6 +636,7 @@
 							<button class="b2 !py-1" onclick={() => bridge.simulate('SCORE')}>Test-SCORE</button>
 						</div>
 					</div>
+					{/if}
 
 					{#if !bridge.connected}
 						<div class="rounded-xl border border-amber-500 bg-amber-500/10 p-3 text-[13px]">

@@ -25,7 +25,7 @@ import { pansenPuzzleHtml, stallklimaHtml } from '$lib/games/seed-games';
  * WICHTIG: Publikationen, Autorinnen/Autoren und Zahlenwerte sind Platzhalter
  * und keine echten FBN-Veröffentlichungen. Sie zeigen nur Struktur und Ablauf.
  */
-export const SEED_VERSION = 22;
+export const SEED_VERSION = 23;
 
 const T = (d: string, h = 9) => new Date(`${d}T${String(h).padStart(2, '0')}:00:00.000Z`).toISOString();
 
@@ -936,6 +936,7 @@ export const seedExhibitions: Exhibition[] = [
 			},
 			{ id: 'b-st-quiz', type: 'quiz', quizId: 'q-stallklima' },
 			{ id: 'b-st-game', type: 'game', gameId: 'g-stallklima' },
+			{ id: 'b-st-wohlfuehlstall', type: 'game', gameId: 'g-wohlfuehlstall' },
 			{ id: 'b-st-verhalten', type: 'quiz', quizId: 'q-schwein-verhalten' }
 		]
 	}),
@@ -1978,6 +1979,7 @@ export const seedSettings: Settings = {
 	englishEnabled: true,
 	downloads: 'released',
 	presentationMode: true,
+	debugMode: false,
 	contactEmail: 'kommunikation@example.org'
 };
 

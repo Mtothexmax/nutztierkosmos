@@ -298,15 +298,17 @@
 			</div>
 		{/if}
 
-		<details class="rounded-2xl bg-brand-900 p-4 text-white/90">
-			<summary class="cursor-pointer font-medium">{L('Bridge-Konsole', 'Bridge console')}</summary>
-			{#if bridge.log.length === 0}
-				<p class="mt-2 font-mono text-[12px] text-white/60">{L('Noch keine Nachrichten.', 'No messages yet.')}</p>
-			{:else}
-				<pre class="mt-2 overflow-x-auto font-mono text-[12px] leading-5">{bridge.log
-						.map((entry) => `${entry.time}  ${entry.direction.padEnd(12)} ${entry.type.padEnd(9)} ${entry.detail}`)
-						.join('\n')}</pre>
-			{/if}
-		</details>
+		{#if content.settings.debugMode}
+			<details class="rounded-2xl bg-brand-900 p-4 text-white/90">
+				<summary class="cursor-pointer font-medium">{L('Bridge-Konsole', 'Bridge console')}</summary>
+				{#if bridge.log.length === 0}
+					<p class="mt-2 font-mono text-[12px] text-white/60">{L('Noch keine Nachrichten.', 'No messages yet.')}</p>
+				{:else}
+					<pre class="mt-2 overflow-x-auto font-mono text-[12px] leading-5">{bridge.log
+							.map((entry) => `${entry.time}  ${entry.direction.padEnd(12)} ${entry.type.padEnd(9)} ${entry.detail}`)
+							.join('\n')}</pre>
+				{/if}
+			</details>
+		{/if}
 	</div>
 {/if}

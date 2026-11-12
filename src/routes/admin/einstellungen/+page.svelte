@@ -92,6 +92,10 @@
 			<input type="checkbox" class="mt-1 h-4 w-4" bind:checked={draft.presentationMode} />
 			<span>Präsentationsmodus<span class="block text-[13px] text-ink-500">Zeigt unten rechts, welche Anforderungen der Leistungsbeschreibung der aktuelle Screen abdeckt. Für die Vorstellung beim Auftraggeber – im Echtbetrieb aus.</span></span>
 		</label>
+		<label class="flex items-start gap-3">
+			<input type="checkbox" class="mt-1 h-4 w-4" bind:checked={draft.debugMode} />
+			<span>Debug-Modus<span class="block text-[13px] text-ink-500">Blendet beim Spielen die Bridge-Konsole mit allen Nachrichten zwischen Plattform und Spiel ein. Für die Entwicklung von Spielen – im Echtbetrieb aus.</span></span>
+		</label>
 	</section>
 
 	<div class="flex flex-wrap gap-2">
