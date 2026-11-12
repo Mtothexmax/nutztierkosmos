@@ -289,6 +289,7 @@ export function bundleGame(game: Game): string {
 	}
 
 	let html = entry.content;
+	const inlined = new Set<string>();
 
 	// Stylesheets einbetten
 	html = html.replace(/<link\b[^>]*>/gi, (tag) => {
@@ -296,6 +297,7 @@ export function bundleGame(game: Game): string {
 		const href = attr(tag, 'href');
 		const file = href ? lookup(entry.path, href, map) : null;
 		if (!file || file.kind !== 'css') return tag;
+		inlined.add(normalizePath(file.path));
 		return `<style>\n${escapeInline(processCss(file.content, file.path, map), 'style')}\n</style>`;
 	});
 
@@ -305,6 +307,7 @@ export function bundleGame(game: Game): string {
 		(match, before: string, _quote, src: string, after: string) => {
 			const file = lookup(entry.path, src, map);
 			if (!file || file.kind !== 'js') return match;
+			inlined.add(normalizePath(file.path));
 			return `<script${before}${after}>${escapeInline(file.content, 'script')}</script>`;
 		}
 	);
@@ -336,7 +339,82 @@ export function bundleGame(game: Game): string {
 		return `<style${attrs}>${processCss(css, entry.path, map)}</style>`;
 	});
 
-	return html;
+	return injectRuntimeResolver(html, entry, files, inlined);
+}
+
+/**
+ * Pfade, die das Spiel erst zur Laufzeit setzt (innerHTML, img.src, new Audio,
+ * fetch …), zeigen im srcdoc-iframe auf die Plattform statt aufs Paket. Dieses
+ * Skript läuft vor allen Spielskripten und löst solche Pfade gegen die
+ * Paketdateien auf. Bereits eingebettete Skripte und Stylesheets fehlen in der
+ * Tabelle, damit das Bundle nicht doppelt so groß wird.
+ */
+function injectRuntimeResolver(html: string, entry: GameFile, files: GameFile[], inlined: Set<string>): string {
+	const table: Record<string, string> = {};
+	for (const file of files) {
+		const path = normalizePath(file.path);
+		if (file === entry || inlined.has(path)) continue;
+		table[path] = fileDataUrl(file);
+	}
+	if (Object.keys(table).length === 0) return html;
+	const baseDir = dirname(normalizePath(entry.path));
+	const script = `<script>(function () {
+  var F = ${JSON.stringify(table).replace(/</g, '\\u003c')};
+  var BASE = ${JSON.stringify(baseDir === '.' ? '' : baseDir + '/')};
+  function res(u) {
+    if (typeof u !== 'string' || !u || /^([a-z][a-z0-9+.-]*:|\\/\\/|#)/i.test(u)) return u;
+    var p = u.split('#')[0].split('?')[0];
+    try { p = decodeURI(p); } catch (e) {}
+    p = p.charAt(0) === '/' ? p.slice(1) : BASE + p;
+    var out = [];
+    p.split('/').forEach(function (s) { if (s === '..') out.pop(); else if (s && s !== '.') out.push(s); });
+    p = out.join('/');
+    return F[p] || F[p.toLowerCase()] || u;
+  }
+  function patch(proto, prop) {
+    var d = proto && Object.getOwnPropertyDescriptor(proto, prop);
+    if (!d || !d.set) return;
+    Object.defineProperty(proto, prop, { configurable: true, enumerable: d.enumerable, get: d.get,
+      set: function (v) { d.set.call(this, res(v)); } });
+  }
+  patch(HTMLImageElement.prototype, 'src');
+  patch(HTMLMediaElement.prototype, 'src');
+  patch(HTMLSourceElement.prototype, 'src');
+  patch(HTMLVideoElement.prototype, 'poster');
+  var ATTR = /^(src|poster)$/i;
+  var setAttr = Element.prototype.setAttribute;
+  Element.prototype.setAttribute = function (n, v) {
+    return setAttr.call(this, n, ATTR.test(n) ? res(String(v)) : v);
+  };
+  function fix(el) {
+    if (!el || el.nodeType !== 1) return;
+    ['src', 'poster'].forEach(function (a) {
+      var v = el.getAttribute(a);
+      if (v) { var r = res(v); if (r !== v) setAttr.call(el, a, r); }
+    });
+  }
+  new MutationObserver(function (list) {
+    list.forEach(function (m) {
+      if (m.type === 'attributes') return fix(m.target);
+      m.addedNodes.forEach(function (n) {
+        fix(n);
+        if (n.querySelectorAll) n.querySelectorAll('[src],[poster]').forEach(fix);
+      });
+    });
+  }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['src', 'poster'] });
+  if (window.fetch) {
+    var f = window.fetch;
+    window.fetch = function (input, init) { return f.call(this, typeof input === 'string' ? res(input) : input, init); };
+  }
+  var open = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function (method, url) {
+    var args = Array.prototype.slice.call(arguments);
+    args[1] = res(String(url));
+    return open.apply(this, args);
+  };
+})();</script>`;
+	if (/<head\b[^>]*>/i.test(html)) return html.replace(/<head\b[^>]*>/i, (tag) => tag + script);
+	return script + html;
 }
 
 export const starterIndexHtml = `<!doctype html>
